@@ -1,0 +1,42 @@
+{
+  "folders": [
+    {
+      "name": "backend",
+      "path": "./backend"
+    },
+    {
+      "name": "root",
+      "path": "./"
+    }
+  ],
+  "settings": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "off",
+    "python.testing.pytestEnabled": true,
+    "isort.args": ["--profile", "black"],
+    "[python]": {
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+      }
+    },
+    "cSpell.words": [
+      "backref",
+      "fastapi",
+      "isort",
+      "jsonable",
+      "ondelete",
+      "onupdate",
+      "primaryjoin",
+      "pydantic",
+      "pytest",
+      "starlette",
+      "structlog",
+      "typer",
+      "uselist",
+      "viewonly"
+    ]
+  }
+}
