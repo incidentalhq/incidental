@@ -1,0 +1,19 @@
+.DS_Store
+*.py[cod]
+*.swp
+*._*
+*.pytest_cache
+.mypy_cache
+.ipynb_checkpoints
+
+# C extensions
+*.so
+
+# Packages
+build
+eggs
+
+cache/
+mnt/
+.env
+

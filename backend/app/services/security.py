@@ -1,0 +1,92 @@
+"""Security services"""
+
+from datetime import datetime, timedelta
+
+import structlog
+from passlib.totp import TOTP, TokenError
+from sqlalchemy.orm import Session
+
+from app.exceptions import ValidationError
+from app.models import User
+
+logger = structlog.get_logger(logger_name=__name__)
+
+# the max times a user is allowed to attempt a login
+MAX_LOGIN_ATTEMPTS = 4
+
+COOL_OFF_PERIOD = timedelta(minutes=15)
+
+OTP_CODE_EXPIRE_IN_SECONDS = 120
+
+
+class SecurityService:
+    def __init__(
+        self,
+        session: Session,
+    ):
+        self.session = session
+
+    def generate_otp_code(self, user: User) -> str:
+        """
+        Generate an OTP code for a user
+        """
+        private_bytes = user.private_key.encode("utf8")
+        generator = TOTP(
+            key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw"
+        )
+        token = generator.generate()
+
+        return token.token
+
+    def validate_otp_code(self, user: User, code: str) -> None:
+        """Validate the OTP code"""
+        private_bytes = user.private_key.encode("utf8")
+        totp = TOTP(key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
+
+        if self.is_user_account_in_cool_off_period(user):
+            raise ValidationError(
+                "Max login attempts attempted on account, please wait 15m before trying again",
+                "max_login_attempts",
+            )
+
+        self.reset_cool_off_if_possible(user)
+
+        try:
+            totp.match(code)
+        except TokenError:
+            logger.warning("otp code not correct", user=user)
+            user.last_login_attempt_at = datetime.now()
+            user.login_attempts += 1
+
+            raise ValidationError(
+                "OTP code is incorrect, please try again", "incorrect_code"
+            )
+
+        user.login_attempts = 0
+
+    def is_user_account_in_cool_off_period(self, user: User) -> bool:
+        """
+        Has the user's account reached max attempts, and are we still within the cool off window
+        """
+        if (
+            user.login_attempts >= MAX_LOGIN_ATTEMPTS
+            and user.last_login_attempt_at
+            and datetime.now() - user.last_login_attempt_at <= COOL_OFF_PERIOD
+        ):
+            return True
+        else:
+            return False
+
+    def reset_cool_off_if_possible(self, user: User) -> bool:
+        """
+        If max attempts was reached, but we're outside the cool off window, reset the login attempts
+        """
+        if (
+            user.login_attempts >= MAX_LOGIN_ATTEMPTS
+            and user.last_login_attempt_at
+            and datetime.now() - user.last_login_attempt_at > COOL_OFF_PERIOD
+        ):
+            user.login_attempts = 0
+            return True
+        else:
+            return False
