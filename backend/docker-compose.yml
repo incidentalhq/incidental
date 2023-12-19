@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  backend:
+    image: incidental/backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+      - "8888:8888"
+    volumes:
+      - ".:/srv"
+    env_file:
+      - .env
+    command: uvicorn app.main:app --port 5000 --host 0.0.0.0 --reload
+
+  postgres:
+    image: postgres:14
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=backend
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgresdata:
+    driver: local

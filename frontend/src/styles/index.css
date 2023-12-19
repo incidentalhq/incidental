@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+html,
+body {
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5rem;
+
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: 'slnt' 0;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2 {
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+form label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-gray-700);
+  font-weight: 600;
+}
+
+form .error {
+  border: 1px solid #ef5858 !important;
+}
+
+form .error-help {
+  color: #ef5858;
+  font-size: 0.9rem;
+}
+
+form input[type='text'],
+form input[type='password'],
+form input[type='number'],
+form input[type='date'],
+form input[type='datetime-local'],
+textarea {
+  border: 1px solid var(--color-gray-300);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+}
+
+form input[type='text'],
+form input[type='password'],
+textarea {
+  width: 100%;
+}
+
+form input[type='number'] {
+  width: 100px;
+}
+
+form select {
+  border: 1px solid var(--color-gray-300);
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  appearance: none;
+  background: #fff
+    url("data:image/svg+xml;charset=utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23667189'%20d='M2%200L0%202h4zm0%205L0%203h4z'/%3E%3C/svg%3E")
+    no-repeat right 0.6rem center/.6rem 1rem;
+  max-width: 100%;
+}
+
+.space-y-2 > * {
+  margin-bottom: 0.5rem;
+}
+
+a,
+a:visited {
+  color: var(--color-slate-600);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-blue-700);
+}

@@ -1,0 +1,58 @@
+{
+  "folders": [
+    {
+      "name": "__root__",
+      "path": "./"
+    },
+    {
+      "name": "backend",
+      "path": "./backend"
+    },
+    {
+      "name": "frontend",
+      "path": "./frontend"
+    },
+    {
+      "name": "slack-app",
+      "path": "./slack-app"
+    }
+  ],
+  "settings": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "off",
+    "python.testing.pytestEnabled": true,
+    "[python]": {
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      }
+    },
+    "cSpell.words": [
+      "backref",
+      "fastapi",
+      "fontawesome",
+      "Formik",
+      "fortawesome",
+      "httpx",
+      "isort",
+      "jsonable",
+      "ondelete",
+      "onupdate",
+      "passlib",
+      "primaryjoin",
+      "pydantic",
+      "pytest",
+      "sessionmaker",
+      "shortuuid",
+      "starlette",
+      "structlog",
+      "tanstack",
+      "toastify",
+      "typer",
+      "uselist",
+      "viewonly"
+    ]
+  }
+}
