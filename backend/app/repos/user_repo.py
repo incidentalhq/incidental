@@ -18,15 +18,11 @@ class UserRepo:
     def get_by_id_or_throw(self, id: int) -> User:
         user = self.session.query(User).get(id)
         if not user:
-            raise ValidationError(
-                "Could not find user", code=ErrorCodes.MODEL_NOT_FOUND
-            )
+            raise ValidationError("Could not find user", code=ErrorCodes.MODEL_NOT_FOUND)
         return user
 
     def get_by_email_address(self, email: str) -> typing.Optional[User]:
-        return (
-            self.session.query(User).filter(User.email_address == email.lower()).first()
-        )
+        return self.session.query(User).filter(User.email_address == email.lower()).first()
 
     def get_user_by_auth_token(self, token: str) -> User:
         user = self.session.query(User).filter(User.auth_token == token).first()
@@ -37,9 +33,7 @@ class UserRepo:
         user = self.get_by_email_address(data.email_address)
 
         if user:
-            raise FormFieldValidationError(
-                "Sorry, that email address is already in use", "emailAddress"
-            )
+            raise FormFieldValidationError("Sorry, that email address is already in use", "emailAddress")
 
         user = User()
         user.name = data.name

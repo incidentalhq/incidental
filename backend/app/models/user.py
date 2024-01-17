@@ -56,7 +56,7 @@ class User(Base, TimestampMixin):
     def __repr__(self):
         return "<User: id={} email={}>".format(self.id, self.email_address)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         if self.password is None:
             return False
         return pwd_context.verify(password, self._password)
