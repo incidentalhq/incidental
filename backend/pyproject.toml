@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lantern-backend"
+name = "incidental-backend"
 version = "0.1.0"
 description = ""
 authors = ["Sanjeevan Ambalavanar <hello@sanjeevan.co.uk>"]

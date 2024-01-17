@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   backend:
-    image: lantern/backend:latest
+    image: incidental/backend:latest
     build:
       context: .
       dockerfile: Dockerfile
