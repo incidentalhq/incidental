@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.101.0"
+fastapi = "^0.105.0"
 uvicorn = "^0.23.2"
 pydantic = {extras = ["email"], version = "^2.1.1"}
 pydantic-settings = "^2.0.2"
@@ -23,6 +23,7 @@ typer = "^0.9.0"
 python-multipart = "^0.0.6"
 boto3 = "^1.28.23"
 pytest = "^7.4.0"
+slack-sdk = "^3.26.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -32,3 +33,8 @@ mypy = "^1.5.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.isort]
+known_first_party = ["app"]
+
+[tool.black]
+line-length = 120
