@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IUser } from "shared-types/types";
+import { IUser } from "@/types/models";
 
 import { clearUserDataFromBrowser, saveAuthToBrowser } from "@/utils/storage";
 
@@ -10,6 +10,14 @@ const _userAuthProvider = () => {
   const [user, setUser] = useState<IUser>();
   const navigate = useNavigate();
   const { apiService } = useApiService();
+
+  const slackLogin = async (code: string) => {
+    const data = await apiService.slackOpenIdLogin(code);
+    setUser(data);
+    saveAuthToBrowser(data);
+    apiService.setCurrentUser(data);
+    navigate("/");
+  };
 
   const login = async (emailAddress: string, password: string) => {
     const data = await apiService.authUser({
@@ -28,7 +36,7 @@ const _userAuthProvider = () => {
     navigate("/");
   };
 
-  return { setUser, user, logout, login };
+  return { setUser, user, logout, login, slackLogin };
 };
 
 // Create a type from the return values of _useDataProvider

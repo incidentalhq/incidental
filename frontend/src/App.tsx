@@ -14,7 +14,9 @@ import Login from "@/pages/Login/Login";
 import { AuthProvider } from "@/hooks/useAuth";
 import Register from "@/pages/Register/Register";
 import RegisterSuccess from "@/pages/Register/Success";
-import { AdminRoutePaths, RoutePaths } from "./routes";
+import { RoutePaths } from "./routes";
+import OAuthComplete from "./pages/OAuth/Complete";
+import IncidentsList from "./pages/Incidents/List";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +30,7 @@ const DefaultLayoutRoutes = () => (
   <DefaultLayout>
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/incidents" element={<IncidentsList />} />
     </Routes>
   </DefaultLayout>
 );
@@ -52,6 +55,10 @@ const App = () => {
               <Routes>
                 <Route path={RoutePaths.LOGIN} element={<Login />} />
                 <Route path={RoutePaths.REGISTER} element={<Register />} />
+                <Route
+                  path={RoutePaths.OAUTH_COMPLETE}
+                  element={<OAuthComplete />}
+                />
                 <Route
                   path={RoutePaths.REGISTER_SUCCESS}
                   element={<RegisterSuccess />}

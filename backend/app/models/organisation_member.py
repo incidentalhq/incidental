@@ -7,10 +7,14 @@ from .mixins import TimestampMixin
 
 
 class OrganisationMember(Base, TimestampMixin):
-    __tablename__ = "organisation_member"
+    __prefix__ = "org_mem"
 
-    user_id: Mapped[str] = mapped_column(String(50), ForeignKey("user.id"), nullable=False)
-    organisation_id: Mapped[str] = mapped_column(String(50), ForeignKey("organisation.id"), nullable=False)
+    user_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("user.id", ondelete="cascade"), nullable=False, index=True
+    )
+    organisation_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("organisation.id", ondelete="cascade"), nullable=False, index=True
+    )
     role: Mapped[str] = mapped_column(UnicodeText, nullable=False)
 
     # relationships

@@ -1,34 +1,9 @@
-import calendar
 import logging
 import os
-import random
-import typing
-from datetime import datetime
+import re
 
 import structlog
 from structlog.contextvars import merge_contextvars
-import shortuuid
-
-ALPHABET = "bcdfghjklmnpqrstvwxyz0123456789BCDFGHJKLMNPQRSTVWXYZ"
-
-
-def public_id_gen(prefix: str) -> typing.Callable[[], str]:
-    id = shortuuid.uuid()
-    return lambda: f"{prefix}_{id}"
-
-
-def random_id(length: int) -> str:
-    return "".join([random.choice(ALPHABET) for i in range(length)])
-
-
-def to_timestamp(datetime: datetime) -> int:
-    """Convert to UTC datetime"""
-    return calendar.timegm(datetime.timetuple())
-
-
-def to_datetime(timestamp: int) -> datetime:
-    """Converts unix UTC time into a UTC datetime object"""
-    return datetime.utcfromtimestamp(timestamp)
 
 
 def setup_logger() -> None:
@@ -50,3 +25,14 @@ def setup_logger() -> None:
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=False,
     )
+
+
+def to_channel_name(name: str) -> str:
+    slug = name.lower()
+
+    # Replace spaces with underscores
+    slug = re.sub(r"\s+", "-", slug)
+
+    # Remove special characters
+    slug = re.sub(r"[^a-zA-Z0-9-]", "", slug)
+    return slug

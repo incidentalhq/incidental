@@ -3,8 +3,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.exceptions import FormFieldValidationError
-from app.routes import health, slack, users, world
+from app.exceptions import ApplicationException, FormFieldValidationError
+from app.routes import health, incidents, slack, users, world
 
 from .env import settings
 
@@ -24,6 +24,7 @@ def create_app() -> FastAPI:
     app.include_router(world.router, prefix="/world")
     app.include_router(health.router, prefix="/health")
     app.include_router(slack.router, prefix="/slack")
+    app.include_router(incidents.router, prefix="/incidents")
 
     return app
 
@@ -44,6 +45,19 @@ async def application_formfield_validation_exception_handler(
             {
                 "errors": [{"loc": [err.attribute], "type": "general", "msg": err.error}],
                 "detail": err.error,
+                "code": err.code if err.code else "generic_error",
+            }
+        ),
+    )
+
+
+@app.exception_handler(ApplicationException)
+async def application_exception_handler(request: Request, err: ApplicationException) -> JSONResponse:
+    return JSONResponse(
+        status_code=err.status_code,
+        content=jsonable_encoder(
+            {
+                "detail": err.message,
                 "code": err.code if err.code else "generic_error",
             }
         ),

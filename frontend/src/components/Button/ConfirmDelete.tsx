@@ -59,7 +59,7 @@ const ConfirmDelete: React.FC<Props> = ({
   };
 
   return (
-    <Button danger={true} onClick={onClick} {...props}>
+    <Button $danger={true} onClick={onClick} {...props}>
       {children}
     </Button>
   );

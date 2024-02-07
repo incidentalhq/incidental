@@ -1,26 +1,12 @@
 import { createContext, useContext, useState } from "react";
-import {
-  IOrganisation,
-  IProject,
-  ISubscription,
-  ITodo,
-} from "shared-types/models";
+import { IOrganisation } from "@/types/models";
 
 const useGlobalProvider = () => {
-  const [subscription, setSubscription] = useState<ISubscription>();
-  const [todos, setTodos] = useState<ITodo[]>([]);
   const [organisation, setOrganisation] = useState<IOrganisation>();
-  const [projects, setProjects] = useState<IProject>([]);
 
   return {
-    subscription,
-    setSubscription,
-    setTodos,
-    todos,
     organisation,
     setOrganisation,
-    projects,
-    setProjects,
   };
 };
 

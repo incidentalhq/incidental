@@ -5,7 +5,7 @@ from datetime import datetime
 from passlib.context import CryptContext
 from sqlalchemy import Boolean, DateTime, Integer, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column, synonym
+from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.db import Base
@@ -26,15 +26,20 @@ class User(Base, TimestampMixin):
     is_super_admin = mapped_column(Boolean, default=False)
     is_billing_user = mapped_column(Boolean, default=False)
     language = mapped_column(UnicodeText, nullable=False, default="en-gb")
-    _settings = mapped_column(
-        "settings", JSONB(none_as_null=True), nullable=False, default={}
-    )
+    _settings = mapped_column("settings", JSONB(none_as_null=True), nullable=False, default={})
     is_email_verified = mapped_column(Boolean, nullable=False, default=False)
     login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     last_login_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     last_login_attempt_at = mapped_column(DateTime, nullable=True)
 
+    # slack specific
+    slack_user_id = mapped_column(UnicodeText, nullable=True, unique=True)
+
     # relationships
+    organisations = relationship("Organisation", secondary="organisation_member", back_populates="users")
+    incidents_created = relationship("Incident", back_populates="owner")
+
+    # user specific settings
     def _set_settings(self, value):
         self._settings = value
         flag_modified(self, "_settings")

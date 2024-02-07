@@ -1,10 +1,11 @@
 import {
+  IIncident,
   ILoggedInUser,
   IPublicUser,
   IUser,
   IWorld,
-  PaginatedResults,
 } from "@/types/models";
+import { PaginatedResults } from "@/types/core";
 
 import { callApi } from "./transport";
 
@@ -21,9 +22,14 @@ interface IAuthUser {
 
 export class ApiService {
   user: ILoggedInUser | undefined;
+  organisation: string | undefined;
 
   setCurrentUser(user: ILoggedInUser) {
     this.user = user;
+  }
+
+  setOrganisation(organisation: string) {
+    this.organisation = organisation;
   }
 
   createUser(userData: ICreateUser) {
@@ -42,5 +48,35 @@ export class ApiService {
 
   getWorld() {
     return callApi<IWorld>("GET", "/world/", { user: this.user });
+  }
+
+  slackOpenIdLogin(code: string) {
+    return callApi<ILoggedInUser>("POST", "/slack/openid/complete", {
+      data: { code },
+    });
+  }
+
+  slackInstallation(code: string) {
+    return callApi<ILoggedInUser>("POST", "/slack/oauth/complete", {
+      data: { code },
+    });
+  }
+
+  searchIncidents(
+    query: string | undefined = undefined,
+    page: number = 1,
+    size: number = 20
+  ) {
+    return callApi<PaginatedResults<IIncident>>("GET", `/incidents/search`, {
+      user: this.user,
+      headers: {
+        "x-organisation-id": this.organisation,
+      },
+      params: {
+        q: query,
+        page,
+        size,
+      },
+    });
   }
 }
