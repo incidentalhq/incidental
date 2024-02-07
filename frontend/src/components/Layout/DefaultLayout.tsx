@@ -7,8 +7,8 @@ import SideBar from "../Sections/Sidebar";
 
 const Container = styled.div`
   display: flex;
-  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 `;
 
 const Content = styled.div``;
@@ -20,8 +20,10 @@ const RightColumn = styled.div`
 `;
 
 const LeftColumn = styled.div`
-  margin: 1rem;
+  padding: 1rem;
   width: 10rem;
+  border-right: 1px solid var(--color-gray-200);
+  height: 100vh;
 `;
 
 type Props = {

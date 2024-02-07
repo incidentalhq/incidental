@@ -1,20 +1,16 @@
 import {
-  faAt,
-  faClipboard,
-  faInbox,
-  faPoll,
-  faTrafficLight,
-  faTree,
-  faUsersCrown,
+  faBoltLightning,
+  faCog,
+  faHome,
 } from "@fortawesome/pro-duotone-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { IUser } from "shared-types/types";
 import styled, { css, keyframes } from "styled-components";
+import { IUser } from "@/types/models";
 
-import logo from "@/assets/mark_900.svg";
-import { AdminRoutePaths, RoutePaths } from "@/routes";
+import logo from "@/assets/mark_border.png";
+import { RoutePaths } from "@/routes";
 
 const colorCycle = keyframes`
   from {
@@ -95,17 +91,14 @@ const SideBar: React.FC<Props> = ({ user }) => {
         </Link>
       </LogoSection>
       <MenuItems>
-        <Item to={AdminRoutePaths.POSTS_LIST}>
-          <FontAwesomeIcon icon={faClipboard} fixedWidth={true} /> All posts
+        <Item to={RoutePaths.DASHBOARD}>
+          <FontAwesomeIcon icon={faHome} fixedWidth={true} /> Dashboard
         </Item>
-        <Item to={AdminRoutePaths.INBOX}>
-          <FontAwesomeIcon icon={faAt} fixedWidth={true} /> Assigned to me
+        <Item to={RoutePaths.INCIDENTS}>
+          <FontAwesomeIcon icon={faBoltLightning} fixedWidth={true} /> Incidents
         </Item>
-        <Item to={RoutePaths.ROADMAP}>
-          <FontAwesomeIcon icon={faTrafficLight} fixedWidth={true} /> Roadmap
-        </Item>
-        <Item to={RoutePaths.CHANGELOG}>
-          <FontAwesomeIcon icon={faTree} fixedWidth={true} /> Changelog
+        <Item to={RoutePaths.SETTINGS}>
+          <FontAwesomeIcon icon={faCog} fixedWidth={true} /> Settings
         </Item>
       </MenuItems>
     </Root>

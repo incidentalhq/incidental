@@ -2,10 +2,7 @@ import structlog
 import typer
 
 from app.db import session_factory
-from app.models import User
 from app.repos import UserRepo
-from app.schemas.actions import CreateUserSchema
-from app.services.identity import IdentityService
 from app.utils import setup_logger
 
 setup_logger()
@@ -14,29 +11,20 @@ app = typer.Typer(no_args_is_help=True)
 logger = structlog.get_logger(logger_name="script")
 
 
-@app.command()
-def make_user(name: str, email: str, password: str) -> User:
+@app.command(help="Set password for user")
+def set_password(email: str, password: str):
     db = session_factory()
     user_repo = UserRepo(db)
 
-    identity_service = IdentityService(
-        db,
-        user_repo,
-    )
+    user = user_repo.get_by_email_address(email)
+    if not user:
+        logger.error("Could not find user")
+        return
 
-    item = CreateUserSchema(
-        name=name,
-        email_address=email,
-        password=password,
-    )
-
-    user = identity_service.create_account(item)
-    user.is_email_verified = True
-    logger.info("Created new user", user=item)
-
+    user.password = password
     db.commit()
 
-    return user
+    logger.info("Password updated")
 
 
 if __name__ == "__main__":

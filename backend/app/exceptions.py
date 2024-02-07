@@ -7,6 +7,8 @@ class ErrorCodes(Enum):
     OVER_QUOTA = "OVER_QUOTA"
     MODEL_NOT_FOUND = "MODEL_NOT_FOUND"
     NOT_ALLOWED = "NOT_ALLOWED"
+    EXCEEDED_MAX_LOGIN_ATTEMPTS = "EXCEEDED_MAX_LOGIN_ATTEMPTS"
+    USER_NOT_VERIFIED = "USER_NOT_VERIFIED"
 
 
 class ApplicationException(Exception):
@@ -22,9 +24,7 @@ class ApplicationException(Exception):
 
 
 class FormFieldValidationError(ApplicationException):
-    def __init__(
-        self, error: str, attribute: str = "general", code: ErrorCodes | None = None
-    ):
+    def __init__(self, error: str, attribute: str = "general", code: ErrorCodes | None = None):
         self.error = error
         self.attribute = attribute
         self.code = code

@@ -1,17 +1,16 @@
 import secrets
 import typing
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
 from app.models import User
 from app.schemas.actions import CreateUserSchema
 
+from .base_repo import BaseRepo
 
-class UserRepo:
-    def __init__(self, session: Session):
-        self.session = session
 
+class UserRepo(BaseRepo):
     def get_by_id(self, id: int) -> User | None:
         return self.session.query(User).get(id)
 
@@ -29,21 +28,28 @@ class UserRepo:
 
         return user
 
-    def create_user(self, data: CreateUserSchema) -> User:
-        user = self.get_by_email_address(data.email_address)
+    def create_user(self, create_in: CreateUserSchema) -> User:
+        user = self.get_by_email_address(create_in.email_address)
 
         if user:
             raise FormFieldValidationError("Sorry, that email address is already in use", "emailAddress")
 
         user = User()
-        user.name = data.name
-        user.password = data.password
-        user.email_address = data.email_address.lower()
+        user.name = create_in.name
+        user.password = create_in.password
+        user.email_address = create_in.email_address.lower()
         user.auth_token = secrets.token_urlsafe(32)
-        user.is_email_verified = False
+        user.is_email_verified = create_in.is_email_verified
         user.is_active = True
+
+        # slack specific
+        user.slack_user_id = create_in.slack_user_id
 
         self.session.add(user)
         self.session.flush()
 
         return user
+
+    def get_by_slack_user_id(self, slack_user_id: str) -> User | None:
+        query = select(User).where(User.slack_user_id == slack_user_id).limit(1)
+        return self.session.scalars(query).first()

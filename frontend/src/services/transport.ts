@@ -1,5 +1,6 @@
 import axios, { Method, RawAxiosRequestConfig } from "axios";
-import { IErrorItem, IResponseError, IUser } from "shared-types/types";
+import { IErrorItem, IResponseError } from "@/types/core";
+import { IUser } from "@/types/models";
 
 export const getBaseUrl = (): string => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -49,13 +50,16 @@ export const callApi = async <T>(
 
   // convert user object to headers
   if (config && config.user !== undefined) {
-    baseConfig.headers = createAuthHeader(config.user.authToken);
+    baseConfig.headers = {
+      ...createAuthHeader(config.user.authToken),
+      ...(config.headers ?? {}),
+    };
     delete config.user;
   }
 
   baseConfig = {
-    ...baseConfig,
     ...config,
+    ...baseConfig,
   };
 
   try {

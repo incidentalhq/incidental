@@ -3,12 +3,8 @@ export enum RoutePaths {
   DASHBOARD = "/",
   REGISTER = "/register",
   REGISTER_SUCCESS = "/register/success",
-  POSTS_LIST = "/posts",
-  ROADMAP = "/roadmap",
-  CHANGELOG = "/changelog",
-}
+  OAUTH_COMPLETE = "/oauth/complete",
 
-export enum AdminRoutePaths {
-  INBOX = "/admin/inbox",
-  POSTS_LIST = "/admin/posts",
+  INCIDENTS = "/incidents",
+  SETTINGS = "/settings",
 }

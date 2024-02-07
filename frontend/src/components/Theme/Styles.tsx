@@ -70,23 +70,22 @@ const primaryButtonCss = css`
 `;
 
 interface ButtonCustomProps {
-  danger?: boolean;
-  primary?: boolean;
+  $danger?: boolean;
+  $primary?: boolean;
 }
 
 export const Button = styled.button<ButtonCustomProps>`
   ${buttonCss}
-  ${(props) => (props.danger ? deleteButtonCss : null)}
-  ${(props) => (props.primary ? primaryButtonCss : "")}
+  ${(props) => (props.$danger ? deleteButtonCss : null)}
+  ${(props) => (props.$primary ? primaryButtonCss : "")}
 `;
 
 export const Box = styled.div`
   background: #fff;
   border-radius: var(--radius-md);
-  box-shadow: var(--stripe-shadow);
   position: relative;
   margin-bottom: 1rem;
-  overflow: hidden; // bottom left + right corners are rendered properly
+  border: 1px solid var(--color-gray-200);
 `;
 
 export const Table = styled.table`
@@ -126,8 +125,6 @@ export const Header = styled.div<HeaderStyleProps>`
   padding-bottom: 16px;
   padding-left: 20px;
   padding-right: 20px;
-  box-shadow: ${(props) =>
-    props.includeSeparator === false ? "none" : "inset 0 -1px #e3e8ee"};
   display: flex;
   justify-content: space-between;
   outline: none;
