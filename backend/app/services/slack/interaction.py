@@ -53,12 +53,12 @@ class SlackInteractionService:
         # severity
         sev_field = self.form_repo.get_form_field_by_name(form=form, name="Severity")
         sev_id = form_state_values[f"block-{sev_field.id}"][sev_field.id]["selected_option"]["value"]
-        severity = self.incident_repo.get_severity_by_id(id=sev_id)
+        severity = self.incident_repo.get_incident_severity_by_id(id=sev_id)
 
         # incident type
         type_field = self.form_repo.get_form_field_by_name(form=form, name="Incident type")
         type_id = form_state_values[f"block-{type_field.id}"][type_field.id]["selected_option"]["value"]
-        incident_type = self.incident_repo.get_type_by_id(id=type_id)
+        incident_type = self.incident_repo.get_incident_type_by_id(id=type_id)
 
         user = self.slack_user_service.get_or_create_user_from_slack_id(
             interaction.payload["user"]["id"], organisation=organisation
@@ -68,7 +68,7 @@ class SlackInteractionService:
         )
 
         # assign role
-        role = self.incident_repo.get_role(organisation=organisation, kind=IncidentRoleKind.REPORTER)
+        role = self.incident_repo.get_incident_role(organisation=organisation, kind=IncidentRoleKind.REPORTER)
         if not role:
             raise Exception("Could not find role reporter")
 

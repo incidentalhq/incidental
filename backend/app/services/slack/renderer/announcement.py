@@ -2,6 +2,7 @@ from typing import Any
 
 import structlog
 
+from app.env import settings
 from app.models import Announcement, AnnouncementFields, Incident, IncidentRoleKind
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -14,34 +15,54 @@ class AnnouncementRenderer:
         self.announcement = announcement
 
     def render(self) -> list[dict[str, Any]]:
+        divider = {
+            "type": "divider",
+        }
         header_section = {
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": self.incident.name,
+                "text": f":mega: {self.incident.name}",
             },
         }
         description_section = {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": ":mega: A new incident has been created",
+                "text": "A new incident has been created",
             },
         }
 
-        fields_section: dict[str, Any] = {
-            "type": "section",
-            "fields": [],
-        }
+        field_sections: list[dict[str, Any]] = []
 
         for field_name in self.announcement.fields:
-            fields_section["fields"].append(self.render_field_to_slack_field(field=field_name))
+            text_field = self.render_field_to_slack_field(field=field_name)
+            field_sections.append(
+                {
+                    "type": "section",
+                    "text": text_field,
+                }
+            )
 
-        blocks = [
+        actions = {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "Incident page"},
+                    "url": f"{settings.FRONTEND_URL}/incident/{self.incident.id}",
+                }
+            ],
+        }
+
+        blocks: list[dict[str, Any]] = [
             header_section,
             description_section,
-            fields_section,
+            divider,
         ]
+        blocks.extend(field_sections)
+        blocks.append(divider)
+        blocks.append(actions)
 
         return blocks
 
@@ -52,29 +73,34 @@ class AnnouncementRenderer:
                 lead_label = lead.name if lead else "Not assigned"
                 return {
                     "type": "mrkdwn",
-                    "text": f":firefighter: *Lead*:\n {lead_label}\n",
+                    "text": f":firefighter: *Lead*: {lead_label}\n",
                 }
             case AnnouncementFields.TYPE:
                 return {
                     "type": "mrkdwn",
-                    "text": f":traffic_light: *Type:*\n {self.incident.incident_type.name}\n",
+                    "text": f":package: *Type:* {self.incident.incident_type.name}\n",
                 }
             case AnnouncementFields.SEVERITY:
                 return {
                     "type": "mrkdwn",
-                    "text": f":zap: *Severity:*\n {self.incident.incident_severity.name}\n",
+                    "text": f":zap: *Severity:* {self.incident.incident_severity.name}\n",
                 }
             case AnnouncementFields.STATUS:
                 return {
                     "type": "mrkdwn",
-                    "text": f":compass: *Status:*\n {self.incident.incident_status.name}\n",
+                    "text": f":traffic_light: *Status:* {self.incident.incident_status.name}\n",
                 }
             case AnnouncementFields.REPORTER:
                 reporter = self.incident.get_user_for_role(IncidentRoleKind.REPORTER)
                 reporter_label = reporter.name if reporter else "Not assigned"
                 return {
                     "type": "mrkdwn",
-                    "text": f"*Reporter:*\n {reporter_label}\n",
+                    "text": f"*:man-frowning: Reporter:* {reporter_label}\n",
+                }
+            case AnnouncementFields.SLACK_CHANNEL:
+                return {
+                    "type": "mrkdwn",
+                    "text": f"*:hash: Channel*: #{self.incident.slack_channel_name}",
                 }
 
         return None

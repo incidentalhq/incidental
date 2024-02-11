@@ -10,11 +10,8 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class SlackUserService:
-    def __init__(
-        self, bot_token: str, user_repo: UserRepo, organisation_repo: OrganisationRepo, user_token: str | None = None
-    ):
+    def __init__(self, bot_token: str, user_repo: UserRepo, organisation_repo: OrganisationRepo):
         self.bot_token = bot_token
-        self.user_token = user_token
         self.client = WebClient(token=bot_token)
         self.user_repo = user_repo
         self.organisation_repo = organisation_repo
@@ -30,17 +27,22 @@ class SlackUserService:
         # otherwise create a new user
         slack_user_response = self.client.users_info(user=slack_id)
         slack_user_response.validate()
+        logger.info("slack user", u=slack_user_response.data)
 
         name = slack_user_response.data["user"]["real_name"]
         email_address = slack_user_response.data["user"]["profile"]["email"]
-        password = genword(15)
+        password = genword(length=14)
 
         user = self.user_repo.create_user(
             create_in=CreateUserSchema(
-                name=name, email_address=email_address, password=password, slack_user_id=slack_id
+                name=name,
+                email_address=email_address,
+                password=password,
+                slack_user_id=slack_id,
             )
         )
+        logger.info("Created new user from slack information", user_id=user.id)
 
-        self.organisation_repo.add_member(user, organisation)
+        self.organisation_repo.add_member(user, organisation, role="member")
 
         return user

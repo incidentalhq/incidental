@@ -55,18 +55,23 @@ class IncidentRepo(BaseRepo):
 
         return PaginatedResults(total=total, page=page, size=size, items=records)
 
-    def get_all(self, organisation: Organisation) -> Sequence[IncidentType]:
+    def get_all_incidents(self, organisation: Organisation) -> Sequence[Incident]:
+        stmt = select(Incident).where(Incident.organisation_id == organisation.id, Incident.deleted_at.is_(None))
+
+        return self.session.scalars(stmt).all()
+
+    def get_all_incident_types(self, organisation: Organisation) -> Sequence[IncidentType]:
         stmt = select(IncidentType).where(
             IncidentType.organisation_id == organisation.id, IncidentType.deleted_at.is_(None)
         )
 
         return self.session.scalars(stmt).all()
 
-    def get_severity_by_id(self, id: str) -> IncidentSeverity | None:
+    def get_incident_severity_by_id(self, id: str) -> IncidentSeverity | None:
         stmt = select(IncidentSeverity).where(IncidentSeverity.id == id, IncidentSeverity.deleted_at.is_(None)).limit(1)
         return self.session.scalar(stmt)
 
-    def get_type_by_id(self, id: str) -> IncidentType | None:
+    def get_incident_type_by_id(self, id: str) -> IncidentType | None:
         stmt = select(IncidentType).where(IncidentType.id == id, IncidentType.deleted_at.is_(None)).limit(1)
         return self.session.scalar(stmt)
 
@@ -136,6 +141,14 @@ class IncidentRepo(BaseRepo):
         return self.session.scalar(stmt) or 0
 
     def assign_role(self, incident: Incident, role: IncidentRole, user: User) -> IncidentRoleAssignment:
+
+        # if that role has already been assigned, update the user
+        for role_assignment in incident.incident_role_assignments:
+            if role_assignment.incident_role.id == role.id:
+                role_assignment.user_id = user.id
+                return role_assignment
+
+        # otherwise create a new role assignment
         model = IncidentRoleAssignment()
         model.user_id = user.id
         model.incident_role_id = role.id
@@ -146,7 +159,7 @@ class IncidentRepo(BaseRepo):
 
         return model
 
-    def get_role(self, organisation: Organisation, kind: IncidentRole) -> IncidentRole | None:
+    def get_incident_role(self, organisation: Organisation, kind: IncidentRoleKind) -> IncidentRole | None:
         stmt = (
             select(IncidentRole)
             .where(
@@ -173,3 +186,15 @@ class IncidentRepo(BaseRepo):
         self.session.flush()
 
         return model
+
+    def get_incident_by_slack_channel_id(self, id: str) -> Incident | None:
+        stmt = select(Incident).where(Incident.slack_channel_id == id, Incident.deleted_at.is_(None)).limit(1)
+
+        return self.session.scalar(stmt)
+
+    def get_all_incident_statuses(self, organisation: Organisation) -> Sequence[IncidentStatus]:
+        stmt = select(IncidentStatus).where(
+            IncidentStatus.organisation_id == organisation.id, IncidentStatus.deleted_at.is_(None)
+        )
+
+        return self.session.scalars(stmt).all()

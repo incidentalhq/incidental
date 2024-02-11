@@ -88,33 +88,3 @@ class OAuthConnectorService:
         )
 
         return credentials
-
-    def refresh_credentials(self, refresh_token: str) -> Credentials:
-        """Update the current token with a new one"""
-        params = {
-            "refresh_token": refresh_token,
-            "client_id": self.integration.client_id,
-            "client_secret": self.integration.client_secret,
-            "grant_type": "refresh_token",
-        }
-        response = httpx.post(self.token_url, data=params)
-        if not response.is_success:
-            logger.error("Refresh error", content=response.content)
-
-        response.raise_for_status()
-
-        data = response.json()
-        logger.debug("credentials refreshed", data=data)
-
-        expires_at = None
-        if data.get("expires_in"):
-            expires_at = datetime.now() + timedelta(seconds=data.get("expires_in"))
-
-        credentials = Credentials(
-            access_token=data["access_token"],
-            refresh_token=refresh_token,
-            expires_at=expires_at,
-            token_type=data["token_type"],
-        )
-
-        return credentials

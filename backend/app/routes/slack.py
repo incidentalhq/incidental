@@ -1,5 +1,5 @@
 import structlog
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -13,14 +13,21 @@ from app.repos import (
     SeverityRepo,
     UserRepo,
 )
-from app.schemas.actions import OAuth2AuthorizationResultSchema, SlackEventsSchema
+from app.schemas.actions import OAuth2AuthorizationResultSchema
 from app.schemas.models import UserSchema
-from app.schemas.slack import SlackCommandDataSchema, SlackInteractionSchema
+from app.schemas.slack import (
+    SlackCommandDataSchema,
+    SlackEventCallbackSchema,
+    SlackEventSchema,
+    SlackInteractionSchema,
+    SlackUrlVerificationHandshakeSchema,
+)
 from app.services.identity import IdentityService
 from app.services.incident import IncidentService
 from app.services.oauth_connector import OAuthConnectorService
 from app.services.onboarding import OnboardingService
 from app.services.slack.command import SlackCommandService
+from app.services.slack.events import SlackEventsService
 from app.services.slack.interaction import SlackInteractionService
 from app.services.slack.user import SlackUserService
 
@@ -120,7 +127,6 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
 async def slack_oauth_complete(result: OAuth2AuthorizationResultSchema, session: Session = Depends(get_db)):
     connector = _create_oauth_connector()
     token = connector.complete(code=result.code)
-    logger.info("token", token=token)
 
     organisation_repo = OrganisationRepo(session=session)
     organisation = organisation_repo.get_by_slack_team_id(token.original_data["team"]["id"])
@@ -135,16 +141,49 @@ async def slack_oauth_complete(result: OAuth2AuthorizationResultSchema, session:
 
 
 @router.post("/events")
-async def slack_events(slack_event: SlackEventsSchema):
-    logger.info("request", body=slack_event)
+async def slack_events(slack_event: SlackEventSchema, session: Session = Depends(get_db)):
 
-    return {"challenge": slack_event.challenge}
+    # initial verification for this endpoint
+    if isinstance(slack_event, SlackUrlVerificationHandshakeSchema):
+        return {"challenge": slack_event.challenge}
+
+    # otherwise handle events from slack
+    elif isinstance(slack_event, SlackEventCallbackSchema):
+        organisation_repo = OrganisationRepo(session=session)
+        user_repo = UserRepo(session=session)
+        incident_repo = IncidentRepo(session=session)
+
+        organisation = organisation_repo.get_by_slack_team_id(slack_team_id=slack_event.team_id)
+        if not organisation:
+            logger.warning("Organisation not found", slack_team_id=slack_event.team_id)
+            return
+
+        slack_user_service = SlackUserService(
+            bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
+        )
+
+        slack_events_service = SlackEventsService(
+            organisation=organisation,
+            organisation_repo=organisation_repo,
+            user_repo=user_repo,
+            slack_user_service=slack_user_service,
+            incident_repo=incident_repo,
+        )
+
+        if not slack_events_service.verify_token(slack_event.token):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token is invalid")
+
+        slack_events_service.handle_event(slack_event)
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
-@router.post("/slash/inc")
-async def slack_slash_inc(
+@router.post("/slash-command")
+async def slack_slash_command(
     command: SlackCommandDataSchema = Depends(SlackCommandDataSchema.as_form), session: Session = Depends(get_db)
 ):
+    """Main endpoint to handle slack slash command /inc and /incident"""
+
     logger.info("slash command", cmd=command)
 
     user_repo = UserRepo(session=session)
@@ -152,22 +191,30 @@ async def slack_slash_inc(
     form_repo = FormRepo(session=session)
     severity_repo = SeverityRepo(session=session)
     incident_repo = IncidentRepo(session=session)
+    user_repo = UserRepo(session=session)
 
     organisation = organisation_repo.get_by_slack_team_id(command.team_id)
     if not organisation:
         raise ApplicationException("Could not find related organisation")
 
-    user = user_repo.get_by_slack_user_id(command.user_id)
-    if not user:
-        # create a new user
-        pass
+    slack_user_service = SlackUserService(
+        bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
+    )
+
+    slack_user_service.get_or_create_user_from_slack_id(slack_id=command.user_id, organisation=organisation)
 
     slack_command_service = SlackCommandService(
-        organisation=organisation, form_repo=form_repo, severity_repo=severity_repo, incident_repo=incident_repo
+        organisation=organisation,
+        form_repo=form_repo,
+        severity_repo=severity_repo,
+        incident_repo=incident_repo,
+        user_repo=user_repo,
+        slack_user_service=slack_user_service,
     )
 
     try:
         slack_command_service.handle_command(command=command)
+        session.commit()
     except Exception:
         logger.exception("There was an error sending slack message")
 
@@ -178,8 +225,6 @@ async def slack_slash_inc(
 def slack_interaction(
     session: Session = Depends(get_db), interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form)
 ):
-    logger.info("Received interaction", payload=interaction.payload)
-
     organisation_repo = OrganisationRepo(session=session)
     form_repo = FormRepo(session=session)
     incident_repo = IncidentRepo(session=session)

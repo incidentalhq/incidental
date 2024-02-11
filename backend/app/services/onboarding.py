@@ -49,17 +49,45 @@ class OnboardingService:
         self._setup_announcement(organisation)
 
     def _setup_forms(self, organisation: Organisation) -> list[Form]:
-        form = create_incident_form = self.form_repo.create_form(
+
+        # create incident form
+        create_incident_form = self.form_repo.create_form(
             organisation=organisation, name="Create incident", _type=FormType.CREATE_INCIDENT
         )
 
         self.form_repo.create_form_field(
-            form, name="Name", kind=FormFieldKind.TEXT, position=0, description="A descriptive name for the incident"
+            create_incident_form,
+            name="Name",
+            kind=FormFieldKind.TEXT,
+            position=0,
+            description="A descriptive name for the incident",
         )
-        self.form_repo.create_form_field(form, name="Incident type", kind=FormFieldKind.INCIDENT_TYPE, position=1)
-        self.form_repo.create_form_field(form, name="Severity", kind=FormFieldKind.SEVERITY_TYPE, position=2)
+        self.form_repo.create_form_field(
+            create_incident_form, name="Incident type", kind=FormFieldKind.INCIDENT_TYPE, position=1
+        )
+        self.form_repo.create_form_field(
+            create_incident_form, name="Severity", kind=FormFieldKind.SEVERITY_TYPE, position=2
+        )
 
-        return [create_incident_form]
+        # give a status update form
+        update_status_form = self.form_repo.create_form(
+            organisation=organisation, name="Update status", _type=FormType.UPDATE_INCIDENT
+        )
+        self.form_repo.create_form_field(
+            update_status_form, name="Status", kind=FormFieldKind.INCIDENT_STATUS, position=1
+        )
+        self.form_repo.create_form_field(
+            update_status_form, name="Severity", kind=FormFieldKind.SEVERITY_TYPE, position=2
+        )
+        self.form_repo.create_form_field(
+            update_status_form,
+            name="Message",
+            kind=FormFieldKind.TEXT,
+            position=3,
+            description="Give an update of the current status of the incident",
+        )
+
+        return [create_incident_form, update_status_form]
 
     def _setup_severities(self, organisation: Organisation):
         descriptors = [
