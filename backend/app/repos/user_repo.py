@@ -1,5 +1,4 @@
 import secrets
-import typing
 
 from sqlalchemy import select
 
@@ -20,17 +19,16 @@ class UserRepo(BaseRepo):
             raise ValidationError("Could not find user", code=ErrorCodes.MODEL_NOT_FOUND)
         return user
 
-    def get_by_email_address(self, email: str) -> typing.Optional[User]:
+    def get_by_email_address(self, email: str) -> User | None:
         return self.session.query(User).filter(User.email_address == email.lower()).first()
 
-    def get_user_by_auth_token(self, token: str) -> User:
+    def get_user_by_auth_token(self, token: str) -> User | None:
         user = self.session.query(User).filter(User.auth_token == token).first()
 
         return user
 
     def create_user(self, create_in: CreateUserSchema) -> User:
         user = self.get_by_email_address(create_in.email_address)
-
         if user:
             raise FormFieldValidationError("Sorry, that email address is already in use", "emailAddress")
 

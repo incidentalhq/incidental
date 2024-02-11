@@ -21,14 +21,14 @@ class OrganisationRepo(BaseRepo):
 
         return organisation
 
-    def get_member(self, user: User, organisation: Organisation) -> OrganisationMember:
-        query = (
+    def get_member(self, user: User, organisation: Organisation) -> OrganisationMember | None:
+        stmt = (
             select(OrganisationMember)
             .where(OrganisationMember.organisation_id == organisation.id, OrganisationMember.user_id == user.id)
             .limit(1)
         )
 
-        return self.session.scalars(query).first()
+        return self.session.scalar(stmt)
 
     def add_member(self, user: User, organisation: Organisation, role: str) -> OrganisationMember:
         member = OrganisationMember()
@@ -45,3 +45,7 @@ class OrganisationRepo(BaseRepo):
         query = select(Organisation).where(Organisation.slack_team_id == slack_team_id).limit(1)
 
         return self.session.scalars(query).first()
+
+    def get_by_id(self, id: str) -> Organisation | None:
+        stmt = select(Organisation).where(Organisation.id == id).limit(1)
+        return self.session.scalar(stmt)

@@ -24,6 +24,7 @@ class FormFieldKind(str, enum.Enum):
     # specific
     INCIDENT_TYPE = "INCIDENT_TYPE"
     SEVERITY_TYPE = "SEVERITY_TYPE"
+    INCIDENT_STATUS = "INCIDENT_STATUS"
 
 
 class FormField(Base, TimestampMixin, SoftDeleteMixin):

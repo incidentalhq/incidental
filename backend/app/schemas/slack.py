@@ -1,9 +1,38 @@
 import json
-from typing import Any
+from typing import Annotated, Any, Literal, Union
 
 from fastapi import Form
+from pydantic import ConfigDict, Field
 
-from app.schemas.base import BaseSchema
+from .base import BaseSchema
+from .slack_events import SlackEventTypesSchema
+
+
+class SlackEventBaseSchema(BaseSchema):
+    model_config = ConfigDict(extra="allow")
+
+
+class SlackUrlVerificationHandshakeSchema(SlackEventBaseSchema):
+    token: str
+    challenge: str | None = None
+    type: Literal["url_verification"]
+
+
+class SlackEventCallbackSchema(SlackEventBaseSchema):
+    type: Literal["event_callback"]
+    token: str
+    team_id: str
+    api_app_id: str
+    event: SlackEventTypesSchema
+    event_context: str
+    event_id: str
+    event_time: int
+    authorizations: list[dict[str, Any]]
+    is_ext_shared_channel: bool
+    context_enterprise_id: Any
+
+
+SlackEventSchema = Annotated[Union[SlackEventCallbackSchema, SlackUrlVerificationHandshakeSchema], Field]
 
 
 class SlackCommandDataSchema(BaseSchema):

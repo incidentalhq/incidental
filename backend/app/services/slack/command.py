@@ -1,123 +1,172 @@
-import json
+from typing import TypedDict
 
 import structlog
 from slack_sdk import WebClient
 
-from app.models import Form, FormField, Organisation
+from app.models import IncidentRoleKind, Organisation
 from app.models.form import FormType
-from app.models.form_field import FormFieldKind
-from app.repos import FormRepo, IncidentRepo, SeverityRepo
+from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
 from app.schemas.slack import SlackCommandDataSchema
+from app.services.slack.renderer.form import FormRenderer, RenderContext
+from app.services.slack.user import SlackUserService
 
 logger = structlog.get_logger(logger_name=__name__)
 
 
+class CommandError(Exception):
+    pass
+
+
+class InvalidUsageError(CommandError):
+    def __init__(self, message: str, command: SlackCommandDataSchema, *args: object) -> None:
+        super().__init__(*args)
+
+        self.message = message
+        self.command = command
+
+
+class SubCommandType(TypedDict):
+    sub_command: str
+    handler: str
+
+
 class SlackCommandService:
+
+    sub_commands: list[SubCommandType] = [
+        {
+            "sub_command": "lead",
+            "handler": "assign_lead",
+        },
+        {"sub_command": "status", "handler": "update_status"},
+    ]
+
     def __init__(
-        self, organisation: Organisation, form_repo: FormRepo, severity_repo: SeverityRepo, incident_repo: IncidentRepo
+        self,
+        organisation: Organisation,
+        form_repo: FormRepo,
+        severity_repo: SeverityRepo,
+        incident_repo: IncidentRepo,
+        user_repo: UserRepo,
+        slack_user_service: SlackUserService,
     ):
         self.severity_repo = severity_repo
         self.incident_repo = incident_repo
         self.organisation = organisation
         self.form_repo = form_repo
+        self.slack_client = WebClient(token=self.organisation.slack_bot_token)
+        self.user_repo = user_repo
+        self.slack_user_service = slack_user_service
 
     def handle_command(self, command: SlackCommandDataSchema):
-        slack_client = WebClient(token=self.organisation.slack_bot_token)
+        try:
+            if self.is_incident_channel(command.channel_id):
+                self.handle_incident_channel_command(command)
+            else:
+                self.handle_create_incident(command)
+        except InvalidUsageError as ex:
+            self.show_invalid_usage_error(message=ex.message, command=ex.command)
 
+    def is_incident_channel(self, channel_id: str) -> bool:
+        incidents = self.incident_repo.get_all_incidents(organisation=self.organisation)
+        channel_ids = set([it.slack_channel_id for it in incidents])
+
+        if channel_id in channel_ids:
+            return True
+
+        return False
+
+    def handle_create_incident(self, command: SlackCommandDataSchema):
+        """Launch the create incident form"""
         create_incident_form = self.form_repo.get_form(
             organisation=self.organisation, form_type=FormType.CREATE_INCIDENT
         )
         if not create_incident_form:
-            logger.error("Could not find create incident form")
-            raise Exception("Could not create incident form")
+            raise RuntimeError("Could not find create incident form")
 
-        modal = self.create_form_modal(form=create_incident_form)
+        form_renderer = FormRenderer(
+            organisation=self.organisation,
+            severities=self.severity_repo.get_all(organisation=self.organisation),
+            incident_types=self.incident_repo.get_all_incident_types(self.organisation),
+            incident_statuses=self.incident_repo.get_all_incident_statuses(self.organisation),
+            form=create_incident_form,
+        )
+        rendered_form_view = form_renderer.render()
+        self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
 
-        slack_client.views_open(trigger_id=command.trigger_id, view=modal)
+    def handle_incident_channel_command(self, command: SlackCommandDataSchema) -> None:
+        """When command is issued within an incident channel"""
+        if not command.text:
+            self.show_commands_help()
+            return
 
-    def create_form_modal(self, form: Form) -> dict:
-        blocks = []
-        for field in form.form_fields:
-            block = self.render_block(field)
-            if block:
-                blocks.append(block)
+        parts = list(map(lambda it: it.strip(), command.text.split(" ")))
+        sub_command = parts[0]
 
-        modal = {
-            "type": "modal",
-            "callback_id": f"form-{form.id}",
-            "title": {"type": "plain_text", "text": form.name},
-            "submit": {"type": "plain_text", "text": "Create"},
-            "blocks": blocks,
-            "private_metadata": json.dumps(
-                {
-                    "form_id": form.id,
-                }
-            ),
-        }
+        handler_descriptor = next(filter(lambda it: it["sub_command"] == sub_command, self.sub_commands), None)
+        if not handler_descriptor:
+            raise InvalidUsageError(f"{sub_command} is not a valid command. To get help use /inc", command)
 
-        return modal
+        handler = getattr(self, handler_descriptor["handler"])
+        handler(command, parts[1:])
 
-    def render_block(self, form_field: FormField) -> dict:
-        if form_field.kind == FormFieldKind.TEXT:
-            return {
-                "type": "input",
-                "block_id": f"block-{form_field.id}",
-                "label": {"type": "plain_text", "text": form_field.name},
-                "element": {
-                    "type": "plain_text_input",
-                    "multiline": False,
-                    "action_id": form_field.id,
-                    "initial_value": form_field.default_value if form_field.default_value else "",
-                },
-                "hint": {
-                    "type": "plain_text",
-                    "text": form_field.description,
-                },
-            }
-        elif form_field.kind == FormFieldKind.SEVERITY_TYPE:
-            options = []
-            severities = self.severity_repo.get_all(organisation=self.organisation)
-            for sev in severities:
-                options.append(
-                    {
-                        "text": {"type": "plain_text", "text": sev.name},
-                        "value": sev.id,
-                    }
-                )
+    def assign_lead(self, command: SlackCommandDataSchema, params: list[str]):
+        """Assign lead role to a user"""
 
-            return {
-                "type": "input",
-                "block_id": f"block-{form_field.id}",
-                "label": {"type": "plain_text", "text": "Pick a severity level"},
-                "element": {
-                    "type": "static_select",
-                    "action_id": form_field.id,
-                    "options": options,
-                },
-            }
-        elif form_field.kind == FormFieldKind.INCIDENT_TYPE:
-            options = []
-            incident_types = self.incident_repo.get_all(organisation=self.organisation)
-            default: None | dict = None
-            for it in incident_types:
-                opt = {
-                    "text": {"type": "plain_text", "text": it.name},
-                    "value": it.id,
-                }
-                options.append(opt)
-                if it.name == "Default":
-                    default = opt
+        if len(params) != 1:
+            raise InvalidUsageError("This command expects the name of user, e.g /inc lead @TheUser", command)
 
-            return {
-                "type": "input",
-                "block_id": f"block-{form_field.id}",
-                "label": {"type": "plain_text", "text": "Pick an incident type"},
-                "element": {
-                    "type": "static_select",
-                    "action_id": form_field.id,
-                    "options": options,
-                    "initial_option": default,
-                },
-            }
-        else:
-            raise Exception("Unknown field type")
+        incident = self.incident_repo.get_incident_by_slack_channel_id(command.channel_id)
+        if not incident:
+            raise RuntimeError("Could not find associated incident")
+
+        role = self.incident_repo.get_incident_role(organisation=self.organisation, kind=IncidentRoleKind.LEAD)
+        if not role:
+            raise RuntimeError("Could not find lead role for organisation")
+
+        user_tag = params[0]  # formatted: <@U03E56CEXB2|username>
+        slack_user_id = user_tag.split("|")[0].lstrip("<").replace("@", "")
+
+        user = self.slack_user_service.get_or_create_user_from_slack_id(
+            slack_id=slack_user_id, organisation=self.organisation
+        )
+        if not user:
+            raise InvalidUsageError(f"Could not find user {params[0]}", command)
+
+        self.incident_repo.assign_role(incident=incident, role=role, user=user)
+        logger.info("Assigned role", role=IncidentRoleKind.LEAD, user=user.id)
+
+        public_message = f"<@{user.slack_user_id}> has been assigned as {role.name} for this incident"
+        self.slack_client.chat_postMessage(channel=command.channel_id, user=user.slack_user_id, text=public_message)
+
+        # TODO: send a ephemeral message to the user who has the new role about what the expectations are for the role
+
+    def update_status(self, command: SlackCommandDataSchema, params: list[str]):
+        logger.info("Updating status")
+
+        update_incident_form = self.form_repo.get_form(
+            organisation=self.organisation, form_type=FormType.UPDATE_INCIDENT
+        )
+        if not update_incident_form:
+            raise RuntimeError("Could not find update incident status form")
+
+        incident = self.incident_repo.get_incident_by_slack_channel_id(command.channel_id)
+        if not incident:
+            raise RuntimeError("Could not find associated incident")
+
+        form_renderer = FormRenderer(
+            organisation=self.organisation,
+            severities=self.severity_repo.get_all(organisation=self.organisation),
+            incident_types=self.incident_repo.get_all_incident_types(self.organisation),
+            incident_statuses=self.incident_repo.get_all_incident_statuses(self.organisation),
+            form=update_incident_form,
+        )
+        context = RenderContext(incident=incident)
+        rendered_form_view = form_renderer.render(context=context)
+        self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
+
+    def show_commands_help(self):
+        logger.info("showing help")
+
+    def show_invalid_usage_error(self, message: str, command: SlackCommandDataSchema):
+        logger.info(message)
+        self.slack_client.chat_postEphemeral(channel=command.channel_id, user=command.user_id, text=message)
