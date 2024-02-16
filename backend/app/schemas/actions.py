@@ -1,6 +1,9 @@
 from typing import Annotated
 
+from fastapi import Query
 from pydantic import EmailStr, StringConstraints
+
+from app.models import IncidentStatusCategoryEnum
 
 from .base import BaseSchema
 
@@ -29,3 +32,19 @@ class PaginationParamsSchema(BaseSchema):
 
 class IncidentSearchSchema(PaginationParamsSchema):
     q: str | None = None
+    status_category: list[IncidentStatusCategoryEnum] | None = None
+
+    @classmethod
+    def as_query(
+        cls,
+        page: int = Query(1),
+        size: int = Query(25),
+        q: str | None = Query(None),
+        status_category: Annotated[list[IncidentStatusCategoryEnum] | None, Query(alias="statusCategory")] = None,
+    ) -> "IncidentSearchSchema":
+        return IncidentSearchSchema(
+            page=page,
+            size=size,
+            q=q,
+            status_category=status_category,
+        )

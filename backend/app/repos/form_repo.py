@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import select
 
 from app.models import Form, FormField, Organisation
@@ -8,7 +10,7 @@ from .base_repo import BaseRepo
 
 
 class FormRepo(BaseRepo):
-    def search_forms(self, organisation: Organisation) -> list[Form]:
+    def search_forms(self, organisation: Organisation) -> Sequence[Form]:
         stmt = select(Form).where(Form.organisation_id == organisation.id, Form.is_published.is_(True))
 
         return self.session.scalars(stmt).all()
@@ -25,19 +27,30 @@ class FormRepo(BaseRepo):
         return form
 
     def create_form_field(
-        self, form: Form, name: str, kind: FormFieldKind, position: int = 0, description: str = ""
+        self,
+        form: Form,
+        name: str,
+        kind: FormFieldKind,
+        label: str,
+        is_required: bool,
+        position: int = 0,
+        description: str | None = None,
+        can_remove: bool = True,
     ) -> FormField:
-        ff = FormField()
-        ff.form_id = form.id
-        ff.name = name
-        ff.kind = kind
-        ff.position = position
-        ff.description = description
+        model = FormField()
+        model.form_id = form.id
+        model.label = label
+        model.name = name
+        model.kind = kind
+        model.position = position
+        model.description = description
+        model.is_required = is_required
+        model.can_remove = can_remove
 
-        self.session.add(ff)
+        self.session.add(model)
         self.session.flush()
 
-        return ff
+        return model
 
     def get_form(self, organisation: Organisation, form_type: FormType) -> Form | None:
         stmt = select(Form).where(Form.organisation_id == organisation.id, Form.type == form_type).limit(1)

@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from app.models import (
     AnnouncementActions,
@@ -51,43 +51,86 @@ class OnboardingService:
     def _setup_forms(self, organisation: Organisation) -> list[Form]:
 
         # create incident form
-        create_incident_form = self.form_repo.create_form(
+        create_form = self.form_repo.create_form(
             organisation=organisation, name="Create incident", _type=FormType.CREATE_INCIDENT
         )
+        create_form_fields_descriptor: list[dict[str, Any]] = [
+            {
+                "name": "incident_name",
+                "label": "Name",
+                "is_required": True,
+                "kind": FormFieldKind.TEXT,
+                "description": "A descriptive name for the incident",
+                "can_remove": False,
+            },
+            {
+                "name": "incident_type",
+                "label": "Incident type",
+                "is_required": True,
+                "kind": FormFieldKind.INCIDENT_TYPE,
+                "can_remove": False,
+            },
+            {
+                "name": "incident_severity",
+                "label": "Severity",
+                "is_required": True,
+                "kind": FormFieldKind.SEVERITY_TYPE,
+                "can_remove": False,
+            },
+            {
+                "name": "summary",
+                "label": "Message",
+                "is_required": False,
+                "kind": FormFieldKind.TEXTAREA,
+                "description": "Give a summary of the current state of the incident.",
+                "can_remove": False,
+            },
+        ]
+        self._create_form_fields(form=create_form, field_descriptions=create_form_fields_descriptor)
 
-        self.form_repo.create_form_field(
-            create_incident_form,
-            name="Name",
-            kind=FormFieldKind.TEXT,
-            position=0,
-            description="A descriptive name for the incident",
-        )
-        self.form_repo.create_form_field(
-            create_incident_form, name="Incident type", kind=FormFieldKind.INCIDENT_TYPE, position=1
-        )
-        self.form_repo.create_form_field(
-            create_incident_form, name="Severity", kind=FormFieldKind.SEVERITY_TYPE, position=2
-        )
-
-        # give a status update form
+        # create a status update form
         update_status_form = self.form_repo.create_form(
             organisation=organisation, name="Update status", _type=FormType.UPDATE_INCIDENT
         )
-        self.form_repo.create_form_field(
-            update_status_form, name="Status", kind=FormFieldKind.INCIDENT_STATUS, position=1
-        )
-        self.form_repo.create_form_field(
-            update_status_form, name="Severity", kind=FormFieldKind.SEVERITY_TYPE, position=2
-        )
-        self.form_repo.create_form_field(
-            update_status_form,
-            name="Message",
-            kind=FormFieldKind.TEXT,
-            position=3,
-            description="Give an update of the current status of the incident",
-        )
+        update_status_form_fields = [
+            {
+                "name": "incident_status",
+                "label": "Status",
+                "is_required": True,
+                "kind": FormFieldKind.INCIDENT_STATUS,
+                "can_remove": False,
+            },
+            {
+                "name": "incident_severity",
+                "label": "Severity",
+                "is_required": True,
+                "kind": FormFieldKind.SEVERITY_TYPE,
+                "can_remove": False,
+            },
+            {
+                "name": "summary",
+                "label": "Summary",
+                "is_required": False,
+                "kind": FormFieldKind.TEXTAREA,
+                "can_remove": False,
+            },
+        ]
+        self._create_form_fields(form=update_status_form, field_descriptions=update_status_form_fields)
 
-        return [create_incident_form, update_status_form]
+        return [create_form, update_status_form]
+
+    def _create_form_fields(self, form: Form, field_descriptions: list[dict[str, Any]]):
+        for idx, item in enumerate(field_descriptions):
+            self.form_repo.create_form_field(
+                form=form,
+                name=item["name"],
+                kind=item["kind"],
+                label=item["label"],
+                is_required=item["is_required"],
+                position=idx,
+                description=item.get("description"),
+                can_remove=item["can_remove"],
+            )
 
     def _setup_severities(self, organisation: Organisation):
         descriptors = [
@@ -156,7 +199,7 @@ class OnboardingService:
         ]
 
         for _, item in enumerate(descriptors):
-            self.incident_repo.create_role(
+            self.incident_repo.create_incident_role(
                 organisation=organisation,
                 name=item["name"],
                 description=item["description"],

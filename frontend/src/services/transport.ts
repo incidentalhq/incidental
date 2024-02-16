@@ -1,6 +1,12 @@
 import axios, { Method, RawAxiosRequestConfig } from "axios";
+import qs from "qs";
 import { IErrorItem, IResponseError } from "@/types/core";
 import { IUser } from "@/types/models";
+
+// patch axios
+axios.defaults.paramsSerializer = (params: Record<string, unknown>): string => {
+  return qs.stringify(params, { arrayFormat: "repeat" });
+};
 
 export const getBaseUrl = (): string => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;

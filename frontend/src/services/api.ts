@@ -20,6 +20,13 @@ interface IAuthUser {
   password: string;
 }
 
+type SearchIncidentsParams = {
+  query?: string;
+  statusCategory?: string[];
+  page?: number;
+  size?: number;
+};
+
 export class ApiService {
   user: ILoggedInUser | undefined;
   organisation: string | undefined;
@@ -62,11 +69,12 @@ export class ApiService {
     });
   }
 
-  searchIncidents(
-    query: string | undefined = undefined,
-    page: number = 1,
-    size: number = 20
-  ) {
+  searchIncidents({
+    query,
+    statusCategory,
+    page = 1,
+    size = 25,
+  }: SearchIncidentsParams) {
     return callApi<PaginatedResults<IIncident>>("GET", `/incidents/search`, {
       user: this.user,
       headers: {
@@ -76,6 +84,7 @@ export class ApiService {
         q: query,
         page,
         size,
+        statusCategory,
       },
     });
   }

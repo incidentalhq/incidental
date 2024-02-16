@@ -1,3 +1,5 @@
+from typing import Any
+
 import structlog
 from passlib.pwd import genword
 from slack_sdk import WebClient
@@ -7,6 +9,10 @@ from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import CreateUserSchema
 
 logger = structlog.get_logger(logger_name=__name__)
+
+
+class UserIsABotError(Exception):
+    pass
 
 
 class SlackUserService:
@@ -29,8 +35,15 @@ class SlackUserService:
         slack_user_response.validate()
         logger.info("slack user", u=slack_user_response.data)
 
-        name = slack_user_response.data["user"]["real_name"]
-        email_address = slack_user_response.data["user"]["profile"]["email"]
+        user_data = slack_user_response.get("user", dict[str, Any]())
+
+        # is bot user
+        is_bot = user_data.get("is_bot", False)
+        if is_bot:
+            raise UserIsABotError()
+
+        name = user_data["real_name"]
+        email_address = user_data["profile"]["email"]
         password = genword(length=14)
 
         user = self.user_repo.create_user(
@@ -41,8 +54,7 @@ class SlackUserService:
                 slack_user_id=slack_id,
             )
         )
-        logger.info("Created new user from slack information", user_id=user.id)
-
         self.organisation_repo.add_member(user, organisation, role="member")
+        logger.info("Created new user from slack information", user_id=user.id, organisation_id=organisation.id)
 
         return user

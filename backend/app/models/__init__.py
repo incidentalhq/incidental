@@ -8,6 +8,7 @@ from .incident_role_assignment import IncidentRoleAssignment
 from .incident_severity import IncidentSeverity
 from .incident_status import IncidentStatus, IncidentStatusCategoryEnum
 from .incident_type import IncidentType
+from .incident_update import IncidentUpdate
 from .organisation import Organisation
 from .organisation_member import OrganisationMember
 from .settings import Settings

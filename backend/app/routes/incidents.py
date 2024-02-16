@@ -14,12 +14,12 @@ from app.schemas.resources import PaginatedResults
 
 logger = structlog.get_logger(logger_name=__name__)
 
-router = APIRouter(tags=["Incident"])
+router = APIRouter(tags=["Incidents"])
 
 
 @router.get("/search", response_model=PaginatedResults[IncidentSchema])
 async def incident_search(
-    search_params: Annotated[IncidentSearchSchema, Depends(IncidentSearchSchema)],
+    search_params: Annotated[IncidentSearchSchema, Depends(IncidentSearchSchema.as_query)],
     organisation_id: Annotated[str | None, Header(alias="x-organisation-id")] = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
