@@ -192,6 +192,7 @@ async def slack_slash_command(
     severity_repo = SeverityRepo(session=session)
     incident_repo = IncidentRepo(session=session)
     user_repo = UserRepo(session=session)
+    announcement_repo = AnnouncementRepo(session=session)
 
     organisation = organisation_repo.get_by_slack_team_id(command.team_id)
     if not organisation:
@@ -200,8 +201,11 @@ async def slack_slash_command(
     slack_user_service = SlackUserService(
         bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
     )
+    incident_service = IncidentService(
+        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
+    )
 
-    slack_user_service.get_or_create_user_from_slack_id(slack_id=command.user_id, organisation=organisation)
+    user = slack_user_service.get_or_create_user_from_slack_id(slack_id=command.user_id, organisation=organisation)
 
     slack_command_service = SlackCommandService(
         organisation=organisation,
@@ -210,10 +214,11 @@ async def slack_slash_command(
         incident_repo=incident_repo,
         user_repo=user_repo,
         slack_user_service=slack_user_service,
+        incident_service=incident_service,
     )
 
     try:
-        slack_command_service.handle_command(command=command)
+        slack_command_service.handle_command(command=command, user=user)
         session.commit()
     except Exception:
         logger.exception("There was an error sending slack message")
@@ -230,11 +235,14 @@ def slack_interaction(
     incident_repo = IncidentRepo(session=session)
     user_repo = UserRepo(session=session)
     announcement_repo = AnnouncementRepo(session=session)
+    severity_repo = SeverityRepo(session=session)
 
     organisation = organisation_repo.get_by_slack_team_id(interaction.payload["team"]["id"])
     if not organisation:
         logger.error("Unhandled interaction event for team", team_id=interaction.payload["team"]["id"])
         return Response(status_code=status.HTTP_200_OK)
+
+    logger.info("interaction", data=interaction.payload)
 
     incident_service = IncidentService(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
@@ -242,13 +250,18 @@ def slack_interaction(
     slack_user_service = SlackUserService(
         bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
     )
+    user = slack_user_service.get_or_create_user_from_slack_id(
+        slack_id=interaction.payload["user"]["id"], organisation=organisation
+    )
+
     slack_interaction_service = SlackInteractionService(
         form_repo=form_repo,
         incident_repo=incident_repo,
         slack_user_service=slack_user_service,
         incident_service=incident_service,
+        severity_repo=severity_repo,
     )
-    slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation)
+    slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation, user=user)
 
     session.commit()
 

@@ -11,7 +11,7 @@ from app.schemas.models import UserSchema
 from app.services.login import LoginError, LoginService
 from app.services.security import SecurityService
 
-router = APIRouter(tags=["User"])
+router = APIRouter(tags=["Users"])
 
 
 @router.post("/auth/", response_model=UserSchema)

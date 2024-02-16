@@ -5,7 +5,7 @@ from app.db import get_db
 from app.schemas.actions import AuthUserSchema
 from app.schemas.models import UserSchema
 
-router = APIRouter(tags=["Form"])
+router = APIRouter(tags=["Forms"])
 
 
 @router.post("/search/", response_model=UserSchema)

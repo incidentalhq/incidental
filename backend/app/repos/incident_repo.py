@@ -11,6 +11,7 @@ from app.models import (
     IncidentStatus,
     IncidentStatusCategoryEnum,
     IncidentType,
+    IncidentUpdate,
     Organisation,
     User,
 )
@@ -20,6 +21,11 @@ from .base_repo import BaseRepo
 
 
 class IncidentRepo(BaseRepo):
+
+    def get_incident_by_id(self, id: str) -> Incident | None:
+        stmt = select(Incident).where(Incident.id == id).limit(1)
+        return self.session.scalar(stmt)
+
     def create_incident_type(self, organisation: Organisation, name: str, description: str) -> IncidentType:
         model = IncidentType()
         model.organisation_id = organisation.id
@@ -31,7 +37,12 @@ class IncidentRepo(BaseRepo):
         return model
 
     def search_incidents(
-        self, organisation: Organisation, query: str | None, page: int = 1, size: int = 25
+        self,
+        organisation: Organisation,
+        query: str | None = None,
+        status_categories: list[IncidentStatusCategoryEnum] | None = None,
+        page: int = 1,
+        size: int = 25,
     ) -> PaginatedResults[Incident]:
         search_term = query
 
@@ -41,12 +52,17 @@ class IncidentRepo(BaseRepo):
         )
         if query:
             total_stmt = total_stmt.where(Incident.name.ilike(search_term))
+        if status_categories:
+            total_stmt = total_stmt.join(IncidentStatus).where(IncidentStatus.category.in_(status_categories))
+
         total = self.session.scalar(total_stmt) or 0
 
         # get actual results
         stmt = select(Incident).where(Incident.deleted_at.is_(None), Incident.organisation_id == organisation.id)
         if query is not None:
             stmt = stmt.where(Incident.name.ilike(search_term))
+        if status_categories:
+            total_stmt = total_stmt.join(IncidentStatus).where(IncidentStatus.category.in_(status_categories))
 
         offset = (page - 1) * size
         stmt = stmt.offset(offset).limit(size)
@@ -172,7 +188,7 @@ class IncidentRepo(BaseRepo):
 
         return self.session.scalar(stmt)
 
-    def create_role(
+    def create_incident_role(
         self, organisation: Organisation, name: str, description: str, kind: IncidentRoleKind, slack_reference: str
     ) -> IncidentRole:
         model = IncidentRole()
@@ -198,3 +214,34 @@ class IncidentRepo(BaseRepo):
         )
 
         return self.session.scalars(stmt).all()
+
+    def create_incident_update(
+        self,
+        incident: Incident,  # must be current state of incident before updates to sev or status
+        creator: User,
+        new_status: IncidentStatus | None = None,
+        new_severity: IncidentSeverity | None = None,
+        summary: str | None = None,
+    ) -> IncidentUpdate:
+        if new_status is None and new_severity is None and summary is None:
+            raise ValueError("status, severity or summary must be the set")
+
+        model = IncidentUpdate()
+        model.incident_id = incident.id
+        model.creator_id = creator.id
+        model.summary = summary
+
+        if new_severity and new_severity.id != incident.incident_severity_id:
+            model.new_incident_severity_id = new_severity.id
+            model.previous_incident_severity_id = incident.incident_severity_id
+            incident.incident_severity_id = new_severity.id
+
+        if new_status and new_status.id != incident.incident_status_id:
+            model.new_incident_status_id = new_status.id
+            model.previous_incident_status_id = incident.incident_status_id
+            incident.incident_status_id = new_status.id
+
+        self.session.add(model)
+        self.session.flush()
+
+        return model

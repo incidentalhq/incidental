@@ -3,11 +3,13 @@ from typing import TypedDict
 import structlog
 from slack_sdk import WebClient
 
-from app.models import IncidentRoleKind, Organisation
+from app.models import IncidentRoleKind, Organisation, User
 from app.models.form import FormType
 from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
 from app.schemas.slack import SlackCommandDataSchema
-from app.services.slack.renderer.form import FormRenderer, RenderContext
+from app.services.incident import IncidentService
+from app.services.slack.forms.update_incident import UpdateIncidentForm
+from app.services.slack.renderer.form import FormRenderer
 from app.services.slack.user import SlackUserService
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -37,7 +39,10 @@ class SlackCommandService:
             "sub_command": "lead",
             "handler": "assign_lead",
         },
-        {"sub_command": "status", "handler": "update_status"},
+        {
+            "sub_command": "status",
+            "handler": "update_status",
+        },
     ]
 
     def __init__(
@@ -48,6 +53,7 @@ class SlackCommandService:
         incident_repo: IncidentRepo,
         user_repo: UserRepo,
         slack_user_service: SlackUserService,
+        incident_service: IncidentService,
     ):
         self.severity_repo = severity_repo
         self.incident_repo = incident_repo
@@ -56,8 +62,9 @@ class SlackCommandService:
         self.slack_client = WebClient(token=self.organisation.slack_bot_token)
         self.user_repo = user_repo
         self.slack_user_service = slack_user_service
+        self.incident_service = incident_service
 
-    def handle_command(self, command: SlackCommandDataSchema):
+    def handle_command(self, command: SlackCommandDataSchema, user: User):
         try:
             if self.is_incident_channel(command.channel_id):
                 self.handle_incident_channel_command(command)
@@ -84,13 +91,11 @@ class SlackCommandService:
             raise RuntimeError("Could not find create incident form")
 
         form_renderer = FormRenderer(
-            organisation=self.organisation,
             severities=self.severity_repo.get_all(organisation=self.organisation),
             incident_types=self.incident_repo.get_all_incident_types(self.organisation),
             incident_statuses=self.incident_repo.get_all_incident_statuses(self.organisation),
-            form=create_incident_form,
         )
-        rendered_form_view = form_renderer.render()
+        rendered_form_view = form_renderer.render(form=create_incident_form)
         self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
 
     def handle_incident_channel_command(self, command: SlackCommandDataSchema) -> None:
@@ -143,10 +148,10 @@ class SlackCommandService:
     def update_status(self, command: SlackCommandDataSchema, params: list[str]):
         logger.info("Updating status")
 
-        update_incident_form = self.form_repo.get_form(
+        update_incident_form_model = self.form_repo.get_form(
             organisation=self.organisation, form_type=FormType.UPDATE_INCIDENT
         )
-        if not update_incident_form:
+        if not update_incident_form_model:
             raise RuntimeError("Could not find update incident status form")
 
         incident = self.incident_repo.get_incident_by_slack_channel_id(command.channel_id)
@@ -154,14 +159,18 @@ class SlackCommandService:
             raise RuntimeError("Could not find associated incident")
 
         form_renderer = FormRenderer(
-            organisation=self.organisation,
             severities=self.severity_repo.get_all(organisation=self.organisation),
             incident_types=self.incident_repo.get_all_incident_types(self.organisation),
             incident_statuses=self.incident_repo.get_all_incident_statuses(self.organisation),
-            form=update_incident_form,
         )
-        context = RenderContext(incident=incident)
-        rendered_form_view = form_renderer.render(context=context)
+        update_incident_form = UpdateIncidentForm(
+            form=update_incident_form_model,
+            incident=incident,
+            form_renderer=form_renderer,
+            incident_repo=self.incident_repo,
+            incident_service=self.incident_service,
+        )
+        rendered_form_view = update_incident_form.render()
         self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
 
     def show_commands_help(self):

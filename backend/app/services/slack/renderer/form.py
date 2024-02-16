@@ -11,7 +11,6 @@ from app.models import (
     IncidentSeverity,
     IncidentStatus,
     IncidentType,
-    Organisation,
 )
 from app.models.form_field import FormFieldKind
 
@@ -28,37 +27,35 @@ class FormRenderer:
 
     def __init__(
         self,
-        organisation: Organisation,
         severities: list[IncidentSeverity],
         incident_types: list[IncidentType],
         incident_statuses: list[IncidentStatus],
-        form: Form,
     ):
         self.severities = severities
         self.incident_types = incident_types
-        self.organisation = organisation
-        self.form = form
         self.incident_statuses = incident_statuses
 
-    def render(self, context: RenderContext | None = None) -> dict:
+    def render(self, form: Form, context: RenderContext | None = None) -> dict[str, Any]:
         blocks = []
-        for field in self.form.form_fields:
+        for field in form.form_fields:
             block = self._render_block(field, context)
             if block:
                 blocks.append(block)
 
         modal = {
             "type": "modal",
-            "callback_id": f"form-{self.form.id}",
-            "title": {"type": "plain_text", "text": self.form.name},
+            "callback_id": f"form-{form.id}",
+            "title": {"type": "plain_text", "text": form.name},
             "submit": {"type": "plain_text", "text": "Create"},
             "blocks": blocks,
             "private_metadata": json.dumps(
                 {
-                    "form_id": self.form.id,
+                    "form_id": form.id,
+                    "incident_id": context.incident.id if context and context.incident else None,
                 }
             ),
         }
+        print(modal)
 
         return modal
 
@@ -82,15 +79,19 @@ class FormRenderer:
                 "value": context.incident.incident_severity.id,
             }
 
-        rendered_field = {
+        rendered_field: dict[str, Any] = {
             "type": "input",
             "block_id": f"block-{form_field.id}",
-            "label": {"type": "plain_text", "text": "Pick a severity level"},
+            "label": {
+                "type": "plain_text",
+                "text": form_field.label,
+            },
             "element": {
                 "type": "static_select",
                 "action_id": form_field.id,
                 "options": options,
             },
+            "optional": False if form_field.is_required else True,
         }
 
         if initial_option:
@@ -124,7 +125,7 @@ class FormRenderer:
             "block_id": f"block-{form_field.id}",
             "label": {
                 "type": "plain_text",
-                "text": "Pick an incident type",
+                "text": form_field.label,
             },
             "element": {
                 "type": "static_select",
@@ -132,6 +133,7 @@ class FormRenderer:
                 "options": options,
                 "initial_option": initial_option,
             },
+            "optional": False if form_field.is_required else True,
         }
 
         return rendered_field
@@ -158,18 +160,20 @@ class FormRenderer:
                 "value": context.incident.incident_status.id,
             }
 
-        rendered_field = {
+        rendered_field: dict[str, Any] = {
             "type": "input",
             "block_id": f"block-{form_field.id}",
             "label": {
                 "type": "plain_text",
-                "text": form_field.name,
+                "text": form_field.label,
             },
             "element": {
                 "type": "static_select",
                 "action_id": form_field.id,
                 "options": options,
             },
+            "optional": False if form_field.is_required else True,
+            "dispatch_action": True,
         }
 
         if initial_option:
@@ -177,23 +181,47 @@ class FormRenderer:
 
         return rendered_field
 
+    def _render_text(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
+        block = {
+            "type": "input",
+            "block_id": f"block-{form_field.id}",
+            "label": {"type": "plain_text", "text": form_field.label},
+            "element": {
+                "type": "plain_text_input",
+                "multiline": False,
+                "action_id": form_field.id,
+                "initial_value": form_field.default_value if form_field.default_value else "",
+            },
+            "optional": False if form_field.is_required else True,
+        }
+        if form_field.description:
+            block["hint"] = {"type": "plain_text", "text": form_field.description}
+
+        return block
+
+    def _render_multi_line_text(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
+        block = {
+            "type": "input",
+            "block_id": f"block-{form_field.id}",
+            "label": {"type": "plain_text", "text": form_field.label},
+            "element": {
+                "type": "plain_text_input",
+                "multiline": True,
+                "action_id": form_field.id,
+                "initial_value": form_field.default_value if form_field.default_value else "",
+            },
+            "optional": False if form_field.is_required else True,
+        }
+        if form_field.description:
+            block["hint"] = {"type": "plain_text", "text": form_field.description}
+
+        return block
+
     def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict:
         if form_field.kind == FormFieldKind.TEXT:
-            return {
-                "type": "input",
-                "block_id": f"block-{form_field.id}",
-                "label": {"type": "plain_text", "text": form_field.name},
-                "element": {
-                    "type": "plain_text_input",
-                    "multiline": False,
-                    "action_id": form_field.id,
-                    "initial_value": form_field.default_value if form_field.default_value else "",
-                },
-                "hint": {
-                    "type": "plain_text",
-                    "text": form_field.description,
-                },
-            }
+            return self._render_text(form_field=form_field, context=context)
+        elif form_field.kind == FormFieldKind.TEXTAREA:
+            return self._render_multi_line_text(form_field=form_field, context=context)
         elif form_field.kind == FormFieldKind.SEVERITY_TYPE:
             return self._render_severity_type(form_field=form_field, context=context)
         elif form_field.kind == FormFieldKind.INCIDENT_TYPE:

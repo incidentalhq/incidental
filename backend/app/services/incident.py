@@ -3,7 +3,14 @@ from datetime import datetime, timezone
 import structlog
 from slack_sdk import WebClient
 
-from app.models import Incident, IncidentSeverity, IncidentType, Organisation, User
+from app.models import (
+    Incident,
+    IncidentSeverity,
+    IncidentStatus,
+    IncidentType,
+    Organisation,
+    User,
+)
 from app.repos import AnnouncementRepo, IncidentRepo
 from app.services.slack.renderer.announcement import AnnouncementRenderer
 from app.utils import to_channel_name
@@ -135,3 +142,62 @@ class IncidentService:
         blocks = renderer.render()
 
         self.slack_client.chat_postMessage(channel=channel_id, blocks=blocks)
+
+    def create_update(
+        self,
+        incident: Incident,
+        creator: User,
+        new_status: IncidentStatus | None = None,
+        new_severity: IncidentSeverity | None = None,
+        summary: str | None = None,
+    ):
+        blocks = [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "Incident updated"},
+            }
+        ]
+
+        if new_status.id != incident.incident_status.id:
+            blocks.append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Status: {incident.incident_status.name} -> {new_status.name}",
+                    },
+                }
+            )
+        if new_severity.id != incident.incident_severity.id:
+            blocks.append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Severity: {incident.incident_severity.name} -> {new_severity.name}",
+                    },
+                }
+            )
+        if summary is not None:
+            blocks.append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": summary,
+                    },
+                }
+            )
+
+        blocks.append(
+            {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": f":bust_in_silhouette: Updated by <@{creator.slack_user_id}>"}],
+            }
+        )
+
+        self.incident_repo.create_incident_update(
+            incident=incident, creator=creator, new_status=new_status, new_severity=new_severity, summary=summary
+        )
+
+        self.slack_client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)

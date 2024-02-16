@@ -6,7 +6,7 @@ from app.repos import IncidentRepo, OrganisationRepo, UserRepo
 from app.schemas.slack import SlackEventCallbackSchema
 from app.schemas.slack_events import CatchAllEventType, MemberJoinedChannelEvenType
 
-from .user import SlackUserService
+from .user import SlackUserService, UserIsABotError
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -47,10 +47,13 @@ class SlackEventsService:
             self.handle_catch_all(event.event)
 
     def handle_member_join(self, event_type: MemberJoinedChannelEvenType):
-
-        user = self.slack_user_service.get_or_create_user_from_slack_id(
-            slack_id=event_type.user, organisation=self.organisation
-        )
+        try:
+            user = self.slack_user_service.get_or_create_user_from_slack_id(
+                slack_id=event_type.user, organisation=self.organisation
+            )
+        except UserIsABotError:
+            logger.info("User is a bot; ignoring")
+            return
 
         incident = self.incident_repo.get_incident_by_slack_channel_id(event_type.channel)
         if not incident:

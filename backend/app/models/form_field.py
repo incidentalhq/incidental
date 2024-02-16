@@ -37,10 +37,12 @@ class FormField(Base, TimestampMixin, SoftDeleteMixin):
         String(50), ForeignKey("custom_field.id", ondelete="cascade"), nullable=True, index=True
     )
     kind: Mapped[FormFieldKind] = mapped_column(Enum(FormFieldKind, native_enum=False), nullable=False)
+    label: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     description: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    can_remove: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     default_value: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
 
     # relationships
