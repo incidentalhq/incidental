@@ -1,0 +1,19 @@
+{
+    "semi": false,
+    "trailingComma": "none",
+    "singleQuote": true,
+    "printWidth": 120,
+    "tabWidth": 2,
+    "endOfLine": "auto",
+    "importOrderSeparation": true,
+    "importOrder": [
+        "<THIRD_PARTY_MODULES>",
+        "@/(.*)$",
+        "components/(.*)$",
+        "containers/(.*)$",
+        "services/(.*)$",
+        "^[./](.*)$"
+    ],
+    "importOrderCaseInsensitive": true,
+    "importOrderSortSpecifiers": true
+}

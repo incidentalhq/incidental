@@ -28,7 +28,9 @@ def upgrade() -> None:
         sa.Column("guide", sa.UnicodeText(), nullable=True),
         sa.Column("slack_reference", sa.UnicodeText(), nullable=False),
         sa.Column(
-            "kind", sa.Enum("REPORTER", "LEAD", "CUSTOM", name="incidentrolekind", native_enum=False), nullable=False
+            "kind",
+            sa.Enum("REPORTER", "LEAD", "CUSTOM", name="incidentrolekind", native_enum=False),
+            nullable=False,
         ),
         sa.Column("id", sa.String(length=50), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -57,7 +59,12 @@ def upgrade() -> None:
         "category",
         existing_type=sa.VARCHAR(length=50),
         type_=sa.Enum(
-            "TRIAGE", "ACTIVE", "POST_INCIDENT", "CLOSED", name="incidentstatuscategoryenum", native_enum=False
+            "TRIAGE",
+            "ACTIVE",
+            "POST_INCIDENT",
+            "CLOSED",
+            name="incidentstatuscategoryenum",
+            native_enum=False,
         ),
         existing_nullable=False,
     )
@@ -70,7 +77,12 @@ def downgrade() -> None:
         "incident_status",
         "category",
         existing_type=sa.Enum(
-            "TRIAGE", "ACTIVE", "POST_INCIDENT", "CLOSED", name="incidentstatuscategoryenum", native_enum=False
+            "TRIAGE",
+            "ACTIVE",
+            "POST_INCIDENT",
+            "CLOSED",
+            name="incidentstatuscategoryenum",
+            native_enum=False,
         ),
         type_=sa.VARCHAR(length=50),
         existing_nullable=False,

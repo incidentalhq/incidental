@@ -55,6 +55,10 @@ class SlackUserService:
             )
         )
         self.organisation_repo.add_member(user, organisation, role="member")
-        logger.info("Created new user from slack information", user_id=user.id, organisation_id=organisation.id)
+        logger.info(
+            "Created new user from slack information",
+            user_id=user.id,
+            organisation_id=organisation.id,
+        )
 
         return user

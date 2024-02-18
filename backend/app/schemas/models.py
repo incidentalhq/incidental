@@ -72,3 +72,12 @@ class IncidentSchema(ModelSchema):
     incident_status: IncidentStatusSchema
     incident_severity: IncidentSeveritySchema
     incident_role_assignments: Sequence[IncidentRoleAssignmentSchema]
+
+
+class IncidentUpdateSchema(ModelSchema):
+    creator: PublicUserSchema
+    summary: str | None
+    new_incident_status: IncidentStatusSchema | None
+    previous_incident_status: IncidentStatusSchema | None
+    new_incident_severity: IncidentSeveritySchema | None
+    previous_incident_severity: IncidentSeveritySchema | None

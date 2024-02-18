@@ -1,5 +1,6 @@
 import {
   IIncident,
+  IIncidentUpdate,
   ILoggedInUser,
   IPublicUser,
   IUser,
@@ -87,5 +88,17 @@ export class ApiService {
         statusCategory,
       },
     });
+  }
+
+  getIncident(id: string) {
+    return callApi<IIncident>("GET", `/incidents/${id}`, { user: this.user });
+  }
+
+  getIncidentUpdates(id: string) {
+    return callApi<PaginatedResults<IIncidentUpdate>>(
+      "GET",
+      `/incidents/${id}/updates`,
+      { user: this.user }
+    );
   }
 }

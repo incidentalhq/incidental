@@ -10,6 +10,7 @@ from .mixins import SoftDeleteMixin, TimestampMixin
 if typing.TYPE_CHECKING:
     from .incident_severity import IncidentSeverity
     from .incident_status import IncidentStatus
+    from .user import User
 
 
 class IncidentUpdate(Base, TimestampMixin, SoftDeleteMixin):
@@ -26,13 +27,19 @@ class IncidentUpdate(Base, TimestampMixin, SoftDeleteMixin):
         String(50), ForeignKey("incident_status.id", ondelete="cascade"), nullable=True, index=True
     )
     new_incident_severity_id: Mapped[str | None] = mapped_column(
-        String(50), ForeignKey("incident_severity.id", ondelete="cascade"), nullable=True, index=True
+        String(50),
+        ForeignKey("incident_severity.id", ondelete="cascade"),
+        nullable=True,
+        index=True,
     )
     previous_incident_status_id: Mapped[str | None] = mapped_column(
         String(50), ForeignKey("incident_status.id", ondelete="cascade"), nullable=True, index=True
     )
     previous_incident_severity_id: Mapped[str | None] = mapped_column(
-        String(50), ForeignKey("incident_severity.id", ondelete="cascade"), nullable=True, index=True
+        String(50),
+        ForeignKey("incident_severity.id", ondelete="cascade"),
+        nullable=True,
+        index=True,
     )
 
     # relationships
@@ -48,3 +55,4 @@ class IncidentUpdate(Base, TimestampMixin, SoftDeleteMixin):
     previous_incident_severity: Mapped["IncidentSeverity"] = relationship(
         "IncidentSeverity", foreign_keys="IncidentUpdate.previous_incident_severity_id"
     )
+    creator: Mapped["User"] = relationship("User")

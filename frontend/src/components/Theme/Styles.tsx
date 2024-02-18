@@ -136,6 +136,17 @@ interface ContentProps {
 export const Content = styled.div<ContentProps>`
   padding: ${(props) => (props.$padding === false ? "0" : "1rem 20px")};
   position: relative;
+  display: flex;
+`;
+
+export const ContentMain = styled.div`
+  flex: 1;
+  padding: 1rem;
+`;
+export const ContentSidebar = styled.div`
+  flex-width: 100px;
+  background-color: var(--color-gray-50);
+  padding: 1rem;
 `;
 
 export const Title = styled.span`

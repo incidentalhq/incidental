@@ -12,7 +12,6 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class UpdateIncidentForm(BaseForm):
-
     def __init__(
         self,
         form: Form,
@@ -34,7 +33,6 @@ class UpdateIncidentForm(BaseForm):
         return modal
 
     def handle_submit(self, interaction: SlackInteractionSchema, user: User):
-
         incident_severity = self.get_field_value(self.form, interaction, field_name="incident_severity")
         incident_status = self.get_field_value(self.form, interaction, field_name="incident_status")
         summary = self.get_field_value(self.form, interaction, field_name="summary")
@@ -49,7 +47,11 @@ class UpdateIncidentForm(BaseForm):
             or summary is not None
         ):
             self.incident_service.create_update(
-                incident=self.incident, creator=user, new_status=status, new_severity=severity, summary=summary
+                incident=self.incident,
+                creator=user,
+                new_status=status,
+                new_severity=severity,
+                summary=summary,
             )
 
         self.session.flush()

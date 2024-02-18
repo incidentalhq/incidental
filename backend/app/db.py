@@ -29,7 +29,6 @@ session_factory = sessionmaker(bind=engine)
 
 
 class Base(DeclarativeBase):
-    __name__: str  # class name
     __prefix__: str  # prefix used for record IDs
 
     @declared_attr.directive

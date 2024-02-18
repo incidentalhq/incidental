@@ -49,7 +49,10 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index(
-        op.f("ix_incident_update_new_incident_status_id"), "incident_update", ["new_incident_status_id"], unique=False
+        op.f("ix_incident_update_new_incident_status_id"),
+        "incident_update",
+        ["new_incident_status_id"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_incident_update_previous_incident_severity_id"),

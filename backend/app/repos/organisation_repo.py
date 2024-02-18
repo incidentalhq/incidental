@@ -24,7 +24,10 @@ class OrganisationRepo(BaseRepo):
     def get_member(self, user: User, organisation: Organisation) -> OrganisationMember | None:
         stmt = (
             select(OrganisationMember)
-            .where(OrganisationMember.organisation_id == organisation.id, OrganisationMember.user_id == user.id)
+            .where(
+                OrganisationMember.organisation_id == organisation.id,
+                OrganisationMember.user_id == user.id,
+            )
             .limit(1)
         )
 

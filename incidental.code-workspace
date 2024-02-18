@@ -20,7 +20,6 @@
     "editor.formatOnSave": true,
     "python.analysis.typeCheckingMode": "off",
     "python.testing.pytestEnabled": true,
-    "isort.args": ["--profile", "black"],
     "[python]": {
       "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"

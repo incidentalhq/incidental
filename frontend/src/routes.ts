@@ -7,4 +7,5 @@ export enum RoutePaths {
 
   INCIDENTS = "/incidents",
   SETTINGS = "/settings",
+  SHOW_INCIDENT = "/incidents/:id",
 }

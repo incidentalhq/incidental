@@ -12,7 +12,6 @@ from .base_repo import BaseRepo
 
 
 class AnnouncementRepo(BaseRepo):
-
     def get_announcement(self, organisation: Organisation) -> Announcement | None:
         stmt = select(Announcement).where(Announcement.organisation_id == organisation.id).limit(1)
         return self.session.scalar(stmt)

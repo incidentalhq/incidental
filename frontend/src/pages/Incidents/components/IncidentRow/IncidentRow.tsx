@@ -1,10 +1,13 @@
+import { RoutePaths } from "@/routes";
 import { IncidentRoleKind } from "@/types/enums";
 import { IIncident } from "@/types/models";
+import { generatePath, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const Root = styled.div`
   padding: 1rem 20px;
   border-top: 1px solid var(--color-gray-200);
+  cursor: pointer;
 `;
 const Header = styled.div`
   display: flex;
@@ -30,8 +33,14 @@ interface Props {
 }
 
 const IncidentRow: React.FC<Props> = ({ incident }) => {
+  const navigate = useNavigate();
+
+  const handleClick = (evt: React.MouseEvent<HTMLDivElement>) => {
+    evt.preventDefault();
+    navigate(generatePath(RoutePaths.SHOW_INCIDENT, { id: incident.id }));
+  };
   return (
-    <Root>
+    <Root onClick={handleClick}>
       <Header>
         <Reference>{incident.reference}</Reference>
         <Status>{incident.incidentStatus.name}</Status>

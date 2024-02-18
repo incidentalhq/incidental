@@ -9,7 +9,6 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class BaseForm:
-
     def render(self) -> dict[str, Any]:
         raise NotImplementedError()
 

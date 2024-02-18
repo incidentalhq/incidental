@@ -21,10 +21,9 @@ from .base_repo import BaseRepo
 
 
 class IncidentRepo(BaseRepo):
-
-    def get_incident_by_id(self, id: str) -> Incident | None:
+    def get_incident_by_id(self, id: str) -> Incident:
         stmt = select(Incident).where(Incident.id == id).limit(1)
-        return self.session.scalar(stmt)
+        return self.session.scalars(stmt).one()
 
     def create_incident_type(self, organisation: Organisation, name: str, description: str) -> IncidentType:
         model = IncidentType()
@@ -124,7 +123,11 @@ class IncidentRepo(BaseRepo):
         return self.session.scalar(stmt)
 
     def create_incident_status(
-        self, organisation: Organisation, name: str, sort_order: int, category: IncidentStatusCategoryEnum
+        self,
+        organisation: Organisation,
+        name: str,
+        sort_order: int,
+        category: IncidentStatusCategoryEnum,
     ) -> IncidentStatus:
         """Create new incident status"""
         model = IncidentStatus()
@@ -157,7 +160,6 @@ class IncidentRepo(BaseRepo):
         return self.session.scalar(stmt) or 0
 
     def assign_role(self, incident: Incident, role: IncidentRole, user: User) -> IncidentRoleAssignment:
-
         # if that role has already been assigned, update the user
         for role_assignment in incident.incident_role_assignments:
             if role_assignment.incident_role.id == role.id:
@@ -189,7 +191,12 @@ class IncidentRepo(BaseRepo):
         return self.session.scalar(stmt)
 
     def create_incident_role(
-        self, organisation: Organisation, name: str, description: str, kind: IncidentRoleKind, slack_reference: str
+        self,
+        organisation: Organisation,
+        name: str,
+        description: str,
+        kind: IncidentRoleKind,
+        slack_reference: str,
     ) -> IncidentRole:
         model = IncidentRole()
         model.organisation_id = organisation.id
@@ -245,3 +252,25 @@ class IncidentRepo(BaseRepo):
         self.session.flush()
 
         return model
+
+    def get_incident_updates(
+        self, incident: Incident, page: int = 1, size: int = 25
+    ) -> PaginatedResults[IncidentUpdate]:
+        """Get incident updates"""
+        stmt = select().where(IncidentUpdate.incident_id == incident.id, IncidentUpdate.deleted_at.is_(None))
+
+        # get total
+        total_stmt = stmt.add_columns(func.count(IncidentUpdate.id))
+        total = self.session.scalar(total_stmt)
+
+        # get paginated results
+        offset = (page - 1) * size
+        results_stmt = (
+            stmt.add_columns(IncidentUpdate)
+            .order_by(IncidentUpdate.created_at.desc())
+            .offset(offset=offset)
+            .limit(limit=size)
+        )
+        results = self.session.scalars(results_stmt).all()
+
+        return PaginatedResults(total=total, page=page, size=size, items=results)
