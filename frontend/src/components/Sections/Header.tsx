@@ -1,15 +1,15 @@
-import { Link } from "react-router-dom";
-import { IUser } from "shared-types/types";
-import styled from "styled-components";
-import Dropdown from "@/components/Dropdown/Dropdown";
+import { Link } from 'react-router-dom'
+import { IUser } from 'shared-types/types'
+import styled from 'styled-components'
 
-import useAuth from "@/hooks/useAuth";
+import Dropdown from '@/components/Dropdown/Dropdown'
+import useAuth from '@/hooks/useAuth'
 
 const Root = styled.div`
   display: flex;
   margin: 1rem 0 1rem;
   justify-content: space-between;
-`;
+`
 const MenuItem = styled.div`
   a {
     padding: 0.25rem 0.5rem;
@@ -19,17 +19,17 @@ const MenuItem = styled.div`
       background-color: var(--color-gray-100);
     }
   }
-`;
-const NavbarItems = styled.div``;
+`
+const NavbarItems = styled.div``
 
 interface Props {
-  user: IUser;
+  user: IUser
 }
 
 const Header: React.FC<Props> = ({ user }) => {
-  const { logout } = useAuth();
+  const { logout } = useAuth()
 
-  const handleClickLogout = () => logout();
+  const handleClickLogout = () => logout()
 
   return (
     <Root>
@@ -40,14 +40,14 @@ const Header: React.FC<Props> = ({ user }) => {
             <Link to={`/profile`}>Profile</Link>
           </MenuItem>
           <MenuItem>
-            <Link onClick={handleClickLogout} to={""}>
+            <Link onClick={handleClickLogout} to={''}>
               Logout
             </Link>
           </MenuItem>
         </Dropdown>
       </NavbarItems>
     </Root>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

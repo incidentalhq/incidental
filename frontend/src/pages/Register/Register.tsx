@@ -1,15 +1,13 @@
-import { FormikHelpers } from "formik";
-import { Link, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { Box, Content } from "@/components/Theme/Styles";
+import { FormikHelpers } from 'formik'
+import { Link, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
-import RegisterForm, {
-  RegisterFormValues,
-} from "@/components/RegisterForm/RegisterForm";
-import useApiService from "@/hooks/useApi";
-import { RoutePaths } from "@/routes";
-import { APIError } from "@/services/transport";
-import { apiErrorsToFormikErrors } from "@/utils/form";
+import RegisterForm, { RegisterFormValues } from '@/components/RegisterForm/RegisterForm'
+import { Box, Content } from '@/components/Theme/Styles'
+import useApiService from '@/hooks/useApi'
+import { RoutePaths } from '@/routes'
+import { APIError } from '@/services/transport'
+import { apiErrorsToFormikErrors } from '@/utils/form'
 
 const Root = styled.div`
   width: 30rem;
@@ -18,7 +16,7 @@ const Root = styled.div`
   > h2 {
     margin-bottom: 1rem;
   }
-`;
+`
 const FooterMessage = styled.div`
   font-size: 0.9rem;
   display: flex;
@@ -30,26 +28,23 @@ const FooterMessage = styled.div`
   > a {
     text-decoration: none;
   }
-`;
+`
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
-  const { apiService } = useApiService();
+  const navigate = useNavigate()
+  const { apiService } = useApiService()
 
-  const handleSubmit = async (
-    values: RegisterFormValues,
-    { setErrors }: FormikHelpers<RegisterFormValues>
-  ) => {
+  const handleSubmit = async (values: RegisterFormValues, { setErrors }: FormikHelpers<RegisterFormValues>) => {
     try {
-      await apiService.createUser(values);
-      navigate(RoutePaths.REGISTER_SUCCESS);
+      await apiService.createUser(values)
+      navigate(RoutePaths.REGISTER_SUCCESS)
     } catch (e) {
       if (e instanceof APIError) {
-        setErrors(apiErrorsToFormikErrors(e));
+        setErrors(apiErrorsToFormikErrors(e))
       }
-      console.error(e);
+      console.error(e)
     }
-  };
+  }
 
   return (
     <Root>
@@ -60,10 +55,10 @@ const Register: React.FC = () => {
         </Content>
       </Box>
       <FooterMessage>
-        Already have an account? <Link to={"/login"}>Login here</Link>
+        Already have an account? <Link to={'/login'}>Login here</Link>
       </FooterMessage>
     </Root>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register

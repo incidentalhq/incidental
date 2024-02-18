@@ -4,10 +4,10 @@ export const getPages = (
   leftEdge = 2,
   leftCurrent = 2,
   rightCurrent = 2,
-  rightEdge = 2,
+  rightEdge = 2
 ) => {
-  let last = 0;
-  const ret = [];
+  let last = 0
+  const ret = []
   for (let i = 1; i < totalPages + 1; i++) {
     if (
       i <= leftEdge ||
@@ -15,13 +15,13 @@ export const getPages = (
       i > totalPages - rightEdge
     ) {
       if (last + 1 !== i) {
-        ret.push(null);
+        ret.push(null)
       }
-      ret.push(i);
-      last = i;
+      ret.push(i)
+      last = i
     }
   }
-  return ret;
-};
+  return ret
+}
 
-export default getPages;
+export default getPages

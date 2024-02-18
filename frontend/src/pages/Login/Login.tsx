@@ -1,11 +1,11 @@
-import { FormikHelpers } from "formik";
-import styled from "styled-components";
-import { Box, Content } from "@/components/Theme/Styles";
+import { FormikHelpers } from 'formik'
+import styled from 'styled-components'
 
-import LoginForm, { LoginFormValues } from "@/components/LoginForm/LoginForm";
-import useAuth from "@/hooks/useAuth";
-import { APIError } from "@/services/transport";
-import { apiErrorsToFormikErrors } from "@/utils/form";
+import LoginForm, { LoginFormValues } from '@/components/LoginForm/LoginForm'
+import { Box, Content } from '@/components/Theme/Styles'
+import useAuth from '@/hooks/useAuth'
+import { APIError } from '@/services/transport'
+import { apiErrorsToFormikErrors } from '@/utils/form'
 
 const Root = styled.div`
   width: 30rem;
@@ -14,24 +14,21 @@ const Root = styled.div`
   > h2 {
     margin-bottom: 1rem;
   }
-`;
+`
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login } = useAuth()
 
-  const handleSubmit = async (
-    values: LoginFormValues,
-    { setErrors }: FormikHelpers<LoginFormValues>
-  ) => {
+  const handleSubmit = async (values: LoginFormValues, { setErrors }: FormikHelpers<LoginFormValues>) => {
     try {
-      await login(values.emailAddress, values.password);
+      await login(values.emailAddress, values.password)
     } catch (e) {
       if (e instanceof APIError) {
-        setErrors(apiErrorsToFormikErrors(e));
+        setErrors(apiErrorsToFormikErrors(e))
       }
-      console.error(e);
+      console.error(e)
     }
-  };
+  }
 
   return (
     <Root>
@@ -42,7 +39,7 @@ const Login: React.FC = () => {
         </Content>
       </Box>
     </Root>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

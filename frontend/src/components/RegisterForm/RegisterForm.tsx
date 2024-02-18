@@ -1,45 +1,35 @@
-import { Form, Formik, FormikHelpers } from "formik";
-import { Button } from "@/components/Theme/Styles";
-import GeneralError from "@/components/Form/GeneralError";
-import Field from "@/components/Form/Field";
-import * as Yup from "yup";
+import { Form, Formik, FormikHelpers } from 'formik'
+import * as Yup from 'yup'
+
+import Field from '@/components/Form/Field'
+import GeneralError from '@/components/Form/GeneralError'
+import { Button } from '@/components/Theme/Styles'
 
 interface Props {
-  onSubmit: (
-    values: RegisterFormValues,
-    helpers: FormikHelpers<RegisterFormValues>
-  ) => void;
+  onSubmit: (values: RegisterFormValues, helpers: FormikHelpers<RegisterFormValues>) => void
 }
 
 export interface RegisterFormValues {
-  name: string;
-  password: string;
-  emailAddress: string;
+  name: string
+  password: string
+  emailAddress: string
 }
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string().required("Please enter your name"),
-  emailAddress: Yup.string()
-    .email("This does not look like an email address")
-    .required("An email address is required"),
-  password: Yup.string()
-    .required("A password is required")
-    .min(6, "Must be at least 8 characters"),
-});
+  name: Yup.string().required('Please enter your name'),
+  emailAddress: Yup.string().email('This does not look like an email address').required('An email address is required'),
+  password: Yup.string().required('A password is required').min(6, 'Must be at least 8 characters')
+})
 
 const defaultValues = {
-  name: "",
-  password: "",
-  emailAddress: "",
-};
+  name: '',
+  password: '',
+  emailAddress: ''
+}
 
 const RegisterForm: React.FC<Props> = ({ onSubmit }) => {
   return (
-    <Formik<RegisterFormValues>
-      validationSchema={validationSchema}
-      initialValues={defaultValues}
-      onSubmit={onSubmit}
-    >
+    <Formik<RegisterFormValues> validationSchema={validationSchema} initialValues={defaultValues} onSubmit={onSubmit}>
       {({ isSubmitting }) => (
         <Form className="space-y-2">
           <GeneralError />
@@ -55,12 +45,7 @@ const RegisterForm: React.FC<Props> = ({ onSubmit }) => {
           </div>
           <div>
             <label className="block">Email address</label>
-            <Field
-              name="emailAddress"
-              type="text"
-              className="w-full"
-              help="What you'll use to login"
-            />
+            <Field name="emailAddress" type="text" className="w-full" help="What you'll use to login" />
           </div>
           <div>
             <label className="block">Password</label>
@@ -80,7 +65,7 @@ const RegisterForm: React.FC<Props> = ({ onSubmit }) => {
         </Form>
       )}
     </Formik>
-  );
-};
+  )
+}
 
-export default RegisterForm;
+export default RegisterForm

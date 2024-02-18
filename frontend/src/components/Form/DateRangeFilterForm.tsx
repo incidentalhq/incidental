@@ -1,10 +1,10 @@
-import { Form, Formik, FormikHelpers } from "formik";
-import styled from "styled-components";
-import * as Yup from "yup";
+import { Form, Formik, FormikHelpers } from 'formik'
+import styled from 'styled-components'
+import * as Yup from 'yup'
 
-import Field from "./Field";
-import GeneralError from "./GeneralError";
-import { Button } from "../Theme/Styles";
+import { Button } from '../Theme/Styles'
+import Field from './Field'
+import GeneralError from './GeneralError'
 
 const FormBody = styled.div`
   display: flex;
@@ -12,30 +12,27 @@ const FormBody = styled.div`
   > * {
     margin-right: 1rem;
   }
-`;
+`
 
 interface Props {
-  onSubmit: (
-    values: DateRangeFilterValues,
-    helpers: FormikHelpers<DateRangeFilterValues>
-  ) => void;
+  onSubmit: (values: DateRangeFilterValues, helpers: FormikHelpers<DateRangeFilterValues>) => void
 }
 
 export interface DateRangeFilterValues {
-  startDate: string;
-  endDate: string;
+  startDate: string
+  endDate: string
 }
 
 const validationSchema = Yup.object().shape({
-  startDate: Yup.date().required("Select a start date"),
-  endDate: Yup.date().required("Select an end date"),
-});
+  startDate: Yup.date().required('Select a start date'),
+  endDate: Yup.date().required('Select an end date')
+})
 
 const DateRangeFilterForm: React.FC<Props> = ({ onSubmit }) => {
   const defaultValues = {
-    startDate: "",
-    endDate: "",
-  };
+    startDate: '',
+    endDate: ''
+  }
 
   return (
     <Formik<DateRangeFilterValues>
@@ -65,7 +62,7 @@ const DateRangeFilterForm: React.FC<Props> = ({ onSubmit }) => {
         </Form>
       )}
     </Formik>
-  );
-};
+  )
+}
 
-export default DateRangeFilterForm;
+export default DateRangeFilterForm

@@ -1,35 +1,29 @@
-import { Form, Formik, FormikHelpers } from "formik";
-import Field from "ui/components/Form/Field";
-import GeneralError from "ui/components/Form/GeneralError";
-import { Button } from "ui/components/Theme/Styles";
-import * as Yup from "yup";
+import { Form, Formik, FormikHelpers } from 'formik'
+import * as Yup from 'yup'
+
+import Field from 'ui/components/Form/Field'
+import GeneralError from 'ui/components/Form/GeneralError'
+import { Button } from 'ui/components/Theme/Styles'
 
 interface Props {
-  onSubmit: (
-    values: TeamMemberFormValues,
-    helpers: FormikHelpers<TeamMemberFormValues>
-  ) => void;
+  onSubmit: (values: TeamMemberFormValues, helpers: FormikHelpers<TeamMemberFormValues>) => void
 }
 
 export type TeamMemberFormValues = {
-  email: string;
-};
+  email: string
+}
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email().required("An email address is required"),
-});
+  email: Yup.string().email().required('An email address is required')
+})
 
 const TeamMemberForm: React.FC<Props> = ({ onSubmit }) => {
   const defaultValues = {
-    email: "",
-  };
+    email: ''
+  }
 
   return (
-    <Formik<TeamMemberFormValues>
-      validationSchema={validationSchema}
-      initialValues={defaultValues}
-      onSubmit={onSubmit}
-    >
+    <Formik<TeamMemberFormValues> validationSchema={validationSchema} initialValues={defaultValues} onSubmit={onSubmit}>
       {({ isSubmitting }) => (
         <Form className="space-y-2">
           <GeneralError />
@@ -51,7 +45,7 @@ const TeamMemberForm: React.FC<Props> = ({ onSubmit }) => {
         </Form>
       )}
     </Formik>
-  );
-};
+  )
+}
 
-export default TeamMemberForm;
+export default TeamMemberForm

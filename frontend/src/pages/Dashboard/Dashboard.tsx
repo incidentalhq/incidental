@@ -1,18 +1,19 @@
-import { Box, Button, Content, Header, Title } from "@/components/Theme/Styles";
-import useApiService from "@/hooks/useApi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query'
+
+import { Box, Button, Content, Header, Title } from '@/components/Theme/Styles'
+import useApiService from '@/hooks/useApi'
 
 const Dashboard = () => {
-  const { apiService } = useApiService();
+  const { apiService } = useApiService()
 
   const query = useQuery({
-    queryKey: ["incidents"],
-    queryFn: () => apiService.searchIncidents(""),
-  });
+    queryKey: ['incidents'],
+    queryFn: () => apiService.searchIncidents('')
+  })
 
   const handleDeclare = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault();
-  };
+    evt.preventDefault()
+  }
 
   return (
     <>
@@ -28,7 +29,7 @@ const Dashboard = () => {
         <Content $padding={false}></Content>
       </Box>
     </>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

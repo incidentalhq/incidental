@@ -11,7 +11,7 @@ body {
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "slnt" 0;
+  font-variation-settings: 'slnt' 0;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -41,24 +41,24 @@ form .error-help {
   font-size: 0.9rem;
 }
 
-form input[type="text"],
-form input[type="password"],
-form input[type="number"],
-form input[type="date"],
-form input[type="datetime-local"],
+form input[type='text'],
+form input[type='password'],
+form input[type='number'],
+form input[type='date'],
+form input[type='datetime-local'],
 textarea {
   border: 1px solid var(--color-gray-300);
   padding: 0.5rem 0.75rem;
   border-radius: 0.25rem;
 }
 
-form input[type="text"],
-form input[type="password"],
+form input[type='text'],
+form input[type='password'],
 textarea {
   width: 100%;
 }
 
-form input[type="number"] {
+form input[type='number'] {
   width: 100px;
 }
 

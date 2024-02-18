@@ -1,74 +1,74 @@
-const AUTH_KEY = "auth_token";
-const OAUTH_REQUESTS_KEY = "pending_oauth_requests";
+const AUTH_KEY = 'auth_token'
+const OAUTH_REQUESTS_KEY = 'pending_oauth_requests'
 
 export const saveAuthToBrowser = (data: any) => {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(data));
-};
+  localStorage.setItem(AUTH_KEY, JSON.stringify(data))
+}
 
 export const getAuthFromBrowser = () => {
-  const data = localStorage.getItem(AUTH_KEY);
+  const data = localStorage.getItem(AUTH_KEY)
   if (data !== null) {
-    return JSON.parse(data);
+    return JSON.parse(data)
   }
-  return null;
-};
+  return null
+}
 
 export const clearUserDataFromBrowser = () => {
-  localStorage.removeItem(AUTH_KEY);
-};
+  localStorage.removeItem(AUTH_KEY)
+}
 
 interface LocalOAuthRequest {
-  code: string;
-  state: string;
+  code: string
+  state: string
 }
 
 export const pushOAuthRequest = (code: string, state: string) => {
-  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY);
-  let requests: LocalOAuthRequest[] = [];
+  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY)
+  let requests: LocalOAuthRequest[] = []
 
   if (currentRequests !== null) {
-    requests = JSON.parse(currentRequests);
+    requests = JSON.parse(currentRequests)
   } else {
-    requests = [];
+    requests = []
   }
 
   requests.push({
     code,
-    state,
-  });
+    state
+  })
 
-  localStorage.setItem(OAUTH_REQUESTS_KEY, JSON.stringify(requests));
-};
+  localStorage.setItem(OAUTH_REQUESTS_KEY, JSON.stringify(requests))
+}
 
 export const popOAuthRequest = () => {
-  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY);
+  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY)
   if (!currentRequests) {
-    return null;
+    return null
   }
 
-  const requests: LocalOAuthRequest[] = JSON.parse(currentRequests);
+  const requests: LocalOAuthRequest[] = JSON.parse(currentRequests)
 
   if (requests.length == 0) {
-    return null;
+    return null
   }
 
-  const firstRequest = requests.pop() as LocalOAuthRequest;
-  return firstRequest;
-};
+  const firstRequest = requests.pop() as LocalOAuthRequest
+  return firstRequest
+}
 
 export const removeOAuthRequest = (code: string) => {
-  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY);
+  const currentRequests = localStorage.getItem(OAUTH_REQUESTS_KEY)
   if (!currentRequests) {
-    return;
+    return
   }
 
-  const requests: LocalOAuthRequest[] = JSON.parse(currentRequests);
+  const requests: LocalOAuthRequest[] = JSON.parse(currentRequests)
 
   if (requests.length == 0) {
-    return;
+    return
   }
 
-  const filteredRequests = requests.filter((it) => it.code !== code);
+  const filteredRequests = requests.filter((it) => it.code !== code)
 
-  localStorage.setItem(OAUTH_REQUESTS_KEY, JSON.stringify(filteredRequests));
-};
+  localStorage.setItem(OAUTH_REQUESTS_KEY, JSON.stringify(filteredRequests))
+}
