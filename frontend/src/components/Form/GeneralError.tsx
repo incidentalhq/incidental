@@ -1,5 +1,5 @@
-import { useField } from "formik";
-import styled from "styled-components";
+import { useField } from 'formik'
+import styled from 'styled-components'
 
 const Error = styled.div`
   background-color: #dc3545;
@@ -7,17 +7,11 @@ const Error = styled.div`
   padding: 0.5rem;
   margin-bottom: 1rem;
   border-radius: 0.4rem;
-`;
+`
 
 const GeneralError = () => {
-  const [, meta] = useField("general");
-  return (
-    <>
-      {meta.error && typeof meta.error == "string" ? (
-        <Error>{meta.error}</Error>
-      ) : null}
-    </>
-  );
-};
+  const [, meta] = useField('general')
+  return <>{meta.error && typeof meta.error == 'string' ? <Error>{meta.error}</Error> : null}</>
+}
 
-export default GeneralError;
+export default GeneralError

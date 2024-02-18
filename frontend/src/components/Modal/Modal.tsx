@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from "react";
-import styled from "styled-components";
+import React, { PropsWithChildren } from 'react'
+import styled from 'styled-components'
 
 const Root = styled.div`
   width: 100vw;
@@ -13,7 +13,7 @@ const Root = styled.div`
   opacity: 1;
   background: rgba(145, 145, 145, 0.6);
   z-index: 999;
-`;
+`
 
 const Content = styled.div`
   box-shadow:
@@ -31,16 +31,14 @@ const Content = styled.div`
     min-width: initial;
     border-radius: 0;
   }
-`;
+`
 
-const Modal = React.forwardRef<HTMLDivElement, PropsWithChildren<unknown>>(
-  (props, ref) => (
-    <Root>
-      <Content ref={ref}>{props.children}</Content>
-    </Root>
-  ),
-);
+const Modal = React.forwardRef<HTMLDivElement, PropsWithChildren<unknown>>((props, ref) => (
+  <Root>
+    <Content ref={ref}>{props.children}</Content>
+  </Root>
+))
 
-Modal.displayName = "Modal";
+Modal.displayName = 'Modal'
 
-export default Modal;
+export default Modal

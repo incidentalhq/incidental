@@ -1,5 +1,5 @@
 interface Props {
-  error: Error;
+  error: Error
 }
 export function ErrorFallback({ error }: Props) {
   return (
@@ -7,5 +7,5 @@ export function ErrorFallback({ error }: Props) {
       <p>Something went wrong:</p>
       <pre>{error.message}</pre>
     </div>
-  );
+  )
 }

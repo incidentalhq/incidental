@@ -1,7 +1,8 @@
-import { format } from "date-fns";
-import { IInvite } from "shared-types/types";
-import styled from "styled-components";
-import { Button } from "ui/components/Theme/Styles";
+import { format } from 'date-fns'
+import { IInvite } from 'shared-types/types'
+import styled from 'styled-components'
+
+import { Button } from 'ui/components/Theme/Styles'
 
 const Root = styled.div`
   padding: 1rem;
@@ -9,29 +10,29 @@ const Root = styled.div`
   border-top: 0;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-`;
+`
 
 interface CellProps {
-  right?: boolean;
+  right?: boolean
 }
 const Cell = styled.div<CellProps>`
-  text-align: ${(props) => (props.right ? "right" : "left")};
-`;
+  text-align: ${(props) => (props.right ? 'right' : 'left')};
+`
 
 export interface Props {
-  invite: IInvite;
-  onDelete: (invite: IInvite) => void;
+  invite: IInvite
+  onDelete: (invite: IInvite) => void
 }
 
 const SentInvite: React.FC<Props> = ({ invite, onDelete }) => {
-  const sentAt = new Date(invite.createdAt);
-  const formatting = "do MMMM yyyy";
-  const sentAtF = format(sentAt, formatting);
+  const sentAt = new Date(invite.createdAt)
+  const formatting = 'do MMMM yyyy'
+  const sentAtF = format(sentAt, formatting)
 
   return (
     <Root>
       <Cell>{invite.emailAddress}</Cell>
-      <Cell>{"Pending"}</Cell>
+      <Cell>{'Pending'}</Cell>
       <Cell>{sentAtF}</Cell>
       <Cell right={true}>
         <Button danger={true} onClick={() => onDelete(invite)}>
@@ -39,7 +40,7 @@ const SentInvite: React.FC<Props> = ({ invite, onDelete }) => {
         </Button>
       </Cell>
     </Root>
-  );
-};
+  )
+}
 
-export default SentInvite;
+export default SentInvite

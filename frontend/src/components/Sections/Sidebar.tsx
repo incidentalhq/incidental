@@ -1,28 +1,24 @@
-import {
-  faBoltLightning,
-  faCog,
-  faHome,
-} from "@fortawesome/pro-duotone-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import styled, { css, keyframes } from "styled-components";
-import { IUser } from "@/types/models";
+import { faBoltLightning, faCog, faHome } from '@fortawesome/pro-duotone-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import styled, { css, keyframes } from 'styled-components'
 
-import logo from "@/assets/mark_noborder.png";
-import { RoutePaths } from "@/routes";
+import logo from '@/assets/mark_noborder.png'
+import { RoutePaths } from '@/routes'
+import { IUser } from '@/types/models'
 
 const rotate = keyframes`
   100% {
 		transform: rotate(1turn);
 	}
-`;
+`
 
 const borderCss = css`
   overflow: hidden;
   z-index: 0;
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -2;
     left: -50%;
@@ -31,17 +27,22 @@ const borderCss = css`
     height: 200%;
     background-color: #399953;
     background-repeat: no-repeat;
-    background-size: 50% 50%, 50% 50%;
-    background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+    background-size:
+      50% 50%,
+      50% 50%;
+    background-position:
+      0 0,
+      100% 0,
+      100% 100%,
+      0 100%;
 
-    background-image: linear-gradient(#399953, #399953),
-      linear-gradient(#fbb300, #fbb300), linear-gradient(#d53e33, #d53e33),
-      linear-gradient(#377af5, #377af5);
+    background-image: linear-gradient(#399953, #399953), linear-gradient(#fbb300, #fbb300),
+      linear-gradient(#d53e33, #d53e33), linear-gradient(#377af5, #377af5);
     animation: ${rotate} 4s linear infinite;
   }
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -1;
     left: 6px;
@@ -51,27 +52,27 @@ const borderCss = css`
     background: white;
     border-radius: 10px;
   }
-`;
+`
 
 const Root = styled.div`
   align-items: center;
-`;
+`
 const LogoSection = styled.div`
   margin-bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-`;
+`
 
 const Logo = styled.img`
   display: block;
   width: 64px;
   height: 64px;
   border-radius: 1rem;
-`;
+`
 
 interface LogoImageProps {
-  $animate: boolean;
+  $animate: boolean
 }
 
 const LogoWrapper = styled.div<LogoImageProps>`
@@ -83,12 +84,12 @@ const LogoWrapper = styled.div<LogoImageProps>`
   border-radius: 1rem;
   width: 70px;
   height: 70px;
-`;
+`
 
 const MenuItems = styled.div`
   padding: 0;
   margin: 0;
-`;
+`
 const Item = styled(Link)`
   display: block;
   color: #1f4d63;
@@ -102,20 +103,20 @@ const Item = styled(Link)`
   &:hover {
     color: var(--color-blue-700);
   }
-`;
+`
 
 interface Props {
-  user: IUser;
+  user: IUser
 }
 
 const SideBar: React.FC<Props> = () => {
-  const location = useLocation();
-  const [animate, setAnimate] = useState(false);
+  const location = useLocation()
+  const [animate, setAnimate] = useState(false)
 
   useEffect(() => {
-    setAnimate(true);
-    setTimeout(() => setAnimate(false), 2000);
-  }, [location.pathname]);
+    setAnimate(true)
+    setTimeout(() => setAnimate(false), 2000)
+  }, [location.pathname])
 
   return (
     <Root>
@@ -138,7 +139,7 @@ const SideBar: React.FC<Props> = () => {
         </Item>
       </MenuItems>
     </Root>
-  );
-};
+  )
+}
 
-export default SideBar;
+export default SideBar

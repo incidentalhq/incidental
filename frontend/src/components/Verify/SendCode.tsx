@@ -1,33 +1,25 @@
-import { Form, Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import GeneralError from "@/components/Form/GeneralError";
-import Field from "@/components/Form/Field";
-import { Button } from "@/components/Theme/Styles";
+import { Form, Formik, FormikHelpers } from 'formik'
+import * as Yup from 'yup'
+
+import Field from '@/components/Form/Field'
+import GeneralError from '@/components/Form/GeneralError'
+import { Button } from '@/components/Theme/Styles'
 
 interface SendCodeFormProps {
-  onSubmit: (
-    values: SendCodeFormValues,
-    helpers: FormikHelpers<SendCodeFormValues>
-  ) => void | Promise<void>;
+  onSubmit: (values: SendCodeFormValues, helpers: FormikHelpers<SendCodeFormValues>) => void | Promise<void>
 }
 
 export interface SendCodeFormValues {
-  emailAddress: string;
+  emailAddress: string
 }
 
 const validationSchema = Yup.object().shape({
-  emailAddress: Yup.string()
-    .required("An email address is required")
-    .email("That does not look like an email address"),
-});
+  emailAddress: Yup.string().required('An email address is required').email('That does not look like an email address')
+})
 
 const SendCodeForm: React.FC<SendCodeFormProps> = ({ onSubmit }) => {
   return (
-    <Formik
-      validationSchema={validationSchema}
-      initialValues={{ emailAddress: "" }}
-      onSubmit={onSubmit}
-    >
+    <Formik validationSchema={validationSchema} initialValues={{ emailAddress: '' }} onSubmit={onSubmit}>
       {({ isSubmitting }) => (
         <Form className="space-y-2">
           <GeneralError />
@@ -49,7 +41,7 @@ const SendCodeForm: React.FC<SendCodeFormProps> = ({ onSubmit }) => {
         </Form>
       )}
     </Formik>
-  );
-};
+  )
+}
 
-export default SendCodeForm;
+export default SendCodeForm

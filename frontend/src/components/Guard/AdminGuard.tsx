@@ -1,31 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 
-import useAuth from "@/hooks/useAuth";
+import useAuth from '@/hooks/useAuth'
 
 interface Props {
-  children: React.ReactElement;
+  children: React.ReactElement
 }
 
 const AdminGuard: React.FC<Props> = ({ children }) => {
-  const [redirect, setRedirect] = useState(false);
-  const { user } = useAuth();
+  const [redirect, setRedirect] = useState(false)
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!user) {
-      setRedirect(true);
-      return;
+      setRedirect(true)
+      return
     }
     if (!user.isSuperAdmin) {
-      setRedirect(true);
-      return;
+      setRedirect(true)
+      return
     }
-  }, [user]);
+  }, [user])
 
   if (redirect) {
-    return <>Not authorized</>;
+    return <>Not authorized</>
   }
 
-  return children;
-};
+  return children
+}
 
-export default AdminGuard;
+export default AdminGuard

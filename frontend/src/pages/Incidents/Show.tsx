@@ -1,36 +1,30 @@
-import {
-  Box,
-  Button,
-  Content,
-  ContentMain,
-  ContentSidebar,
-  Header,
-  Title,
-} from "@/components/Theme/Styles";
-import styled from "styled-components";
-import useApiService from "@/hooks/useApi";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import Loading from "@/components/Loading/Loading";
-import IncidentUpdate from "./components/IncidentUpdate/IncidentUpdate";
+import { useQuery } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
+import styled from 'styled-components'
+
+import Loading from '@/components/Loading/Loading'
+import { Box, Button, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
+import useApiService from '@/hooks/useApi'
+
+import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
 
 type UrlParams = {
-  id: string;
-};
+  id: string
+}
 
 const ShowIncident = () => {
-  const { apiService } = useApiService();
-  const { id } = useParams<UrlParams>() as UrlParams;
+  const { apiService } = useApiService()
+  const { id } = useParams<UrlParams>() as UrlParams
 
   const query = useQuery({
-    queryKey: ["incident", id],
-    queryFn: () => apiService.getIncident(id),
-  });
+    queryKey: ['incident', id],
+    queryFn: () => apiService.getIncident(id)
+  })
 
   const incidentUpdatesQuery = useQuery({
-    queryKey: ["incident-updates", id],
-    queryFn: () => apiService.getIncidentUpdates(id),
-  });
+    queryKey: ['incident-updates', id],
+    queryFn: () => apiService.getIncidentUpdates(id)
+  })
 
   return (
     <>
@@ -67,7 +61,7 @@ const ShowIncident = () => {
         ) : null}
       </Box>
     </>
-  );
-};
+  )
+}
 
-export default ShowIncident;
+export default ShowIncident

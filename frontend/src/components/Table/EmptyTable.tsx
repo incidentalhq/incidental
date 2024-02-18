@@ -1,5 +1,6 @@
-import styled from "styled-components";
-import Empty from "ui/components/Empty/Empty";
+import styled from 'styled-components'
+
+import Empty from 'ui/components/Empty/Empty'
 
 const Root = styled.div`
   margin: 0 auto;
@@ -9,12 +10,12 @@ const Root = styled.div`
   justify-content: center;
   border: 1px solid var(--color-slate-200);
   width: 600px;
-`;
+`
 
 interface Props {
-  message: string;
-  actionLabel?: string;
-  actionUrl?: string;
+  message: string
+  actionLabel?: string
+  actionUrl?: string
 }
 
 const EmptyTable: React.FC<Props> = (props) => {
@@ -22,7 +23,7 @@ const EmptyTable: React.FC<Props> = (props) => {
     <Root>
       <Empty {...props} />
     </Root>
-  );
-};
+  )
+}
 
-export default EmptyTable;
+export default EmptyTable

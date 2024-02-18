@@ -1,19 +1,15 @@
 :root {
-  --font-sans: "Inter", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --radius-md: 0.4rem;
   --radius-sm: 0.2rem;
 
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  --stripe-shadow: rgba(180, 180, 180, 0.14) 0px 3px 12px 0px,
-    rgba(0, 0, 0, 0.14) 0px 1px 2px 0px;
+  --stripe-shadow: rgba(180, 180, 180, 0.14) 0px 3px 12px 0px, rgba(0, 0, 0, 0.14) 0px 1px 2px 0px;
 
   --color-brand: #00c9ef;
   --color-brand-dark: #dd780e;

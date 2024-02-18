@@ -1,31 +1,28 @@
-import { useState } from "react";
-import styled from "styled-components";
+import { useState } from 'react'
+import styled from 'styled-components'
 
 const Root = styled.div`
   padding: 0.5rem;
-`;
+`
 
 const Panel = styled.div`
   padding: 1rem;
   border-radius: 1rem;
   margin: 1rem 0;
   background-color: var(--color-gray-50);
-`;
+`
 
 interface Props {
-  text: string;
+  text: string
 }
 
-const ExpandableFields: React.FC<React.PropsWithChildren<Props>> = ({
-  children,
-  text,
-}) => {
-  const [showContent, setShowContent] = useState(false);
+const ExpandableFields: React.FC<React.PropsWithChildren<Props>> = ({ children, text }) => {
+  const [showContent, setShowContent] = useState(false)
 
   const handleToggle = (evt: React.MouseEvent<HTMLAnchorElement>) => {
-    evt.preventDefault();
-    setShowContent((prev) => !prev);
-  };
+    evt.preventDefault()
+    setShowContent((prev) => !prev)
+  }
 
   if (showContent) {
     return (
@@ -35,7 +32,7 @@ const ExpandableFields: React.FC<React.PropsWithChildren<Props>> = ({
           Hide
         </a>
       </Panel>
-    );
+    )
   }
 
   return (
@@ -44,7 +41,7 @@ const ExpandableFields: React.FC<React.PropsWithChildren<Props>> = ({
         &raquo; {text}
       </a>
     </Root>
-  );
-};
+  )
+}
 
-export default ExpandableFields;
+export default ExpandableFields
