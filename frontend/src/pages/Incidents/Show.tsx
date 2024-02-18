@@ -3,10 +3,23 @@ import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Loading from '@/components/Loading/Loading'
-import { Box, Button, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 
-import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
+import Timeline from './components/IncidentUpdate/Timeline'
+
+const Description = styled.div`
+  margin-bottom: 1rem;
+`
+
+const Field = styled.div`
+  display: flex;
+  padding: 1rem;
+`
+const FieldName = styled.div`
+  width: 90px;
+`
+const FieldValue = styled.div``
 
 type UrlParams = {
   id: string
@@ -35,26 +48,38 @@ const ShowIncident = () => {
             <Header>
               <Title>{query.data.name}</Title>
             </Header>
-            <Content $padding={false}>
+            <Content>
               <ContentMain>
-                <p>{query.data.description}</p>
+                <Description>
+                  {query.data.description ? <p>{query.data.description}</p> : <p>Add description...</p>}
+                </Description>
 
-                <h2>Updates</h2>
+                <h3>Updates</h3>
                 {incidentUpdatesQuery.isSuccess ? (
-                  <>
-                    {incidentUpdatesQuery.data.items.map((it) => (
-                      <IncidentUpdate key={it.id} incidentUpdate={it} />
-                    ))}
-                  </>
+                  <Timeline updates={incidentUpdatesQuery.data.items} />
                 ) : (
                   <p>There was an issue </p>
                 )}
               </ContentMain>
               <ContentSidebar>
-                <div>
-                  <span>Status</span>
-                  <span>{query.data.incidentStatus.name}</span>
-                </div>
+                <Field>
+                  <FieldName>Status</FieldName>
+                  <FieldValue>{query.data.incidentStatus.name}</FieldValue>
+                </Field>
+                <Field>
+                  <FieldName>Severity</FieldName>
+                  <FieldValue>{query.data.incidentSeverity.name}</FieldValue>
+                </Field>
+                <Field>
+                  <FieldName>Type</FieldName>
+                  <FieldValue>{query.data.incidentType.name}</FieldValue>
+                </Field>
+                {query.data.incidentRoleAssignments.map((it) => (
+                  <Field>
+                    <FieldName>{it.incidentRole.name}</FieldName>
+                    <FieldValue>{it.user.name}</FieldValue>
+                  </Field>
+                ))}
               </ContentSidebar>
             </Content>
           </>

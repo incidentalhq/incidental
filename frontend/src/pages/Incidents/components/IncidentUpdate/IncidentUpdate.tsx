@@ -3,28 +3,14 @@ import styled from 'styled-components'
 import { IIncidentUpdate } from '@/types/models'
 
 const Root = styled.div`
-  padding: 1rem 20px;
-  border-top: 1px solid var(--color-gray-200);
+  padding: 0rem 20px;
   cursor: pointer;
 `
-const Header = styled.div`
+const Creator = styled.div`
   display: flex;
   gap: 8px;
 `
-const Reference = styled.div`
-  font-weight: 600;
-  width: 80px;
-`
-const Name = styled.div``
-const Status = styled.div`
-  width: 80px;
-`
-const Severity = styled.div`
-  width: 80px;
-`
-const Reporter = styled.div`
-  margin-left: auto;
-`
+const FieldChange = styled.div``
 
 interface Props {
   incidentUpdate: IIncidentUpdate
@@ -33,16 +19,28 @@ interface Props {
 const IncidentUpdate: React.FC<Props> = ({ incidentUpdate }) => {
   return (
     <Root>
-      <Header>
-        update
-        <div>
-          {incidentUpdate.newIncidentSeverity ? (
+      <div>
+        <Creator>
+          <dt>{incidentUpdate.creator.name}</dt> posted a new update
+        </Creator>
+        {incidentUpdate.summary ? <div>{incidentUpdate.summary}</div> : null}
+        <FieldChange>
+          {incidentUpdate.newIncidentSeverity && incidentUpdate.previousIncidentSeverity ? (
             <>
-              {incidentUpdate.previousIncidentSeverity?.name} {'->'} {incidentUpdate.newIncidentSeverity.name}
+              Severity updated: {incidentUpdate.previousIncidentSeverity?.name} {'->'}{' '}
+              {incidentUpdate.newIncidentSeverity.name}
             </>
           ) : null}
-        </div>
-      </Header>
+        </FieldChange>
+        <FieldChange>
+          {incidentUpdate.newIncidentStatus && incidentUpdate.previousIncidentStatus ? (
+            <>
+              Status updated: {incidentUpdate.previousIncidentStatus.name} {'->'}{' '}
+              {incidentUpdate.newIncidentStatus?.name}
+            </>
+          ) : null}
+        </FieldChange>
+      </div>
     </Root>
   )
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import styled from 'styled-components'
 
-import { Box, Button, Content, Header, Title } from '@/components/Theme/Styles'
+import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 
 import IncidentRow from './components/IncidentRow/IncidentRow'
@@ -38,7 +38,11 @@ const IncidentsList = () => {
           </div>
         </Header>
         <CategoryHeader>Active</CategoryHeader>
-        <Content $padding={false}>{query.data?.items.map((it) => <IncidentRow key={it.id} incident={it} />)}</Content>
+        <Content>
+          <ContentMain $padding={false}>
+            {query.data?.items.map((it) => <IncidentRow key={it.id} incident={it} />)}
+          </ContentMain>
+        </Content>
       </Box>
     </>
   )
