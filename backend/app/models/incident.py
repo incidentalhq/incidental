@@ -34,10 +34,14 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
         String(50), ForeignKey("user.id", ondelete="cascade"), nullable=False, index=True
     )
     incident_severity_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("incident_severity.id", ondelete="cascade"), nullable=False, index=True
+        String(50),
+        ForeignKey("incident_severity.id", ondelete="cascade"),
+        nullable=False,
+        index=True,
     )
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     reference: Mapped[str] = mapped_column(UnicodeText, nullable=False)
+    description: Mapped[str] = mapped_column(UnicodeText, nullable=True)
 
     # slack specific
     slack_channel_id: Mapped[str] = mapped_column(UnicodeText, nullable=False)

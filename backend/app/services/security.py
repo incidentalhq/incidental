@@ -6,7 +6,7 @@ import structlog
 from passlib.totp import TOTP, TokenError
 from sqlalchemy.orm import Session
 
-from app.exceptions import ValidationError
+from app.exceptions import ErrorCodes, ValidationError
 from app.models import User
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -31,9 +31,7 @@ class SecurityService:
         Generate an OTP code for a user
         """
         private_bytes = user.private_key.encode("utf8")
-        generator = TOTP(
-            key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw"
-        )
+        generator = TOTP(key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
         token = generator.generate()
 
         return token.token
@@ -46,7 +44,7 @@ class SecurityService:
         if self.is_user_account_in_cool_off_period(user):
             raise ValidationError(
                 "Max login attempts attempted on account, please wait 15m before trying again",
-                "max_login_attempts",
+                ErrorCodes.EXCEEDED_MAX_LOGIN_ATTEMPTS,
             )
 
         self.reset_cool_off_if_possible(user)
@@ -58,9 +56,7 @@ class SecurityService:
             user.last_login_attempt_at = datetime.now()
             user.login_attempts += 1
 
-            raise ValidationError(
-                "OTP code is incorrect, please try again", "incorrect_code"
-            )
+            raise ValidationError("OTP code is incorrect, please try again", ErrorCodes.INCORRECT_CODE)
 
         user.login_attempts = 0
 

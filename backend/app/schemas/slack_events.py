@@ -1,7 +1,7 @@
 import enum
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import ConfigDict, Discriminator, Tag
+from pydantic import ConfigDict, Discriminator, Extra, Tag
 
 from .base import BaseSchema
 
@@ -14,7 +14,7 @@ class BaseEventTypeSchema(BaseSchema):
     """Base class for all event type schemas"""
 
     user: str
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra=Extra.allow)
 
 
 class CatchAllEventType(BaseEventTypeSchema):
@@ -23,7 +23,7 @@ class CatchAllEventType(BaseEventTypeSchema):
     type: str
 
 
-class MemberJoinedChannelEvenType(BaseEventTypeSchema):
+class MemberJoinedChannelEventType(BaseEventTypeSchema):
     type: Literal[EventTypes.MEMBER_JOINED_CHANNEL]
     channel: str
     channel_type: str
@@ -41,7 +41,7 @@ def get_discriminator_value(v: dict[str, Any]) -> str:
 
 SlackEventTypesSchema = Annotated[
     Union[
-        Annotated[MemberJoinedChannelEvenType, Tag(EventTypes.MEMBER_JOINED_CHANNEL)],
+        Annotated[MemberJoinedChannelEventType, Tag(EventTypes.MEMBER_JOINED_CHANNEL)],
         Annotated[CatchAllEventType, Tag("fallback")],
     ],
     Discriminator(get_discriminator_value),

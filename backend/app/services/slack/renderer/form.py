@@ -24,7 +24,6 @@ class RenderContext(BaseModel):
 
 
 class FormRenderer:
-
     def __init__(
         self,
         severities: list[IncidentSeverity],

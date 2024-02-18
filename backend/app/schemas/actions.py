@@ -29,6 +29,10 @@ class PaginationParamsSchema(BaseSchema):
     page: int = 1
     size: int = 25
 
+    @classmethod
+    def as_query(cls, page: int = Query(1), size: int = Query(25)):
+        return PaginationParamsSchema(page=page, size=size)
+
 
 class IncidentSearchSchema(PaginationParamsSchema):
     q: str | None = None

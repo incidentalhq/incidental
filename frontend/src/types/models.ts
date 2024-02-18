@@ -27,6 +27,7 @@ export type IPublicUser = Pick<IUser, "id" | "emailAddress" | "name">;
 
 export interface IIncident extends IModel {
   name: string;
+  description: string | null;
   reference: string;
   slackChannelId: string;
   slackChannelName: string;
@@ -63,4 +64,13 @@ export interface IIncidentRole extends IModel {
 export interface IIncidentRoleAssignment extends IModel {
   user: IPublicUser;
   incidentRole: IIncidentRole;
+}
+
+export interface IIncidentUpdate extends IModel {
+  creator: IPublicUser;
+  summary: string;
+  newIncidentStatus: IIncidentStatus | null;
+  newIncidentSeverity: IIncidentSeverity | null;
+  previousIncidentStatus: IIncidentStatus | null;
+  previousIncidentSeverity: IIncidentSeverity | null;
 }

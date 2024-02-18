@@ -66,7 +66,14 @@ def upgrade() -> None:
         sa.Column("description", sa.UnicodeText(), nullable=True),
         sa.Column(
             "kind",
-            sa.Enum("SINGLE_SELECT", "MULTI_SELECT", "TEXT", "TEXTAREA", name="customfieldkind", native_enum=False),
+            sa.Enum(
+                "SINGLE_SELECT",
+                "MULTI_SELECT",
+                "TEXT",
+                "TEXTAREA",
+                name="customfieldkind",
+                native_enum=False,
+            ),
             nullable=False,
         ),
         sa.Column("available_options", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
@@ -85,7 +92,9 @@ def upgrade() -> None:
         sa.Column("is_published", sa.Boolean(), nullable=False),
         sa.Column("template", sa.UnicodeText(), nullable=True),
         sa.Column(
-            "type", sa.Enum("CREATE_INCIDENT", "UPDATE_INCIDENT", name="formtype", native_enum=False), nullable=False
+            "type",
+            sa.Enum("CREATE_INCIDENT", "UPDATE_INCIDENT", name="formtype", native_enum=False),
+            nullable=False,
         ),
         sa.Column("id", sa.String(length=50), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -109,7 +118,10 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_incident_severity_organisation_id"), "incident_severity", ["organisation_id"], unique=False
+        op.f("ix_incident_severity_organisation_id"),
+        "incident_severity",
+        ["organisation_id"],
+        unique=False,
     )
     op.create_table(
         "incident_status",
@@ -125,7 +137,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["organisation_id"], ["organisation.id"], ondelete="cascade"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_incident_status_organisation_id"), "incident_status", ["organisation_id"], unique=False)
+    op.create_index(
+        op.f("ix_incident_status_organisation_id"),
+        "incident_status",
+        ["organisation_id"],
+        unique=False,
+    )
     op.create_table(
         "incident_type",
         sa.Column("organisation_id", sa.String(length=50), nullable=False),
@@ -153,7 +170,10 @@ def upgrade() -> None:
         sa.UniqueConstraint("user_id", "organisation_id", name="ux_user_organisation"),
     )
     op.create_index(
-        op.f("ix_organisation_member_organisation_id"), "organisation_member", ["organisation_id"], unique=False
+        op.f("ix_organisation_member_organisation_id"),
+        "organisation_member",
+        ["organisation_id"],
+        unique=False,
     )
     op.create_index(op.f("ix_organisation_member_user_id"), "organisation_member", ["user_id"], unique=False)
     op.create_table(

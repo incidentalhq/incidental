@@ -1,8 +1,5 @@
 import styled from "styled-components";
-
 import useAuth from "@/hooks/useAuth";
-
-import Header from "../Sections/Header";
 import SideBar from "../Sections/Sidebar";
 
 const Container = styled.div`
@@ -16,7 +13,6 @@ const Content = styled.div``;
 const RightColumn = styled.div`
   background: #fff;
   flex: 1;
-  padding: 1rem;
 `;
 
 const LeftColumn = styled.div`
@@ -43,7 +39,6 @@ const DefaultLayout: React.FC<Props> = ({ children }) => {
         <SideBar user={user} />
       </LeftColumn>
       <RightColumn>
-        <Header user={user} />
         <Content>{children}</Content>
       </RightColumn>
     </Container>

@@ -22,7 +22,8 @@ class SeverityRepo(BaseRepo):
 
     def get_all(self, organisation: Organisation) -> Sequence[IncidentSeverity]:
         stmt = select(IncidentSeverity).where(
-            IncidentSeverity.organisation_id == organisation.id, IncidentSeverity.deleted_at.is_(None)
+            IncidentSeverity.organisation_id == organisation.id,
+            IncidentSeverity.deleted_at.is_(None),
         )
 
         return self.session.scalars(stmt).all()

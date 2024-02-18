@@ -9,7 +9,6 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class AnnouncementRenderer:
-
     def __init__(self, announcement: Announcement, incident: Incident):
         self.incident = incident
         self.announcement = announcement

@@ -19,7 +19,12 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class IncidentService:
-    def __init__(self, organisation: Organisation, incident_repo: IncidentRepo, announcement_repo: AnnouncementRepo):
+    def __init__(
+        self,
+        organisation: Organisation,
+        incident_repo: IncidentRepo,
+        announcement_repo: AnnouncementRepo,
+    ):
         self.organisation = organisation
         self.incident_repo = incident_repo
         self.slack_client = WebClient(token=organisation.slack_bot_token)
@@ -71,7 +76,11 @@ class IncidentService:
         return reference
 
     def create_incident(
-        self, name: str, creator: User, incident_severity: IncidentSeverity, incident_type: IncidentType
+        self,
+        name: str,
+        creator: User,
+        incident_severity: IncidentSeverity,
+        incident_type: IncidentType,
     ):
         # FIXME: this should not be hardcoded
         status_name = "Triage"
@@ -192,12 +201,21 @@ class IncidentService:
         blocks.append(
             {
                 "type": "context",
-                "elements": [{"type": "mrkdwn", "text": f":bust_in_silhouette: Updated by <@{creator.slack_user_id}>"}],
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f":bust_in_silhouette: Updated by <@{creator.slack_user_id}>",
+                    }
+                ],
             }
         )
 
         self.incident_repo.create_incident_update(
-            incident=incident, creator=creator, new_status=new_status, new_severity=new_severity, summary=summary
+            incident=incident,
+            creator=creator,
+            new_status=new_status,
+            new_severity=new_severity,
+            summary=summary,
         )
 
         self.slack_client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)

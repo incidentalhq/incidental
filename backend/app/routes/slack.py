@@ -142,7 +142,6 @@ async def slack_oauth_complete(result: OAuth2AuthorizationResultSchema, session:
 
 @router.post("/events")
 async def slack_events(slack_event: SlackEventSchema, session: Session = Depends(get_db)):
-
     # initial verification for this endpoint
     if isinstance(slack_event, SlackUrlVerificationHandshakeSchema):
         return {"challenge": slack_event.challenge}
@@ -159,7 +158,9 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
             return
 
         slack_user_service = SlackUserService(
-            bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
+            bot_token=organisation.slack_bot_token,
+            user_repo=user_repo,
+            organisation_repo=organisation_repo,
         )
 
         slack_events_service = SlackEventsService(
@@ -180,7 +181,8 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
 
 @router.post("/slash-command")
 async def slack_slash_command(
-    command: SlackCommandDataSchema = Depends(SlackCommandDataSchema.as_form), session: Session = Depends(get_db)
+    command: SlackCommandDataSchema = Depends(SlackCommandDataSchema.as_form),
+    session: Session = Depends(get_db),
 ):
     """Main endpoint to handle slack slash command /inc and /incident"""
 
@@ -199,7 +201,9 @@ async def slack_slash_command(
         raise ApplicationException("Could not find related organisation")
 
     slack_user_service = SlackUserService(
-        bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
+        bot_token=organisation.slack_bot_token,
+        user_repo=user_repo,
+        organisation_repo=organisation_repo,
     )
     incident_service = IncidentService(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
@@ -228,7 +232,8 @@ async def slack_slash_command(
 
 @router.post("/interaction")
 def slack_interaction(
-    session: Session = Depends(get_db), interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form)
+    session: Session = Depends(get_db),
+    interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form),
 ):
     organisation_repo = OrganisationRepo(session=session)
     form_repo = FormRepo(session=session)
@@ -248,7 +253,9 @@ def slack_interaction(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
     )
     slack_user_service = SlackUserService(
-        bot_token=organisation.slack_bot_token, user_repo=user_repo, organisation_repo=organisation_repo
+        bot_token=organisation.slack_bot_token,
+        user_repo=user_repo,
+        organisation_repo=organisation_repo,
     )
     user = slack_user_service.get_or_create_user_from_slack_id(
         slack_id=interaction.payload["user"]["id"], organisation=organisation

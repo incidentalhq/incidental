@@ -87,9 +87,6 @@ class SlackCommandDataSchema(BaseSchema):
         )
 
 
-class SlackInteractionPayloadSchema(BaseSchema):
-    pass
-
 
 class SlackInteractionSchema(BaseSchema):
     payload: dict[str, Any]

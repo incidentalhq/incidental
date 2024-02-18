@@ -4,7 +4,7 @@ from app.env import settings
 from app.models import Organisation
 from app.repos import IncidentRepo, OrganisationRepo, UserRepo
 from app.schemas.slack import SlackEventCallbackSchema
-from app.schemas.slack_events import CatchAllEventType, MemberJoinedChannelEvenType
+from app.schemas.slack_events import CatchAllEventType, MemberJoinedChannelEventType
 
 from .user import SlackUserService, UserIsABotError
 
@@ -12,7 +12,6 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class SlackEventsService:
-
     def __init__(
         self,
         organisation: Organisation,
@@ -41,12 +40,12 @@ class SlackEventsService:
             logger.warning("Unable to find slack team", team_id=event.team_id)
             return
 
-        if isinstance(event.event, MemberJoinedChannelEvenType):
+        if isinstance(event.event, MemberJoinedChannelEventType):
             self.handle_member_join(event.event)
         elif isinstance(event.event, CatchAllEventType):
             self.handle_catch_all(event.event)
 
-    def handle_member_join(self, event_type: MemberJoinedChannelEvenType):
+    def handle_member_join(self, event_type: MemberJoinedChannelEventType):
         try:
             user = self.slack_user_service.get_or_create_user_from_slack_id(
                 slack_id=event_type.user, organisation=self.organisation

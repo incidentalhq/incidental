@@ -33,7 +33,6 @@ class SubCommandType(TypedDict):
 
 
 class SlackCommandService:
-
     sub_commands: list[SubCommandType] = [
         {
             "sub_command": "lead",

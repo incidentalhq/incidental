@@ -49,7 +49,6 @@ class OnboardingService:
         self._setup_announcement(organisation)
 
     def _setup_forms(self, organisation: Organisation) -> list[Form]:
-
         # create incident form
         create_form = self.form_repo.create_form(
             organisation=organisation, name="Create incident", _type=FormType.CREATE_INCIDENT
@@ -141,7 +140,10 @@ class OnboardingService:
 
         for idx, item in enumerate(descriptors):
             self.severity_repo.create_severity(
-                organisation=organisation, name=item["name"], description=item["description"], rating=idx
+                organisation=organisation,
+                name=item["name"],
+                description=item["description"],
+                rating=idx,
             )
 
     def _setup_incident_types(self, organisation: Organisation):
@@ -169,7 +171,10 @@ class OnboardingService:
 
         for idx, item in enumerate(descriptors):
             self.incident_repo.create_incident_status(
-                organisation=organisation, name=item["name"], sort_order=idx, category=item["category"]
+                organisation=organisation,
+                name=item["name"],
+                sort_order=idx,
+                category=item["category"],
             )
 
     def _setup_settings(self, organisation: Organisation):
