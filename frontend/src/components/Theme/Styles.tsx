@@ -88,10 +88,8 @@ export const Button = styled.button<ButtonCustomProps>`
 
 export const Box = styled.div`
   background: #fff;
-  border-radius: var(--radius-md);
   position: relative;
   margin-bottom: 1rem;
-  border: 1px solid var(--color-gray-200);
 `
 
 export const Table = styled.table`
@@ -134,23 +132,24 @@ export const Header = styled.div<HeaderStyleProps>`
   display: flex;
   justify-content: space-between;
   outline: none;
+  border-bottom: 1px solid var(--color-gray-200);
 `
-interface ContentProps {
-  $padding?: boolean
-}
 
-export const Content = styled.div<ContentProps>`
-  padding: ${(props) => (props.$padding === false ? '0' : '1rem 20px')};
+export const Content = styled.div`
   position: relative;
   display: flex;
 `
-
-export const ContentMain = styled.div`
+interface ContentMainProps {
+  $padding?: boolean
+}
+export const ContentMain = styled.div<ContentMainProps>`
+  padding: ${(props) => (props.$padding === false ? '0' : '1rem 20px')};
   flex: 1;
-  padding: 1rem;
 `
 export const ContentSidebar = styled.div`
-  flex-width: 100px;
+  flex-grow: 1;
+  max-width: 480px;
+  min-width: 320px;
   background-color: var(--color-gray-50);
   padding: 1rem;
 `

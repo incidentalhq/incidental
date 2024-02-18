@@ -64,6 +64,7 @@ class IncidentRoleAssignmentSchema(ModelSchema):
 
 class IncidentSchema(ModelSchema):
     name: str
+    description: str | None
     reference: str
     slack_channel_id: str
     slack_channel_name: str

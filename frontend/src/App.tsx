@@ -17,6 +17,7 @@ import RegisterSuccess from '@/pages/Register/Success'
 import IncidentsList from './pages/Incidents/List'
 import ShowIncident from './pages/Incidents/Show'
 import OAuthComplete from './pages/OAuth/Complete'
+import SettingsIndex from './pages/Settings'
 import { RoutePaths } from './routes'
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ const DefaultLayoutRoutes = () => (
       <Route path="/" element={<Dashboard />} />
       <Route path={RoutePaths.INCIDENTS} element={<IncidentsList />} />
       <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
+      <Route path={RoutePaths.SETTINGS} element={<SettingsIndex />} />
     </Routes>
   </DefaultLayout>
 )

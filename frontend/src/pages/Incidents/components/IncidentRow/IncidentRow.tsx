@@ -7,7 +7,7 @@ import { IIncident } from '@/types/models'
 
 const Root = styled.div`
   padding: 1rem 20px;
-  border-top: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-200);
   cursor: pointer;
 `
 const Header = styled.div`
