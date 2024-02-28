@@ -33,7 +33,7 @@ class SlackEventsService:
             return False
 
     def handle_event(self, event: SlackEventCallbackSchema):
-        logger.info("handling slack event", slack_event=event)
+        # logger.info("handling slack event", slack_event=event)
 
         organisation = self.organisation_repo.get_by_slack_team_id(slack_team_id=event.team_id)
         if not organisation:

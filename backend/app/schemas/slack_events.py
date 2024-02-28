@@ -13,7 +13,6 @@ class EventTypes(str, enum.Enum):
 class BaseEventTypeSchema(BaseSchema):
     """Base class for all event type schemas"""
 
-    user: str
     model_config = ConfigDict(extra=Extra.allow)
 
 
@@ -25,6 +24,7 @@ class CatchAllEventType(BaseEventTypeSchema):
 
 class MemberJoinedChannelEventType(BaseEventTypeSchema):
     type: Literal[EventTypes.MEMBER_JOINED_CHANNEL]
+    user: str
     channel: str
     channel_type: str
     team: str

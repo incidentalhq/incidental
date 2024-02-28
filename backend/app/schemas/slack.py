@@ -24,12 +24,12 @@ class SlackEventCallbackSchema(SlackEventBaseSchema):
     team_id: str
     api_app_id: str
     event: SlackEventTypesSchema
-    event_context: str
+    event_context: str | None = None
     event_id: str
     event_time: int
     authorizations: list[dict[str, Any]]
     is_ext_shared_channel: bool
-    context_enterprise_id: Any
+    context_enterprise_id: Any | None = None
 
 
 SlackEventSchema = Annotated[Union[SlackEventCallbackSchema, SlackUrlVerificationHandshakeSchema], Field]
@@ -85,7 +85,6 @@ class SlackCommandDataSchema(BaseSchema):
             trigger_id=trigger_id,
             api_app_id=api_app_id,
         )
-
 
 
 class SlackInteractionSchema(BaseSchema):

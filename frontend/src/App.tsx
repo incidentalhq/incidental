@@ -17,7 +17,7 @@ import RegisterSuccess from '@/pages/Register/Success'
 import IncidentsList from './pages/Incidents/List'
 import ShowIncident from './pages/Incidents/Show'
 import OAuthComplete from './pages/OAuth/Complete'
-import SettingsIndex from './pages/Settings'
+import SettingsIndex from './pages/Settings/Index'
 import { RoutePaths } from './routes'
 
 const queryClient = new QueryClient({

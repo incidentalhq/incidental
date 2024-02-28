@@ -152,6 +152,7 @@ export const ContentSidebar = styled.div`
   min-width: 320px;
   background-color: var(--color-gray-50);
   padding: 1rem;
+  height: 100vh;
 `
 
 export const Title = styled.span`

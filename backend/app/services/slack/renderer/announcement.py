@@ -21,7 +21,7 @@ class AnnouncementRenderer:
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f":mega: {self.incident.name}",
+                "text": f":rotating_light: {self.incident.name} :rotating_light:",
             },
         }
         description_section = {
