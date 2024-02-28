@@ -1,5 +1,5 @@
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -181,12 +181,13 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
 
 @router.post("/slash-command")
 async def slack_slash_command(
+    background_tasks: BackgroundTasks,
     command: SlackCommandDataSchema = Depends(SlackCommandDataSchema.as_form),
     session: Session = Depends(get_db),
 ):
     """Main endpoint to handle slack slash command /inc and /incident"""
 
-    logger.info("slash command", cmd=command)
+    # logger.info("slash command", cmd=command)
 
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
@@ -222,8 +223,13 @@ async def slack_slash_command(
     )
 
     try:
-        slack_command_service.handle_command(command=command, user=user)
-        session.commit()
+        # TODO: use celery to run async jobs
+        def task(session: Session):
+            slack_command_service.handle_command(command=command, user=user)
+            session.commit()
+
+        background_tasks.add_task(task, session)
+
     except Exception:
         logger.exception("There was an error sending slack message")
 
@@ -232,6 +238,7 @@ async def slack_slash_command(
 
 @router.post("/interaction")
 def slack_interaction(
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_db),
     interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form),
 ):
@@ -246,8 +253,6 @@ def slack_interaction(
     if not organisation:
         logger.error("Unhandled interaction event for team", team_id=interaction.payload["team"]["id"])
         return Response(status_code=status.HTTP_200_OK)
-
-    logger.info("interaction", data=interaction.payload)
 
     incident_service = IncidentService(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
@@ -268,8 +273,12 @@ def slack_interaction(
         incident_service=incident_service,
         severity_repo=severity_repo,
     )
-    slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation, user=user)
 
-    session.commit()
+    # TODO: use celery to run async jobs
+    def task():
+        slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation, user=user)
+        session.commit()
+
+    background_tasks.add_task(task)
 
     return Response(status_code=status.HTTP_200_OK)

@@ -3,16 +3,10 @@ from datetime import datetime, timezone
 import structlog
 from slack_sdk import WebClient
 
-from app.models import (
-    Incident,
-    IncidentSeverity,
-    IncidentStatus,
-    IncidentType,
-    Organisation,
-    User,
-)
+from app.env import settings
+from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
 from app.repos import AnnouncementRepo, IncidentRepo
-from app.services.slack.renderer.announcement import AnnouncementRenderer
+from app.services.slack.renderer import AnnouncementRenderer, IncidentInformationMessageRenderer
 from app.utils import to_channel_name
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -78,6 +72,7 @@ class IncidentService:
     def create_incident(
         self,
         name: str,
+        summary: str,
         creator: User,
         incident_severity: IncidentSeverity,
         incident_type: IncidentType,
@@ -104,6 +99,7 @@ class IncidentService:
             organisation=self.organisation,
             user=creator,
             name=name,
+            summary=summary,
             status=status,
             severity=incident_severity,
             type=incident_type,
@@ -112,15 +108,22 @@ class IncidentService:
             slack_channel_name=channel_name,
         )
 
+        # create an announcement in the #incidents channel
         self.create_announcement(incident)
+
+        self.set_topic(incident)
+
+        # pin a message into the channel
+        self.pin_message(incident)
+
+        # add bookmarks
+        self.add_bookmarks(incident)
 
         return incident
 
     def create_announcement(self, incident: Incident):
         conversation_list_response = self.slack_client.conversations_list(types=["private_channel", "public_channel"])
         channels: dict[str, str] = dict()
-
-        logger.info("Creating announcement", r=conversation_list_response.data)
 
         for channel_data in conversation_list_response.get("channels", []):  # type: ignore
             channels[channel_data["name"]] = channel_data["id"]
@@ -219,3 +222,55 @@ class IncidentService:
         )
 
         self.slack_client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
+
+    def pin_message(self, incident: Incident) -> None:
+        renderer = IncidentInformationMessageRenderer(incident=incident)
+        blocks = renderer.render()
+
+        message = self.slack_client.chat_postMessage(
+            channel=incident.slack_channel_id,
+            blocks=blocks,
+        )
+
+        # ping message
+        self.slack_client.pins_add(channel=incident.slack_channel_id, timestamp=message.get("ts"))
+
+    def set_topic(self, incident: Incident):
+        self.slack_client.conversations_setTopic(channel=incident.slack_channel_id, topic=incident.reference)
+
+    def add_bookmarks(self, incident: Incident):
+        """Add channel bookmarks"""
+
+        incident_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
+        self.slack_client.bookmarks_add(
+            channel_id=incident.slack_channel_id, title="Homepage", link=incident_url, emoji=":house:", type="link"
+        )
+
+        status_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
+        self.slack_client.bookmarks_add(
+            channel_id=incident.slack_channel_id,
+            title=f"Status: {incident.incident_status.name}",
+            link=status_url,
+            emoji=":traffic_light:",
+            type="link",
+        )
+
+        sev_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
+        self.slack_client.bookmarks_add(
+            channel_id=incident.slack_channel_id,
+            title=f"Severity: {incident.incident_severity.name}",
+            link=sev_url,
+            emoji=":zap:",
+            type="link",
+        )
+
+        lead = incident.get_user_for_role(IncidentRoleKind.LEAD)
+        if lead:
+            lead_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
+            self.slack_client.bookmarks_add(
+                channel_id=incident.slack_channel_id,
+                title=f"Lead: {lead.name}",
+                link=lead_url,
+                emoji=":firefighter:",
+                type="link",
+            )

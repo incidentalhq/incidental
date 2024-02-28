@@ -64,6 +64,7 @@ class SlackInteractionService:
     ) -> Incident:
         form_state_values = interaction.payload["view"]["state"]["values"]
 
+        # name
         name_field = self.form_repo.get_form_field_by_name(form=form, name="incident_name")
         name_value = form_state_values[f"block-{name_field.id}"][name_field.id]["value"]
 
@@ -77,8 +78,12 @@ class SlackInteractionService:
         type_id = form_state_values[f"block-{type_field.id}"][type_field.id]["selected_option"]["value"]
         incident_type = self.incident_repo.get_incident_type_by_id(id=type_id)
 
+        # description
+        type_field = self.form_repo.get_form_field_by_name(form=form, name="summary")
+        summary = form_state_values[f"block-{type_field.id}"][type_field.id]["value"]
+
         incident = self.incident_service.create_incident(
-            name=name_value, creator=user, incident_severity=severity, incident_type=incident_type
+            name=name_value, summary=summary, creator=user, incident_severity=severity, incident_type=incident_type
         )
 
         # assign role

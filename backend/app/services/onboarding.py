@@ -222,6 +222,7 @@ class OnboardingService:
                 AnnouncementFields.TYPE,
                 AnnouncementFields.STATUS,
                 AnnouncementFields.INCIDENT_LEAD,
+                AnnouncementFields.SLACK_CHANNEL,
             ],
             actions=[
                 AnnouncementActions.HOMEPAGE,

@@ -95,6 +95,7 @@ class IncidentRepo(BaseRepo):
         organisation: Organisation,
         user: User,
         name: str,
+        summary: str,
         status: IncidentStatus,
         severity: IncidentSeverity,
         type: IncidentType,
@@ -106,6 +107,7 @@ class IncidentRepo(BaseRepo):
         model.organisation_id = organisation.id
         model.creator_id = user.id
         model.name = name
+        model.description = summary
         model.incident_type_id = type.id
         model.incident_status_id = status.id
         model.incident_severity_id = severity.id
