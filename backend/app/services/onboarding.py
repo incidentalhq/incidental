@@ -165,7 +165,7 @@ class OnboardingService:
             {"name": "Investigating", "category": IncidentStatusCategoryEnum.ACTIVE},
             {"name": "Fixing", "category": IncidentStatusCategoryEnum.ACTIVE},
             {"name": "Monitoring", "category": IncidentStatusCategoryEnum.ACTIVE},
-            {"name": "Resolved", "category": IncidentStatusCategoryEnum.POST_INCIDENT},
+            {"name": "Documenting", "category": IncidentStatusCategoryEnum.POST_INCIDENT},
             {"name": "Closed", "category": IncidentStatusCategoryEnum.CLOSED},
         ]
 

@@ -4,8 +4,10 @@ export type ILoggedInUser = Required<IUser>
 
 type Brand<K, T> = K & { __brand: T }
 
+export type ModelID = Brand<string, 'ModelPK'>
+
 interface IModel {
-  id: Brand<string, 'ModelPK'>
+  id: ModelID
   createdAt: string
 }
 
@@ -14,6 +16,8 @@ export interface IOrganisation extends IModel {}
 export interface IWorld {
   user: IUser
   organisation: IOrganisation
+  statusList: IIncidentStatus[]
+  severityList: IIncidentSeverity[]
 }
 
 export interface IUser extends IModel {

@@ -1,13 +1,19 @@
 import { createContext, useContext, useState } from 'react'
 
-import { IOrganisation } from '@/types/models'
+import { IIncidentSeverity, IIncidentStatus, IOrganisation } from '@/types/models'
 
 const useGlobalProvider = () => {
   const [organisation, setOrganisation] = useState<IOrganisation>()
+  const [statusList, setStatusList] = useState<IIncidentStatus[]>([])
+  const [severityList, setSeverityList] = useState<IIncidentSeverity[]>([])
 
   return {
     organisation,
-    setOrganisation
+    setOrganisation,
+    setStatusList,
+    statusList,
+    severityList,
+    setSeverityList
   }
 }
 

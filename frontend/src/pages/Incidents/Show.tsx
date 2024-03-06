@@ -1,15 +1,23 @@
 import { useQuery } from '@tanstack/react-query'
+import { MouseEvent, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Loading from '@/components/Loading/Loading'
+import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
+import useGlobal from '@/hooks/useGlobal'
 
+import ChangeSeverityForm, {
+  FormValues as ChangeSeverityFormValues
+} from './components/ChangeSeverityForm/ChangeSeverityForm'
+import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './components/ChangeStatusForm/ChangeStatusForm'
+import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import Timeline from './components/IncidentUpdate/Timeline'
 
 const Description = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 `
 
 const Field = styled.div`
@@ -20,6 +28,17 @@ const FieldName = styled.div`
   width: 90px;
 `
 const FieldValue = styled.div``
+const ModalContainer = styled.div`
+  padding: 1rem;
+`
+const FlatButton = styled.button`
+  border: none;
+  padding: 0.25rem 1rem;
+
+  &:hover {
+    background-color: var(--color-gray-200);
+  }
+`
 
 type UrlParams = {
   id: string
@@ -28,30 +47,95 @@ type UrlParams = {
 const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
+  const { setModal, closeModal } = useModal()
+  const { statusList, severityList } = useGlobal()
 
-  const query = useQuery({
+  // Incident state
+  const incidentQuery = useQuery({
     queryKey: ['incident', id],
     queryFn: () => apiService.getIncident(id)
   })
 
+  // Incident updates state
   const incidentUpdatesQuery = useQuery({
     queryKey: ['incident-updates', id],
     queryFn: () => apiService.getIncidentUpdates(id)
   })
 
+  // Change description of this incident
+  const handleChangeDescription = useCallback(
+    async (values: FormValues) => {
+      await apiService.patchIncident(id, {
+        description: values.description
+      })
+      incidentQuery.refetch()
+    },
+    [id, apiService, incidentQuery]
+  )
+
+  // Change the status of this incident
+  const handleChangeStatus = async (values: ChangeStatusFormValues) => {
+    await apiService.patchIncident(id, {
+      incidentStatus: {
+        id: values.status
+      }
+    })
+    incidentQuery.refetch()
+    closeModal()
+  }
+
+  const handleChangeSeverity = async (values: ChangeSeverityFormValues) => {
+    await apiService.patchIncident(id, {
+      incidentSeverity: {
+        id: values.severity
+      }
+    })
+    incidentQuery.refetch()
+    closeModal()
+  }
+
+  // Show modal when edit status is clicked
+  const handleEditStatus = (evt: MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
+    if (!incidentQuery.data) {
+      return
+    }
+    setModal(
+      <ModalContainer>
+        <h2>Change status</h2>
+        <p>Update the status of your incident</p>
+        <ChangeStatusForm statusList={statusList} incident={incidentQuery.data} onSubmit={handleChangeStatus} />
+      </ModalContainer>
+    )
+  }
+
+  const handleEditSeverity = (evt: MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
+    if (!incidentQuery.data) {
+      return
+    }
+    setModal(
+      <ModalContainer>
+        <h2>Change severity</h2>
+        <ChangeSeverityForm severityList={severityList} incident={incidentQuery.data} onSubmit={handleChangeSeverity} />
+      </ModalContainer>
+    )
+  }
+
   return (
     <>
       <Box>
-        {query.isLoading && <Loading />}
-        {query.isSuccess ? (
+        {incidentQuery.isLoading && <Loading />}
+        {incidentQuery.isSuccess ? (
           <>
             <Header>
-              <Title>{query.data.name}</Title>
+              <Title>{incidentQuery.data.name}</Title>
             </Header>
             <Content>
               <ContentMain>
+                <h3>Description</h3>
                 <Description>
-                  {query.data.description ? <p>{query.data.description}</p> : <p>Add description...</p>}
+                  <EditDescriptionForm incident={incidentQuery.data} onSubmit={handleChangeDescription} />
                 </Description>
 
                 <h3>Updates</h3>
@@ -64,18 +148,26 @@ const ShowIncident = () => {
               <ContentSidebar>
                 <Field>
                   <FieldName>Status</FieldName>
-                  <FieldValue>{query.data.incidentStatus.name}</FieldValue>
+                  <FieldValue>
+                    <FlatButton type="button" onClick={handleEditStatus}>
+                      {incidentQuery.data.incidentStatus.name}
+                    </FlatButton>
+                  </FieldValue>
                 </Field>
                 <Field>
                   <FieldName>Severity</FieldName>
-                  <FieldValue>{query.data.incidentSeverity.name}</FieldValue>
+                  <FieldValue>
+                    <FlatButton type="button" onClick={handleEditSeverity}>
+                      {incidentQuery.data.incidentSeverity.name}
+                    </FlatButton>
+                  </FieldValue>
                 </Field>
                 <Field>
                   <FieldName>Type</FieldName>
-                  <FieldValue>{query.data.incidentType.name}</FieldValue>
+                  <FieldValue>{incidentQuery.data.incidentType.name}</FieldValue>
                 </Field>
-                {query.data.incidentRoleAssignments.map((it) => (
-                  <Field>
+                {incidentQuery.data.incidentRoleAssignments.map((it) => (
+                  <Field key={it.id}>
                     <FieldName>{it.incidentRole.name}</FieldName>
                     <FieldValue>{it.user.name}</FieldValue>
                   </Field>

@@ -100,7 +100,7 @@ class SlackCommandService:
     def handle_incident_channel_command(self, command: SlackCommandDataSchema) -> None:
         """When command is issued within an incident channel"""
         if not command.text:
-            self.show_commands_help()
+            self.show_commands_help(command=command)
             return
 
         parts = list(map(lambda it: it.strip(), command.text.split(" ")))
@@ -172,9 +172,17 @@ class SlackCommandService:
         rendered_form_view = update_incident_form.render()
         self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
 
-    def show_commands_help(self):
-        logger.info("showing help")
+    def show_commands_help(self, command: SlackCommandDataSchema):
+        help_message = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Available commands are: `status`, `lead @username`",
+                },
+            }
+        ]
+        self.slack_client.chat_postEphemeral(channel=command.channel_id, user=command.user_id, blocks=help_message)
 
     def show_invalid_usage_error(self, message: str, command: SlackCommandDataSchema):
-        logger.info(message)
         self.slack_client.chat_postEphemeral(channel=command.channel_id, user=command.user_id, text=message)

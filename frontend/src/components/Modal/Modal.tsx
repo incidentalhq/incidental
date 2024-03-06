@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import React, { PropsWithChildren } from 'react'
 import styled from 'styled-components'
 
@@ -35,7 +36,22 @@ const Content = styled.div`
 
 const Modal = React.forwardRef<HTMLDivElement, PropsWithChildren<unknown>>((props, ref) => (
   <Root>
-    <Content ref={ref}>{props.children}</Content>
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 15
+      }}
+      animate={{
+        opacity: 1,
+        y: 0
+      }}
+      transition={{
+        duration: 0.8,
+        ease: [0, 0.71, 0.2, 1.01]
+      }}
+    >
+      <Content ref={ref}>{props.children}</Content>
+    </motion.div>
   </Root>
 ))
 

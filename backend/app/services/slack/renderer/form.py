@@ -54,7 +54,6 @@ class FormRenderer:
                 }
             ),
         }
-        print(modal)
 
         return modal
 

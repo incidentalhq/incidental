@@ -6,6 +6,7 @@ from pydantic import EmailStr, StringConstraints
 from app.models import IncidentStatusCategoryEnum
 
 from .base import BaseSchema
+from .models import ModelIdSchema
 
 
 class AuthUserSchema(BaseSchema):
@@ -52,3 +53,9 @@ class IncidentSearchSchema(PaginationParamsSchema):
             q=q,
             status_category=status_category,
         )
+
+
+class PatchIncidentSchema(BaseSchema):
+    description: str | None = None
+    incident_status: ModelIdSchema | None = None
+    incident_severity: ModelIdSchema | None = None

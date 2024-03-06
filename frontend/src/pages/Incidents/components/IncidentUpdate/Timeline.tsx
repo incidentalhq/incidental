@@ -44,13 +44,17 @@ interface Props {
 const Timeline: React.FC<Props> = ({ updates }) => {
   return (
     <Root>
-      <ul>
-        {updates.map((item) => (
-          <li>
-            <IncidentUpdate key={item.id} incidentUpdate={item} />
-          </li>
-        ))}
-      </ul>
+      {updates.length == 0 ? (
+        <p>There are no updates.</p>
+      ) : (
+        <ul>
+          {updates.map((item) => (
+            <li key={item.id}>
+              <IncidentUpdate key={item.id} incidentUpdate={item} />
+            </li>
+          ))}
+        </ul>
+      )}
     </Root>
   )
 }

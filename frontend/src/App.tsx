@@ -14,6 +14,8 @@ import Login from '@/pages/Login/Login'
 import Register from '@/pages/Register/Register'
 import RegisterSuccess from '@/pages/Register/Success'
 
+import ModalProvider from './components/Modal/ModalProvider'
+
 import IncidentsList from './pages/Incidents/List'
 import ShowIncident from './pages/Incidents/Show'
 import OAuthComplete from './pages/OAuth/Complete'
@@ -53,19 +55,21 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <GlobalProvider>
-          <ApiServiceProvider>
-            <AuthProvider>
-              <Routes>
-                <Route path={RoutePaths.LOGIN} element={<Login />} />
-                <Route path={RoutePaths.REGISTER} element={<Register />} />
-                <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
-                <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />
-                <Route path="/*" element={<AuthenticatedRoutes />} />
-              </Routes>
-            </AuthProvider>
-          </ApiServiceProvider>
-        </GlobalProvider>
+        <ModalProvider>
+          <GlobalProvider>
+            <ApiServiceProvider>
+              <AuthProvider>
+                <Routes>
+                  <Route path={RoutePaths.LOGIN} element={<Login />} />
+                  <Route path={RoutePaths.REGISTER} element={<Register />} />
+                  <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
+                  <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />
+                  <Route path="/*" element={<AuthenticatedRoutes />} />
+                </Routes>
+              </AuthProvider>
+            </ApiServiceProvider>
+          </GlobalProvider>
+        </ModalProvider>
       </BrowserRouter>
       <ToastContainer hideProgressBar={true} autoClose={2000} />
       <ReactQueryDevtools />

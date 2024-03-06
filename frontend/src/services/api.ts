@@ -1,5 +1,7 @@
 import { PaginatedResults } from '@/types/core'
+import { IncidentStatusCategory } from '@/types/enums'
 import { IIncident, IIncidentUpdate, ILoggedInUser, IPublicUser, IUser, IWorld } from '@/types/models'
+import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
 
@@ -16,7 +18,7 @@ interface IAuthUser {
 
 type SearchIncidentsParams = {
   query?: string
-  statusCategory?: string[]
+  statusCategory?: IncidentStatusCategory[]
   page?: number
   size?: number
 }
@@ -84,5 +86,9 @@ export class ApiService {
 
   getIncidentUpdates(id: string) {
     return callApi<PaginatedResults<IIncidentUpdate>>('GET', `/incidents/${id}/updates`, { user: this.user })
+  }
+
+  patchIncident(id: string, patch: DeepPartial<IIncident>) {
+    return callApi<IIncident>('PATCH', `/incidents/${id}`, { user: this.user, data: patch })
   }
 }

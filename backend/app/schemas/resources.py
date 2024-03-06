@@ -1,7 +1,7 @@
 from typing import Generic, Sequence, TypeVar
 
 from app.schemas.base import BaseSchema
-from app.schemas.models import UserSchema
+from app.schemas.models import IncidentSeveritySchema, IncidentStatusSchema, UserSchema
 
 DataT = TypeVar("DataT")
 
@@ -18,3 +18,5 @@ class PaginatedResults(BaseSchema, Generic[DataT]):
 
 class WorldSchema(BaseSchema):
     user: UserSchema
+    status_list: list[IncidentStatusSchema]
+    severity_list: list[IncidentSeveritySchema]

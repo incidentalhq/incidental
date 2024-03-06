@@ -2,7 +2,7 @@ import { createContext, useState } from 'react'
 
 import ModalRoot from './ModalRoot'
 
-const modalProviderDefaultValue = () => {
+const useModalProviderDefaultValue = () => {
   const [modal, setModal] = useState<React.ReactElement>()
   const closeModal = () => setModal(undefined)
 
@@ -13,7 +13,7 @@ const modalProviderDefaultValue = () => {
   }
 }
 
-type ModalProviderValue = ReturnType<typeof modalProviderDefaultValue>
+type ModalProviderValue = ReturnType<typeof useModalProviderDefaultValue>
 
 export const ModalContext = createContext<undefined | ModalProviderValue>(undefined)
 
@@ -22,7 +22,7 @@ type Props = {
 }
 
 export const ModalProvider: React.FC<Props> = ({ children }) => {
-  const value = modalProviderDefaultValue()
+  const value = useModalProviderDefaultValue()
   const handleClickOutside = () => {
     value.closeModal()
   }
