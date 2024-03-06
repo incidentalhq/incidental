@@ -15,6 +15,7 @@ from app.models import (
     Organisation,
     User,
 )
+from app.schemas.actions import PatchIncidentSchema
 from app.schemas.resources import PaginatedResults
 
 from .base_repo import BaseRepo
@@ -61,10 +62,10 @@ class IncidentRepo(BaseRepo):
         if query is not None:
             stmt = stmt.where(Incident.name.ilike(search_term))
         if status_categories:
-            total_stmt = total_stmt.join(IncidentStatus).where(IncidentStatus.category.in_(status_categories))
+            stmt = stmt.join(IncidentStatus).where(IncidentStatus.category.in_(status_categories))
 
         offset = (page - 1) * size
-        stmt = stmt.offset(offset).limit(size)
+        stmt = stmt.order_by(Incident.created_at.desc()).offset(offset).limit(size)
 
         records = self.session.scalars(stmt).all()
 
@@ -276,3 +277,14 @@ class IncidentRepo(BaseRepo):
         results = self.session.scalars(results_stmt).all()
 
         return PaginatedResults(total=total, page=page, size=size, items=results)
+
+    def patch_incident(self, incident: Incident, patch_in: PatchIncidentSchema) -> None:
+        for field, value in patch_in.model_dump(exclude_unset=True).items():
+            if field == "incident_status":
+                incident.incident_status_id = value["id"]
+            elif field == "incident_severity":
+                incident.incident_severity_id = value["id"]
+            else:
+                setattr(incident, field, value)
+
+        self.session.flush()

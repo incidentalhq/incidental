@@ -6,7 +6,8 @@ from slack_sdk import WebClient
 from app.env import settings
 from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
 from app.repos import AnnouncementRepo, IncidentRepo
-from app.services.slack.renderer import AnnouncementRenderer, IncidentInformationMessageRenderer
+from app.schemas.actions import PatchIncidentSchema
+from app.services.slack.renderer import AnnouncementRenderer, IncidentInformationMessageRenderer, IncidentUpdateRenderer
 from app.utils import to_channel_name
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -163,55 +164,10 @@ class IncidentService:
         new_severity: IncidentSeverity | None = None,
         summary: str | None = None,
     ):
-        blocks = [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": "Incident updated"},
-            }
-        ]
-
-        if new_status.id != incident.incident_status.id:
-            blocks.append(
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"Status: {incident.incident_status.name} -> {new_status.name}",
-                    },
-                }
-            )
-        if new_severity.id != incident.incident_severity.id:
-            blocks.append(
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"Severity: {incident.incident_severity.name} -> {new_severity.name}",
-                    },
-                }
-            )
-        if summary is not None:
-            blocks.append(
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": summary,
-                    },
-                }
-            )
-
-        blocks.append(
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f":bust_in_silhouette: Updated by <@{creator.slack_user_id}>",
-                    }
-                ],
-            }
+        renderer = IncidentUpdateRenderer(
+            creator=creator, incident=incident, new_severity=new_severity, new_status=new_status, summary=summary
         )
+        blocks = renderer.render()
 
         self.incident_repo.create_incident_update(
             incident=incident,
@@ -274,3 +230,23 @@ class IncidentService:
                 emoji=":firefighter:",
                 type="link",
             )
+
+    def patch_incident(self, user: User, incident: Incident, patch_in: PatchIncidentSchema):
+        new_status = None
+        new_sev = None
+
+        if patch_in.incident_status and patch_in.incident_status.id != incident.incident_status_id:
+            new_status = self.incident_repo.get_incident_status_by_id(patch_in.incident_status.id)
+
+        if patch_in.incident_severity and patch_in.incident_severity.id != incident.incident_severity_id:
+            new_sev = self.incident_repo.get_incident_severity_by_id(patch_in.incident_severity.id)
+
+        if new_sev or new_status:
+            self.create_update(
+                incident=incident,
+                creator=user,
+                new_severity=new_sev,
+                new_status=new_status,
+            )
+
+        self.incident_repo.patch_incident(incident=incident, patch_in=patch_in)

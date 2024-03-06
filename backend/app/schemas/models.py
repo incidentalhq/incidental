@@ -6,8 +6,11 @@ from pydantic import EmailStr
 from app.schemas.base import BaseSchema
 
 
-class ModelSchema(BaseSchema):
+class ModelIdSchema(BaseSchema):
     id: str
+
+
+class ModelSchema(ModelIdSchema):
     created_at: datetime
 
 

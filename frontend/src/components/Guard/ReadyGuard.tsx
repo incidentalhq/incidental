@@ -12,7 +12,7 @@ type Props = PropsWithChildren
 const ReadyGuard: React.FC<Props> = ({ children }) => {
   const { apiService } = useApiService()
   const { logout } = useAuth()
-  const { setOrganisation } = useGlobal()
+  const { setOrganisation, setStatusList, setSeverityList } = useGlobal()
 
   const worldQuery = useQuery({
     queryKey: ['world'],
@@ -33,8 +33,10 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     if (worldQuery.isSuccess) {
       setOrganisation(worldQuery.data.organisation)
+      setStatusList(worldQuery.data.statusList)
+      setSeverityList(worldQuery.data.severityList)
     }
-  }, [worldQuery.data, worldQuery.isSuccess, setOrganisation])
+  }, [worldQuery.data, worldQuery.isSuccess, setOrganisation, setStatusList, setSeverityList])
 
   if (!worldQuery.isFetched) {
     return <p>Loading</p>

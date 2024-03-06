@@ -14,12 +14,9 @@ const CategoryHeader = styled.div`
 const IncidentsList = () => {
   const { apiService } = useApiService()
 
-  const query = useQuery({
+  const activeIncidentsQuery = useQuery({
     queryKey: ['incidents'],
-    queryFn: () =>
-      apiService.searchIncidents({
-        statusCategory: ['TRIAGE', 'ACTIVE']
-      })
+    queryFn: () => apiService.searchIncidents({})
   })
 
   const handleDeclare = (evt: React.MouseEvent<HTMLButtonElement>) => {
@@ -37,10 +34,10 @@ const IncidentsList = () => {
             </Button>
           </div>
         </Header>
-        <CategoryHeader>Active</CategoryHeader>
+        <CategoryHeader>All incidents</CategoryHeader>
         <Content>
           <ContentMain $padding={false}>
-            {query.data?.items.map((it) => <IncidentRow key={it.id} incident={it} />)}
+            {activeIncidentsQuery.data?.items.map((it) => <IncidentRow key={it.id} incident={it} />)}
           </ContentMain>
         </Content>
       </Box>
