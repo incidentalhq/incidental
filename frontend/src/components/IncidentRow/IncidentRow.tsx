@@ -1,9 +1,13 @@
+import { format } from 'date-fns'
+import { useMemo } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { RoutePaths } from '@/routes'
 import { IncidentRoleKind } from '@/types/enums'
 import { IIncident } from '@/types/models'
+
+import MiniAvatar from '../User/MiniAvatar'
 
 const Root = styled.div`
   padding: 1rem 20px;
@@ -29,8 +33,27 @@ const Status = styled.div`
 const Severity = styled.div`
   width: 80px;
 `
-const Reporter = styled.div`
+const Right = styled.div`
   margin-left: auto;
+  display: flex;
+`
+const Reporter = styled.div`
+  margin-left: 1rem;
+`
+const Lead = styled.div``
+const NoLeadAvatar = styled.div`
+  height: 18px;
+  width: 18px;
+  border-radius: 9px;
+  background-color: var(--color-gray-200);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 500;
+`
+const ReportedDate = styled.div`
+  margin-left: 1rem;
 `
 
 interface Props {
@@ -44,6 +67,17 @@ const IncidentRow: React.FC<Props> = ({ incident }) => {
     evt.preventDefault()
     navigate(generatePath(RoutePaths.SHOW_INCIDENT, { id: incident.id }))
   }
+
+  const reporter = useMemo(
+    () => incident.incidentRoleAssignments.find((it) => it.incidentRole.kind === IncidentRoleKind.REPORTER),
+    [incident]
+  )
+  const lead = useMemo(
+    () => incident.incidentRoleAssignments.find((it) => it.incidentRole.kind === IncidentRoleKind.LEAD),
+    [incident]
+  )
+  const date = format(incident.createdAt, 'd MMM')
+
   return (
     <Root onClick={handleClick}>
       <Header>
@@ -51,9 +85,15 @@ const IncidentRow: React.FC<Props> = ({ incident }) => {
         <Status>{incident.incidentStatus.name}</Status>
         <Severity>{incident.incidentSeverity.name}</Severity>
         <Name>{incident.name}</Name>
-        <Reporter>
-          {incident.incidentRoleAssignments.find((it) => it.incidentRole.kind === IncidentRoleKind.REPORTER)?.user.name}
-        </Reporter>
+        <Right>
+          <Lead>{lead ? <MiniAvatar user={lead.user} /> : <NoLeadAvatar />}</Lead>
+          {reporter ? (
+            <Reporter>
+              <MiniAvatar user={reporter.user} />
+            </Reporter>
+          ) : null}
+          <ReportedDate>{date}</ReportedDate>
+        </Right>
       </Header>
     </Root>
   )

@@ -1,6 +1,7 @@
 import { faSlack } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { MouseEvent, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -8,6 +9,7 @@ import styled from 'styled-components'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
+import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 
@@ -29,7 +31,10 @@ const Field = styled.div`
 const FieldName = styled.div`
   width: 90px;
 `
-const FieldValue = styled.div``
+const FieldValue = styled.div`
+  display: flex;
+  gap: 8px;
+`
 const ModalContainer = styled.div`
   padding: 1rem;
 `
@@ -181,9 +186,15 @@ const ShowIncident = () => {
                 {incidentQuery.data.incidentRoleAssignments.map((it) => (
                   <Field key={it.id}>
                     <FieldName>{it.incidentRole.name}</FieldName>
-                    <FieldValue>{it.user.name}</FieldValue>
+                    <FieldValue>
+                      <MiniAvatar user={it.user} /> {it.user.name}
+                    </FieldValue>
                   </Field>
                 ))}
+                <Field>
+                  <FieldName>Reported at</FieldName>
+                  <FieldValue>{format(incidentQuery.data.createdAt, 'd MMM yyyy K:maaa')}</FieldValue>
+                </Field>
               </ContentSidebar>
             </Content>
           </>
