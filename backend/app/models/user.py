@@ -1,5 +1,5 @@
 """User model"""
-
+import typing
 from datetime import datetime
 
 from passlib.context import CryptContext
@@ -13,6 +13,9 @@ from app.db import Base
 from .mixins import TimestampMixin
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+if typing.TYPE_CHECKING:
+    from .organisation import Organisation
 
 
 class User(Base, TimestampMixin):
@@ -36,7 +39,9 @@ class User(Base, TimestampMixin):
     slack_user_id = mapped_column(UnicodeText, nullable=True, unique=True)
 
     # relationships
-    organisations = relationship("Organisation", secondary="organisation_member", back_populates="users")
+    organisations: Mapped[list["Organisation"]] = relationship(
+        "Organisation", secondary="organisation_member", back_populates="users"
+    )
     incidents_created = relationship("Incident", back_populates="owner")
 
     # user specific settings

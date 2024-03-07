@@ -17,6 +17,8 @@ class ModelSchema(ModelIdSchema):
 class OrganisationSchema(ModelSchema):
     name: str
     kind: str
+    slack_team_id: str
+    slack_team_name: str
 
 
 class UserSchema(ModelSchema):

@@ -25,6 +25,7 @@ def world_index(db: Session = Depends(get_db), user: User = Depends(get_current_
         "user": user,
         "status_list": status_list,
         "severity_list": severity_list,
+        "organisations": user.organisations,
     }
 
     return world

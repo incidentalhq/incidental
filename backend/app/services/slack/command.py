@@ -3,6 +3,7 @@ from typing import TypedDict
 import structlog
 from slack_sdk import WebClient
 
+from app.env import settings
 from app.models import IncidentRoleKind, Organisation, User
 from app.models.form import FormType
 from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
@@ -144,9 +145,27 @@ class SlackCommandService:
 
         # TODO: send a ephemeral message to the user who has the new role about what the expectations are for the role
 
-    def update_status(self, command: SlackCommandDataSchema, params: list[str]):
-        logger.info("Updating status")
+        # add lead to bookmarks
+        bookmarks_response = self.slack_client.bookmarks_list(channel_id=command.channel_id)
+        has_lead_bookmark = False
+        for bookmark in bookmarks_response.get("bookmarks", []):
+            if bookmark["title"].startswith("Lead:"):
+                has_lead_bookmark = True
+                break
 
+        if not has_lead_bookmark:
+            lead_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
+            self.slack_client.bookmarks_add(
+                channel_id=incident.slack_channel_id,
+                title=f"Lead: {user.name}",
+                link=lead_url,
+                emoji=":firefighter:",
+                type="link",
+            )
+
+    def update_status(self, command: SlackCommandDataSchema, params: list[str]):
+        """Show the update status form"""
+        logger.info("Opening update status form")
         update_incident_form_model = self.form_repo.get_form(
             organisation=self.organisation, form_type=FormType.UPDATE_INCIDENT
         )

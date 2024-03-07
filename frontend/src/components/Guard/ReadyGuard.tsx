@@ -32,7 +32,7 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (worldQuery.isSuccess) {
-      setOrganisation(worldQuery.data.organisation)
+      setOrganisation(worldQuery.data.organisations[0]) //TODO: support multi organisations
       setStatusList(worldQuery.data.statusList)
       setSeverityList(worldQuery.data.severityList)
     }

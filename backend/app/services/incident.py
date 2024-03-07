@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 import structlog
 from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 from app.env import settings
 from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
@@ -177,7 +178,13 @@ class IncidentService:
             summary=summary,
         )
 
-        self.slack_client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
+        try:
+            self.slack_client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
+        except SlackApiError as e:
+            if e.response.get("error") == "is_archived":
+                pass
+            else:
+                raise
 
     def pin_message(self, incident: Incident) -> None:
         renderer = IncidentInformationMessageRenderer(incident=incident)
