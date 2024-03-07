@@ -9,6 +9,10 @@ const Root = styled.div`
   padding: 1rem 20px;
   border-bottom: 1px solid var(--color-gray-200);
   cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-slate-50);
+  }
 `
 const Header = styled.div`
   display: flex;

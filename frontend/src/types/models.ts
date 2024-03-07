@@ -11,11 +11,15 @@ interface IModel {
   createdAt: string
 }
 
-export interface IOrganisation extends IModel {}
+export interface IOrganisation extends IModel {
+  name: string
+  slackTeamName: string
+  slackTeamId: string
+}
 
 export interface IWorld {
   user: IUser
-  organisation: IOrganisation
+  organisations: IOrganisation[]
   statusList: IIncidentStatus[]
   severityList: IIncidentSeverity[]
 }

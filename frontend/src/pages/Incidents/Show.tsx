@@ -1,3 +1,5 @@
+import { faSlack } from '@fortawesome/free-brands-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQuery } from '@tanstack/react-query'
 import { MouseEvent, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
@@ -48,7 +50,7 @@ const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
   const { setModal, closeModal } = useModal()
-  const { statusList, severityList } = useGlobal()
+  const { statusList, severityList, organisation } = useGlobal()
 
   // Incident state
   const incidentQuery = useQuery({
@@ -122,6 +124,8 @@ const ShowIncident = () => {
     )
   }
 
+  const slackUrl = `slack:/channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
+
   return (
     <>
       <Box>
@@ -146,6 +150,14 @@ const ShowIncident = () => {
                 )}
               </ContentMain>
               <ContentSidebar>
+                <Field>
+                  <FieldName>Slack</FieldName>
+                  <FieldValue>
+                    <a href={slackUrl} target="_blank">
+                      <FontAwesomeIcon icon={faSlack} fixedWidth /> Open channel
+                    </a>
+                  </FieldValue>
+                </Field>
                 <Field>
                   <FieldName>Status</FieldName>
                   <FieldValue>
