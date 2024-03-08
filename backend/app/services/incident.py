@@ -1,6 +1,6 @@
 import structlog
 
-from app.models import Incident, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
+from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
 from app.repos import AnnouncementRepo, IncidentRepo
 from app.schemas.actions import PatchIncidentSchema
 from app.services.slack.client import SlackClientService
@@ -66,6 +66,13 @@ class IncidentService:
             slack_channel_id=slack_channel_id,
             slack_channel_name=channel_name,
         )
+
+        # assign role
+        role = self.incident_repo.get_incident_role(organisation=self.organisation, kind=IncidentRoleKind.REPORTER)
+        if not role:
+            raise ValueError("Could not find role reporter")
+
+        self.incident_repo.assign_role(incident=incident, role=role, user=creator)
 
         # invite user to channel
         self.slack_service.invite_user_to_incident_channel(incident=incident, user=creator)
