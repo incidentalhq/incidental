@@ -56,6 +56,7 @@ class IncidentSearchSchema(PaginationParamsSchema):
 
 
 class PatchIncidentSchema(BaseSchema):
+    name: str | None = None
     description: str | None = None
     incident_status: ModelIdSchema | None = None
     incident_severity: ModelIdSchema | None = None
