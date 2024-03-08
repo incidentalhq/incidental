@@ -86,13 +86,6 @@ class SlackInteractionService:
             name=name_value, summary=summary, creator=user, incident_severity=severity, incident_type=incident_type
         )
 
-        # assign role
-        role = self.incident_repo.get_incident_role(organisation=organisation, kind=IncidentRoleKind.REPORTER)
-        if not role:
-            raise Exception("Could not find role reporter")
-
-        self.incident_repo.assign_role(incident=incident, role=role, user=user)
-
         return incident
 
     def update_incident(
