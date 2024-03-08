@@ -86,9 +86,9 @@ const IncidentRow: React.FC<Props> = ({ incident }) => {
         <Severity>{incident.incidentSeverity.name}</Severity>
         <Name>{incident.name}</Name>
         <Right>
-          <Lead>{lead ? <MiniAvatar user={lead.user} /> : <NoLeadAvatar />}</Lead>
+          <Lead title="Incident lead">{lead ? <MiniAvatar user={lead.user} /> : <NoLeadAvatar />}</Lead>
           {reporter ? (
-            <Reporter>
+            <Reporter title="Reporter">
               <MiniAvatar user={reporter.user} />
             </Reporter>
           ) : null}

@@ -1,3 +1,5 @@
+import { formatDistanceToNow } from 'date-fns'
+import { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { IIncidentUpdate } from '@/types/models'
@@ -6,23 +8,29 @@ const Root = styled.div`
   padding: 0rem 20px;
   cursor: pointer;
 `
-const Creator = styled.div`
+const Header = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
 `
 const FieldChange = styled.div``
+const Creator = styled.div`
+  font-weight: 500;
+`
+const Ago = styled.div``
 
 interface Props {
   incidentUpdate: IIncidentUpdate
 }
 
 const IncidentUpdate: React.FC<Props> = ({ incidentUpdate }) => {
+  const date = useMemo(() => formatDistanceToNow(incidentUpdate.createdAt), [incidentUpdate])
   return (
     <Root>
       <div>
-        <Creator>
-          <dt>{incidentUpdate.creator.name}</dt> posted a new update
-        </Creator>
+        <Header>
+          <Creator>{incidentUpdate.creator.name}</Creator>
+          <span>posted a new update</span>&#x2022;<Ago>{date} ago</Ago>
+        </Header>
         {incidentUpdate.summary ? <div>{incidentUpdate.summary}</div> : null}
         <FieldChange>
           {incidentUpdate.newIncidentSeverity && incidentUpdate.previousIncidentSeverity ? (
