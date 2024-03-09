@@ -2,13 +2,17 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas.actions import AuthUserSchema
-from app.schemas.models import UserSchema
+from app.deps import CurrentUser
+from app.repos import FormRepo
+from app.schemas.models import FormSchema
 
 router = APIRouter(tags=["Forms"])
 
 
-@router.post("/search/", response_model=UserSchema)
-def form_search(item: AuthUserSchema, db: Session = Depends(get_db)):
+@router.get("/search/", response_model=list[FormSchema])
+def form_search(user: CurrentUser, db: Session = Depends(get_db)):
     """Search for forms"""
-    pass
+    form_repo = FormRepo(session=db)
+    forms = form_repo.search_forms(organisation=user.organisations[0])
+
+    return forms

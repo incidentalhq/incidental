@@ -8,7 +8,6 @@ const Root = styled.div`
   position: fixed;
   display: flex;
   justify-content: center;
-  align-items: center;
   top: 0;
   left: 0;
   opacity: 1;
@@ -24,6 +23,7 @@ const Content = styled.div`
   background-color: #fff;
   max-width: 1200px;
   border-radius: 1rem;
+  margin-top: 10vh;
 
   @media screen and (max-width: 600px) {
     box-shadow: none;

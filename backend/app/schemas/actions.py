@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import Query
-from pydantic import EmailStr, StringConstraints
+from pydantic import ConfigDict, EmailStr, StringConstraints
 
 from app.models import IncidentStatusCategoryEnum
 
@@ -60,3 +60,18 @@ class PatchIncidentSchema(BaseSchema):
     description: str | None = None
     incident_status: ModelIdSchema | None = None
     incident_severity: ModelIdSchema | None = None
+
+
+class AllowAllSchema(BaseSchema):
+    """Allows any/all values"""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CreateIncidentSchema(BaseSchema):
+    incident_name: str
+    incident_type: str
+    incident_severity: str
+    summary: str | None = None
+
+    model_config = ConfigDict(extra="allow")

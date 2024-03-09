@@ -1,4 +1,4 @@
-import { IncidentRoleKind, IncidentStatusCategory } from './enums'
+import { FormFieldKind, FormType, IncidentRoleKind, IncidentStatusCategory } from './enums'
 
 export type ILoggedInUser = Required<IUser>
 
@@ -22,6 +22,8 @@ export interface IWorld {
   organisations: IOrganisation[]
   statusList: IIncidentStatus[]
   severityList: IIncidentSeverity[]
+  forms: IForm[]
+  incidentTypes: IIncidentType[]
 }
 
 export interface IUser extends IModel {
@@ -81,4 +83,23 @@ export interface IIncidentUpdate extends IModel {
   newIncidentSeverity: IIncidentSeverity | null
   previousIncidentStatus: IIncidentStatus | null
   previousIncidentSeverity: IIncidentSeverity | null
+}
+
+export interface IFormField extends IModel {
+  kind: FormFieldKind
+  label: string
+  name: string
+  description: string | null
+  position: number
+  isRequired: boolean
+  isDeletable: boolean
+  defaultValue: string | null
+}
+
+export interface IForm extends IModel {
+  name: string
+  isPublished: boolean
+  template: string | null
+  type: FormType
+  formFields: IFormField[]
 }

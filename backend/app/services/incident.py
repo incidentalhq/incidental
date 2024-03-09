@@ -2,7 +2,7 @@ import structlog
 
 from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
 from app.repos import AnnouncementRepo, IncidentRepo
-from app.schemas.actions import PatchIncidentSchema
+from app.schemas.actions import CreateIncidentSchema, PatchIncidentSchema
 from app.services.slack.client import SlackClientService
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -32,6 +32,23 @@ class IncidentService:
 
         return reference
 
+    def create_incident_from_schema(self, create_in: CreateIncidentSchema, user: User):
+        incident_severity = self.incident_repo.get_incident_severity_by_id(create_in.incident_severity)
+        if not incident_severity:
+            raise ValueError("Could not find severity")
+
+        incident_type = self.incident_repo.get_incident_type_by_id(create_in.incident_type)
+        if not incident_type:
+            raise ValueError("Could not find incident type")
+
+        return self.create_incident(
+            name=create_in.incident_name,
+            summary=create_in.summary,
+            creator=user,
+            incident_severity=incident_severity,
+            incident_type=incident_type,
+        )
+
     def create_incident(
         self,
         name: str,
@@ -41,10 +58,12 @@ class IncidentService:
         incident_type: IncidentType,
     ):
         # FIXME: this should not be hardcoded
-        status_name = "Triage"
-        status = self.incident_repo.get_incident_status_by_name(organisation=self.organisation, name=status_name)
-        if not status:
-            raise Exception(f"Could not find status: {status_name}")
+        initial_status_name = "Triage"
+        initial_status = self.incident_repo.get_incident_status_by_name(
+            organisation=self.organisation, name=initial_status_name
+        )
+        if not initial_status:
+            raise Exception(f"Could not find status: {initial_status_name}")
 
         reference = self.generate_incident_reference()
 
@@ -59,7 +78,7 @@ class IncidentService:
             user=creator,
             name=name,
             summary=summary,
-            status=status,
+            status=initial_status,
             severity=incident_severity,
             type=incident_type,
             reference=reference,
