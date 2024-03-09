@@ -1,20 +1,14 @@
 import { FormikHelpers } from 'formik'
-import styled from 'styled-components'
+import { Link } from 'react-router-dom'
 
+import logo from '@/assets/mark_noborder.png'
 import LoginForm, { LoginFormValues } from '@/components/LoginForm/LoginForm'
-import { Box, Content } from '@/components/Theme/Styles'
 import useAuth from '@/hooks/useAuth'
+import { RoutePaths } from '@/routes'
 import { APIError } from '@/services/transport'
 import { apiErrorsToFormikErrors } from '@/utils/form'
 
-const Root = styled.div`
-  width: 30rem;
-  margin: 10rem auto;
-
-  > h2 {
-    margin-bottom: 1rem;
-  }
-`
+import { Content, FooterMessage, Logo, Root } from './styles'
 
 const Login: React.FC = () => {
   const { login } = useAuth()
@@ -32,12 +26,14 @@ const Login: React.FC = () => {
 
   return (
     <Root>
+      <Logo src={logo} />
       <h2>Login</h2>
-      <Box>
-        <Content data-testid="login-page">
-          <LoginForm onSubmit={handleSubmit} />
-        </Content>
-      </Box>
+      <Content data-testid="login-page">
+        <LoginForm onSubmit={handleSubmit} />
+      </Content>
+      <FooterMessage>
+        Need a new account? <Link to={RoutePaths.REGISTER}>Register here</Link>
+      </FooterMessage>
     </Root>
   )
 }

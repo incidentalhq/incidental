@@ -15,6 +15,7 @@ export interface IOrganisation extends IModel {
   name: string
   slackTeamName: string
   slackTeamId: string
+  slackAppInstalled: boolean
 }
 
 export interface IWorld {

@@ -3,6 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.deps import CurrentUser
 from app.env import settings
 from app.exceptions import ApplicationException
 from app.repos import (
@@ -22,7 +23,6 @@ from app.schemas.slack import (
     SlackInteractionSchema,
     SlackUrlVerificationHandshakeSchema,
 )
-from app.services.identity import IdentityService
 from app.services.incident import IncidentService
 from app.services.oauth_connector import OAuthConnectorService
 from app.services.onboarding import OnboardingService
@@ -79,23 +79,25 @@ def _create_oauth_connector() -> OAuthConnectorService:
 
 @router.get("/openid/login")
 async def slack_openid_login():
+    """Login with slack oauth2"""
     connector = _create_openid_connector()
     url = connector.create_authorization_url(scopes=["profile", "openid", "email"], state={"mode": "login"})
 
-    return {url}
+    return {"url": url}
 
 
 @router.get("/oauth/install")
 async def slack_install_bot():
-    """Install the slack"""
+    """Install the slack app"""
     connector = _create_oauth_connector()
     url = connector.create_authorization_url(scopes=bot_scopes, state={"mode": "installation"})
 
-    return {url}
+    return {"url": url}
 
 
 @router.post("/openid/complete", response_model=UserSchema)
 async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session: Session = Depends(get_db)):
+    """Complete sign-in using slack"""
     connector = _create_openid_connector()
     token = connector.complete(code=result.code)
 
@@ -106,8 +108,10 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     incident_repo = IncidentRepo(session=session)
     announcement_repo = AnnouncementRepo(session=session)
 
-    identity_service = IdentityService(session=session, user_repo=user_repo, organisation_repo=organisation_repo)
-    create_result = identity_service.get_or_create_from_slack_credentials(credentials=token)
+    slack_user_service = SlackUserService(
+        token=token.access_token, user_repo=user_repo, organisation_repo=organisation_repo
+    )
+    create_result = slack_user_service.get_or_create_user_from_slack_credentials_token()
 
     onboarding_service = OnboardingService(
         form_repo=form_repo,
@@ -124,16 +128,19 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
 
 
 @router.post("/oauth/complete")
-async def slack_oauth_complete(result: OAuth2AuthorizationResultSchema, session: Session = Depends(get_db)):
+async def slack_oauth_complete(
+    result: OAuth2AuthorizationResultSchema, user: CurrentUser, session: Session = Depends(get_db)
+):
+    """Complete installation of slack app"""
     connector = _create_oauth_connector()
     token = connector.complete(code=result.code)
 
     organisation_repo = OrganisationRepo(session=session)
     organisation = organisation_repo.get_by_slack_team_id(token.original_data["team"]["id"])
-    if not organisation:
-        raise ApplicationException("Could not find associated organization")
-
-    organisation.slack_bot_token = token.access_token
+    if organisation:
+        organisation.slack_bot_token = token.access_token
+        session.commit()
+        return Response(status_code=status.HTTP_202_ACCEPTED)
 
     session.commit()
 
@@ -158,7 +165,7 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
             return
 
         slack_user_service = SlackUserService(
-            bot_token=organisation.slack_bot_token,
+            token=organisation.slack_bot_token,
             user_repo=user_repo,
             organisation_repo=organisation_repo,
         )
@@ -202,7 +209,7 @@ async def slack_slash_command(
         raise ApplicationException("Could not find related organisation")
 
     slack_user_service = SlackUserService(
-        bot_token=organisation.slack_bot_token,
+        token=organisation.slack_bot_token,
         user_repo=user_repo,
         organisation_repo=organisation_repo,
     )
@@ -258,7 +265,7 @@ def slack_interaction(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
     )
     slack_user_service = SlackUserService(
-        bot_token=organisation.slack_bot_token,
+        token=organisation.slack_bot_token,
         user_repo=user_repo,
         organisation_repo=organisation_repo,
     )

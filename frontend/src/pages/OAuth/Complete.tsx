@@ -32,7 +32,7 @@ const OAuthComplete: React.FC = () => {
       if (stateDecoded.mode == 'login') {
         await slackLogin(code)
       } else {
-        await apiService.slackInstallation(code)
+        await apiService.slackCompleteAppInstallation(code)
       }
       navigate(RoutePaths.DASHBOARD)
     },

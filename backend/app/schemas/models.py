@@ -17,8 +17,9 @@ class ModelSchema(ModelIdSchema):
 class OrganisationSchema(ModelSchema):
     name: str
     kind: str
-    slack_team_id: str
-    slack_team_name: str
+    slack_team_id: str | None
+    slack_team_name: str | None
+    slack_app_installed: bool
 
 
 class UserSchema(ModelSchema):

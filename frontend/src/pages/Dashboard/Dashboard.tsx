@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { toast, useToast } from 'react-toastify'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
+import EmptyTable from '@/components/Empty/EmptyTable'
 import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/components/Incident/DeclareIncidentForm'
 import IncidentRow from '@/components/Incident/IncidentRow'
 import { useModal } from '@/components/Modal/useModal'
@@ -93,6 +94,7 @@ const Dashboard = () => {
                 {activeIncidentsQuery.data.items.map((it) => (
                   <IncidentRow key={it.id} incident={it} />
                 ))}
+                {activeIncidentsQuery.data.total == 0 && <EmptyTable>No active incidents</EmptyTable>}
               </>
             ) : null}
           </ContentMain>
@@ -108,6 +110,8 @@ const Dashboard = () => {
                 {inTriageQuery.data.items.map((it) => (
                   <IncidentRow key={it.id} incident={it} />
                 ))}
+
+                {inTriageQuery.data.total == 0 && <EmptyTable>No incidents in triage</EmptyTable>}
               </>
             ) : null}
           </ContentMain>

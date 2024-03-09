@@ -9,13 +9,15 @@ import DefaultLayout from '@/components/Layout/DefaultLayout'
 import { ApiServiceProvider } from '@/hooks/useApi'
 import { AuthProvider } from '@/hooks/useAuth'
 import { GlobalProvider } from '@/hooks/useGlobal'
+import Login from '@/pages/Auth/EmailLogin'
+import Register from '@/pages/Auth/Register'
+import RegisterSuccess from '@/pages/Auth/Success'
 import Dashboard from '@/pages/Dashboard/Dashboard'
-import Login from '@/pages/Login/Login'
-import Register from '@/pages/Register/Register'
-import RegisterSuccess from '@/pages/Register/Success'
 
 import ModalProvider from './components/Modal/ModalProvider'
 
+import LoginSelector from './pages/Auth/LoginSelector'
+import SlackLogin from './pages/Auth/SlackLogin'
 import IncidentsList from './pages/Incidents/List'
 import ShowIncident from './pages/Incidents/Show'
 import OAuthComplete from './pages/OAuth/Complete'
@@ -60,7 +62,9 @@ const App = () => {
             <ApiServiceProvider>
               <AuthProvider>
                 <Routes>
-                  <Route path={RoutePaths.LOGIN} element={<Login />} />
+                  <Route path={RoutePaths.LOGIN} element={<LoginSelector />} />
+                  <Route path={RoutePaths.EMAIL_LOGIN} element={<Login />} />
+                  <Route path={RoutePaths.SLACK_LOGIN} element={<SlackLogin />} />
                   <Route path={RoutePaths.REGISTER} element={<Register />} />
                   <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
                   <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />

@@ -1,27 +1,16 @@
 import base64
 import json
 import urllib.parse
-from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
 
 import httpx
 import structlog
 
 from app.env import settings
 from app.exceptions import ApplicationException
+from app.schemas.resources import Credentials
 
 logger = structlog.get_logger(logger_name=__name__)
-
-
-@dataclass
-class Credentials:
-    access_token: str
-    refresh_token: str | None
-    expires_at: datetime | None
-    token_type: str
-    id_token: str | None  # openid
-    original_data: dict[str, Any]
 
 
 class OAuthConnectorService:

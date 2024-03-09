@@ -53,13 +53,13 @@ export class ApiService {
     return callApi<IWorld>('GET', '/world/', { user: this.user })
   }
 
-  slackOpenIdLogin(code: string) {
+  slackCompleteLogin(code: string) {
     return callApi<ILoggedInUser>('POST', '/slack/openid/complete', {
       data: { code }
     })
   }
 
-  slackInstallation(code: string) {
+  slackCompleteAppInstallation(code: string) {
     return callApi<ILoggedInUser>('POST', '/slack/oauth/complete', {
       data: { code }
     })
@@ -94,5 +94,13 @@ export class ApiService {
 
   createIncident(values: Record<string, string>) {
     return callApi<IIncident>('POST', `/incidents`, { user: this.user, data: values })
+  }
+
+  slackLoginUrl() {
+    return callApi<{ url: string }>('GET', `/slack/openid/login`)
+  }
+
+  slackAppInstallationUrl() {
+    return callApi<{ url: string }>('GET', `/slack/oauth/login`)
   }
 }

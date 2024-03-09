@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 import useApiService from '@/hooks/useApi'
 import useAuth from '@/hooks/useAuth'
+import { RoutePaths } from '@/routes'
 import { getAuthFromBrowser, pushOAuthRequest } from '@/utils/storage'
 
 // If Oauth request push request into a local queue
@@ -33,7 +34,7 @@ const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
       apiService.setCurrentUser(cookieData)
 
       // if we're on the login page, but have authenticated then redirect to root page
-      if (location.pathname === '/login') {
+      if (location.pathname === RoutePaths.LOGIN) {
         navigate('/')
       }
     }
@@ -46,7 +47,7 @@ const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
   }, [cookieData, user, setUser, navigate])
 
   if (redirect) {
-    return <Navigate to={'/login'} />
+    return <Navigate to={RoutePaths.LOGIN} />
   }
 
   if (!user) {

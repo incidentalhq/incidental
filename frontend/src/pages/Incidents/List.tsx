@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import styled from 'styled-components'
 
+import EmptyTable from '@/components/Empty/EmptyTable'
 import IncidentRow from '@/components/Incident/IncidentRow'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -36,7 +37,14 @@ const IncidentsList = () => {
       <CategoryHeader>All incidents</CategoryHeader>
       <Content>
         <ContentMain $padding={false}>
-          {activeIncidentsQuery.data?.items.map((it) => <IncidentRow key={it.id} incident={it} />)}
+          {activeIncidentsQuery.isSuccess ? (
+            <>
+              {activeIncidentsQuery.data.items.map((it) => (
+                <IncidentRow key={it.id} incident={it} />
+              ))}
+              {activeIncidentsQuery.data.total == 0 && <EmptyTable>No incidents found</EmptyTable>}
+            </>
+          ) : null}
         </ContentMain>
       </Content>
     </Box>

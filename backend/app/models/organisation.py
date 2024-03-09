@@ -48,3 +48,7 @@ class Organisation(Base, TimestampMixin):
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"
+
+    @property
+    def slack_app_installed(self):
+        return self.slack_bot_token is not None
