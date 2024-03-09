@@ -35,7 +35,7 @@ class FormRepo(BaseRepo):
         is_required: bool,
         position: int = 0,
         description: str | None = None,
-        can_remove: bool = True,
+        is_deletable: bool = True,
     ) -> FormField:
         model = FormField()
         model.form_id = form.id
@@ -45,7 +45,7 @@ class FormRepo(BaseRepo):
         model.position = position
         model.description = description
         model.is_required = is_required
-        model.can_remove = can_remove
+        model.is_deletable = is_deletable
 
         self.session.add(model)
         self.session.flush()

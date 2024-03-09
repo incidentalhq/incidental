@@ -31,7 +31,7 @@ const SelectField: React.FC<Props> = ({
   clearable,
   onChangeValue,
   help,
-  saveOnChange = true,
+  saveOnChange = false,
   ...inputProps
 }) => {
   const [field, meta, helpers] = useField(name)

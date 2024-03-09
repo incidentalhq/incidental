@@ -91,4 +91,8 @@ export class ApiService {
   patchIncident(id: string, patch: DeepPartial<IIncident>) {
     return callApi<IIncident>('PATCH', `/incidents/${id}`, { user: this.user, data: patch })
   }
+
+  createIncident(values: Record<string, string>) {
+    return callApi<IIncident>('POST', `/incidents`, { user: this.user, data: values })
+  }
 }

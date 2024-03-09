@@ -87,3 +87,22 @@ class IncidentUpdateSchema(ModelSchema):
     previous_incident_status: IncidentStatusSchema | None
     new_incident_severity: IncidentSeveritySchema | None
     previous_incident_severity: IncidentSeveritySchema | None
+
+
+class FormFieldSchema(ModelSchema):
+    kind: str
+    label: str
+    name: str
+    description: str | None
+    position: int
+    is_required: bool
+    is_deletable: bool
+    default_value: str | None
+
+
+class FormSchema(ModelSchema):
+    name: str
+    is_published: bool
+    template: str | None
+    type: str
+    form_fields: list[FormFieldSchema]

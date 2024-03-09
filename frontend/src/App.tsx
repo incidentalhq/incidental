@@ -55,8 +55,8 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ModalProvider>
-          <GlobalProvider>
+        <GlobalProvider>
+          <ModalProvider>
             <ApiServiceProvider>
               <AuthProvider>
                 <Routes>
@@ -68,8 +68,8 @@ const App = () => {
                 </Routes>
               </AuthProvider>
             </ApiServiceProvider>
-          </GlobalProvider>
-        </ModalProvider>
+          </ModalProvider>
+        </GlobalProvider>
       </BrowserRouter>
       <ToastContainer hideProgressBar={true} autoClose={2000} />
       <ReactQueryDevtools />
