@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import styled from 'styled-components'
 
-import IncidentRow from '@/components/IncidentRow/IncidentRow'
+import IncidentRow from '@/components/Incident/IncidentRow'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 

@@ -1,10 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import styled from 'styled-components'
 
-import IncidentRow from '@/components/IncidentRow/IncidentRow'
+import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/components/Incident/DeclareIncidentForm'
+import IncidentRow from '@/components/Incident/IncidentRow'
+import { useModal } from '@/components/Modal/useModal'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
-import { IncidentStatusCategory } from '@/types/enums'
+import useGlobal from '@/hooks/useGlobal'
+import { FormType, IncidentStatusCategory } from '@/types/enums'
 
 const Root = styled.div``
 const CategoryHeader = styled.div`
@@ -16,9 +20,15 @@ const Count = styled.span`
   color: var(--color-slate-600);
   padding-left: 1rem;
 `
+const ModalContainer = styled.div`
+  padding: 1rem;
+  width: 600px;
+`
 
 const Dashboard = () => {
   const { apiService } = useApiService()
+  const { setModal } = useModal()
+  const { forms } = useGlobal()
 
   const activeIncidentsQuery = useQuery({
     queryKey: ['active-incidents'],
@@ -30,8 +40,23 @@ const Dashboard = () => {
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.TRIAGE] })
   })
 
+  const handleCreateIncident = useCallback((values: DeclareIncidentFormValues) => {
+    console.log(values)
+  }, [])
+
   const handleDeclare = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.preventDefault()
+    const createForm = forms.find((it) => it.type == FormType.CREATE_INCIDENT)
+    if (!createForm) {
+      console.error('Could not find create form')
+      return
+    }
+    setModal(
+      <ModalContainer>
+        <h2>Declare incident</h2>
+        <DeclareIncidentForm onSubmit={handleCreateIncident} form={createForm} />
+      </ModalContainer>
+    )
   }
 
   return (

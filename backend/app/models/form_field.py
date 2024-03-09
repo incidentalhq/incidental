@@ -42,7 +42,7 @@ class FormField(Base, TimestampMixin, SoftDeleteMixin):
     description: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    can_remove: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_deletable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     default_value: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
 
     # relationships

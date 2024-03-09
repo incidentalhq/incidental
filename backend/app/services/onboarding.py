@@ -60,21 +60,21 @@ class OnboardingService:
                 "is_required": True,
                 "kind": FormFieldKind.TEXT,
                 "description": "A descriptive name for the incident",
-                "can_remove": False,
+                "is_deletable": False,
             },
             {
                 "name": "incident_type",
                 "label": "Incident type",
                 "is_required": True,
                 "kind": FormFieldKind.INCIDENT_TYPE,
-                "can_remove": False,
+                "is_deletable": False,
             },
             {
                 "name": "incident_severity",
                 "label": "Severity",
                 "is_required": True,
                 "kind": FormFieldKind.SEVERITY_TYPE,
-                "can_remove": False,
+                "is_deletable": False,
             },
             {
                 "name": "summary",
@@ -82,7 +82,7 @@ class OnboardingService:
                 "is_required": False,
                 "kind": FormFieldKind.TEXTAREA,
                 "description": "Give a summary of the current state of the incident.",
-                "can_remove": False,
+                "is_deletable": False,
             },
         ]
         self._create_form_fields(form=create_form, field_descriptions=create_form_fields_descriptor)
@@ -97,21 +97,21 @@ class OnboardingService:
                 "label": "Status",
                 "is_required": True,
                 "kind": FormFieldKind.INCIDENT_STATUS,
-                "can_remove": False,
+                "is_deletable": False,
             },
             {
                 "name": "incident_severity",
                 "label": "Severity",
                 "is_required": True,
                 "kind": FormFieldKind.SEVERITY_TYPE,
-                "can_remove": False,
+                "is_deletable": False,
             },
             {
                 "name": "summary",
                 "label": "Summary",
                 "is_required": False,
                 "kind": FormFieldKind.TEXTAREA,
-                "can_remove": False,
+                "is_deletable": False,
             },
         ]
         self._create_form_fields(form=update_status_form, field_descriptions=update_status_form_fields)
@@ -128,7 +128,7 @@ class OnboardingService:
                 is_required=item["is_required"],
                 position=idx,
                 description=item.get("description"),
-                can_remove=item["can_remove"],
+                is_deletable=item["is_deletable"],
             )
 
     def _setup_severities(self, organisation: Organisation):

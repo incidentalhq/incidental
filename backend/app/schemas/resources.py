@@ -1,7 +1,14 @@
 from typing import Generic, Sequence, TypeVar
 
 from app.schemas.base import BaseSchema
-from app.schemas.models import IncidentSeveritySchema, IncidentStatusSchema, OrganisationSchema, UserSchema
+from app.schemas.models import (
+    FormSchema,
+    IncidentSeveritySchema,
+    IncidentStatusSchema,
+    IncidentTypeSchema,
+    OrganisationSchema,
+    UserSchema,
+)
 
 DataT = TypeVar("DataT")
 
@@ -21,3 +28,5 @@ class WorldSchema(BaseSchema):
     status_list: list[IncidentStatusSchema]
     severity_list: list[IncidentSeveritySchema]
     organisations: list[OrganisationSchema]
+    forms: list[FormSchema]
+    incident_types: list[IncidentTypeSchema]
