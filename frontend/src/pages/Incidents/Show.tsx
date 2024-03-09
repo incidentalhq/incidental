@@ -18,6 +18,7 @@ import ChangeSeverityForm, {
 } from './components/ChangeSeverityForm/ChangeSeverityForm'
 import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './components/ChangeStatusForm/ChangeStatusForm'
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
+import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import Timeline from './components/IncidentUpdate/Timeline'
 
 const Description = styled.div`
@@ -129,6 +130,16 @@ const ShowIncident = () => {
     )
   }
 
+  const handleChangeName = useCallback(
+    async (values: ChangeNameFormValues) => {
+      await apiService.patchIncident(id, {
+        name: values.name
+      })
+      incidentQuery.refetch()
+    },
+    [apiService, id, incidentQuery]
+  )
+
   const slackUrl = `slack:/channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
 
   return (
@@ -138,7 +149,9 @@ const ShowIncident = () => {
         {incidentQuery.isSuccess ? (
           <>
             <Header>
-              <Title>{incidentQuery.data.name}</Title>
+              <Title>
+                <EditTitleForm incident={incidentQuery.data} onSubmit={handleChangeName} />
+              </Title>
             </Header>
             <Content>
               <ContentMain>
