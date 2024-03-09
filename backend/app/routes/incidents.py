@@ -1,11 +1,17 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from app.deps import CurrentUser, DatabaseSession, OrganisationId
-from app.repos import AnnouncementRepo, IncidentRepo
-from app.schemas.actions import IncidentSearchSchema, PaginationParamsSchema, PatchIncidentSchema
+from app.models import FormType
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
+from app.schemas.actions import (
+    CreateIncidentSchema,
+    IncidentSearchSchema,
+    PaginationParamsSchema,
+    PatchIncidentSchema,
+)
 from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
 from app.services.incident import IncidentService
@@ -35,8 +41,21 @@ async def incident_search(
 
 
 @router.post("", response_model=IncidentSchema)
-async def incident_create(db: DatabaseSession):
-    pass
+async def incident_create(user: CurrentUser, db: DatabaseSession, create_in: CreateIncidentSchema):
+    form_repo = FormRepo(session=db)
+    incident_repo = IncidentRepo(session=db)
+    announcement_repo = AnnouncementRepo(session=db)
+    incident_service = IncidentService(
+        organisation=user.organisations[0], incident_repo=incident_repo, announcement_repo=announcement_repo
+    )
+    form = form_repo.get_form(organisation=user.organisations[0], form_type=FormType.CREATE_INCIDENT)
+    if not form:
+        raise ValueError("Could not find create incident form")
+
+    incident = incident_service.create_incident_from_schema(create_in=create_in, user=user)
+    db.commit()
+
+    return incident
 
 
 @router.get("/{id}", response_model=IncidentSchema)

@@ -1,5 +1,9 @@
+import { faSpinner } from '@fortawesome/pro-duotone-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Form, Formik, FormikHelpers } from 'formik'
+import camelCase from 'lodash/camelCase'
 import { ReactElement } from 'react'
+import styled from 'styled-components'
 import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
@@ -11,99 +15,129 @@ import { IForm, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } 
 
 import SelectField from '../Form/SelectField'
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required('A name is required')
-})
+const Optional = styled.span`
+  color: var(--color-gray-400);
+`
 
-export type FormValues = Yup.InferType<typeof validationSchema>
+export type FormValues = Record<string, string>
 
 interface Props {
   form: IForm
   onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void | Promise<void>
 }
 
-const renderField = (
-  formField: IFormField,
-  statusList: IIncidentStatus[],
-  severityList: IIncidentSeverity[],
+interface FormFieldProps {
+  formField: IFormField
+  statusList: IIncidentStatus[]
+  severityList: IIncidentSeverity[]
   incidentTypes: IIncidentType[]
-) => {
-  const inputComponent: ReactElement | null = null
+}
+
+const createValidationSchema = (formFields: IFormField[]) => {
+  const fieldsShape: Record<string, Yup.StringSchema> = {}
+
+  for (const field of formFields) {
+    if (field.isRequired) {
+      fieldsShape[field.name] = Yup.string().required('This field is required')
+    }
+  }
+
+  return Yup.object().shape(fieldsShape)
+}
+
+const createDefaultValues = (formFields: IFormField[]) => {
+  const defaultValues: Record<string, string> = {}
+
+  for (const field of formFields) {
+    defaultValues[field.name] = ''
+  }
+
+  return defaultValues
+}
+
+const FormField: React.FC<FormFieldProps> = ({ formField, statusList, severityList, incidentTypes }) => {
+  let inputComponent: ReactElement | null = null
 
   switch (formField.kind) {
     case FormFieldKind.TEXTAREA:
-      return (
-        <div>
-          <label>{formField.label}</label>
-          <Field as={'textarea'} key={formField.id} name={formField.name} type="textarea" />
-          {formField.description}
-        </div>
-      )
+      inputComponent = <Field as={'textarea'} name={formField.name} type="text" />
+      break
     case FormFieldKind.TEXT:
-      return (
-        <div>
-          <label>{formField.label}</label>
-          <Field key={formField.id} name={formField.name} type="text" />
-          {formField.description}
-        </div>
-      )
+      inputComponent = <Field name={formField.name} type="text" />
+      break
     case FormFieldKind.INCIDENT_STATUS: {
       const options = statusList.map((it) => ({
         label: it.name,
         value: it.id
       }))
-      return (
-        <div>
-          <label>{formField.label}</label>
-          <SelectField key={formField.id} name={formField.name} options={options} />
-          {formField.description}
-        </div>
-      )
+      inputComponent = <SelectField name={formField.name} options={options} />
+      break
     }
     case FormFieldKind.SEVERITY_TYPE: {
       const options = severityList.map((it) => ({
         label: it.name,
         value: it.id
       }))
-      return (
-        <div>
-          <label>{formField.label}</label>
-          <SelectField key={formField.id} name={formField.name} options={options} />
-          {formField.description}
-        </div>
-      )
+      inputComponent = <SelectField name={formField.name} options={options} />
+      break
     }
     case FormFieldKind.INCIDENT_TYPE: {
       const options = incidentTypes.map((it) => ({
         label: it.name,
         value: it.id
       }))
-      return (
-        <div>
-          <label>{formField.label}</label>
-          <SelectField key={formField.id} name={formField.name} options={options} />
-          {formField.description}
-        </div>
-      )
+      inputComponent = <SelectField name={formField.name} options={options} />
+      break
     }
   }
+
+  return (
+    <div key={formField.id}>
+      <label>
+        {formField.label} {!formField.isRequired ? <Optional>optional</Optional> : ''}
+      </label>
+      {inputComponent}
+    </div>
+  )
 }
 
 const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
   const { statusList, severityList, incidentTypes } = useGlobal()
   const fields = form.formFields
     .sort((a, b) => (a.position < b.position ? -1 : 1))
-    .map((it) => renderField(it, statusList, severityList, incidentTypes))
+    .map((it) => (
+      <FormField
+        key={it.id}
+        formField={it}
+        statusList={statusList}
+        severityList={severityList}
+        incidentTypes={incidentTypes}
+      />
+    ))
+
+  const handleSubmit = (values: FormValues, helpers: FormikHelpers<FormValues>) => {
+    // camel case all keys
+    const ccKeys = Object.keys(values).reduce((prev, current) => {
+      prev[camelCase(current)] = values[current]
+      return prev
+    }, {} as FormValues)
+
+    onSubmit(ccKeys, helpers)
+  }
 
   return (
-    <Formik validationSchema={validationSchema} initialValues={{ name: '' }} onSubmit={onSubmit}>
+    <Formik
+      validationSchema={createValidationSchema(form.formFields)}
+      onSubmit={handleSubmit}
+      initialValues={createDefaultValues(form.formFields)}
+    >
       {({ isSubmitting }) => (
         <Form className="space-y-2">
           <GeneralError />
           {fields}
           <div>
             <Button $primary={true} type="submit" disabled={isSubmitting}>
-              Declare incident
+              {isSubmitting && <FontAwesomeIcon spin icon={faSpinner} />} Declare incident
             </Button>
           </div>
         </Form>

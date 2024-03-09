@@ -1,7 +1,7 @@
 from .announcement import Announcement, AnnouncementActions, AnnouncementFields
 from .custom_field import CustomField
-from .form import Form
-from .form_field import FormField
+from .form import Form, FormType
+from .form_field import FormField, FormFieldKind
 from .incident import Incident
 from .incident_role import IncidentRole, IncidentRoleKind
 from .incident_role_assignment import IncidentRoleAssignment

@@ -140,7 +140,7 @@ const ShowIncident = () => {
     [apiService, id, incidentQuery]
   )
 
-  const slackUrl = `slack:/channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
+  const slackUrl = `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
 
   return (
     <>

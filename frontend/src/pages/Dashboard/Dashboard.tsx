@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
+import { toast, useToast } from 'react-toastify'
 import styled from 'styled-components'
 
 import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/components/Incident/DeclareIncidentForm'
@@ -27,7 +28,7 @@ const ModalContainer = styled.div`
 
 const Dashboard = () => {
   const { apiService } = useApiService()
-  const { setModal } = useModal()
+  const { setModal, closeModal } = useModal()
   const { forms } = useGlobal()
 
   const activeIncidentsQuery = useQuery({
@@ -40,24 +41,36 @@ const Dashboard = () => {
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.TRIAGE] })
   })
 
-  const handleCreateIncident = useCallback((values: DeclareIncidentFormValues) => {
-    console.log(values)
-  }, [])
+  const handleCreateIncident = useCallback(
+    async (values: DeclareIncidentFormValues) => {
+      try {
+        await apiService.createIncident(values)
+        toast('Incident declared', { type: 'success' })
+        closeModal()
+      } catch (e) {
+        console.error('There was an issue creating the incident')
+      }
+    },
+    [apiService, closeModal]
+  )
 
-  const handleDeclare = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    const createForm = forms.find((it) => it.type == FormType.CREATE_INCIDENT)
-    if (!createForm) {
-      console.error('Could not find create form')
-      return
-    }
-    setModal(
-      <ModalContainer>
-        <h2>Declare incident</h2>
-        <DeclareIncidentForm onSubmit={handleCreateIncident} form={createForm} />
-      </ModalContainer>
-    )
-  }
+  const handleOpenDeclareModal = useCallback(
+    (evt: React.MouseEvent<HTMLButtonElement>) => {
+      evt.preventDefault()
+      const createForm = forms.find((it) => it.type == FormType.CREATE_INCIDENT)
+      if (!createForm) {
+        console.error('Could not find create form')
+        return
+      }
+      setModal(
+        <ModalContainer>
+          <h2>Declare incident</h2>
+          <DeclareIncidentForm onSubmit={handleCreateIncident} form={createForm} />
+        </ModalContainer>
+      )
+    },
+    [setModal, forms, handleCreateIncident]
+  )
 
   return (
     <Root>
@@ -65,7 +78,7 @@ const Dashboard = () => {
         <Header>
           <Title>Dashboard</Title>
           <div>
-            <Button $primary={true} onClick={handleDeclare}>
+            <Button $primary={true} onClick={handleOpenDeclareModal}>
               Declare incident
             </Button>
           </div>
@@ -78,7 +91,7 @@ const Dashboard = () => {
             {activeIncidentsQuery.isSuccess ? (
               <>
                 {activeIncidentsQuery.data.items.map((it) => (
-                  <IncidentRow incident={it} />
+                  <IncidentRow key={it.id} incident={it} />
                 ))}
               </>
             ) : null}
@@ -93,7 +106,7 @@ const Dashboard = () => {
             {inTriageQuery.isSuccess ? (
               <>
                 {inTriageQuery.data.items.map((it) => (
-                  <IncidentRow incident={it} />
+                  <IncidentRow key={it.id} incident={it} />
                 ))}
               </>
             ) : null}
