@@ -61,6 +61,7 @@ export class ApiService {
 
   slackCompleteAppInstallation(code: string) {
     return callApi<ILoggedInUser>('POST', '/slack/oauth/complete', {
+      user: this.user,
       data: { code }
     })
   }
@@ -101,6 +102,6 @@ export class ApiService {
   }
 
   slackAppInstallationUrl() {
-    return callApi<{ url: string }>('GET', `/slack/oauth/login`)
+    return callApi<{ url: string }>('GET', `/slack/oauth/install`, { user: this.user })
   }
 }

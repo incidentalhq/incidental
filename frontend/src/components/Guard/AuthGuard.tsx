@@ -44,7 +44,7 @@ const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
       pushOAuthRequestsIfExists()
       setRedirect(true)
     }
-  }, [cookieData, user, setUser, navigate])
+  }, [cookieData, user, setUser, navigate, location.pathname, apiService])
 
   if (redirect) {
     return <Navigate to={RoutePaths.LOGIN} />

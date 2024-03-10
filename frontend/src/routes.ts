@@ -9,5 +9,8 @@ export enum RoutePaths {
 
   INCIDENTS = '/incidents',
   SETTINGS = '/settings',
-  SHOW_INCIDENT = '/incidents/:id'
+  SHOW_INCIDENT = '/incidents/:id',
+
+  SLACK_INSTALL = '/slack/install',
+  SLACK_INSTALL_COMPLETE = '/slack/install/complete'
 }

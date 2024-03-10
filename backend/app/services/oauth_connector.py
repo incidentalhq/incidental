@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import httpx
 import structlog
 
-from app.env import settings
 from app.exceptions import ApplicationException
 from app.schemas.resources import Credentials
 
@@ -14,26 +13,26 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class OAuthConnectorService:
-    def __init__(self, authorize_url: str, token_url: str, client_id: str, client_secret: str) -> None:
+    def __init__(
+        self, authorize_url: str, token_url: str, client_id: str, client_secret: str, redirect_uri: str
+    ) -> None:
         self.authorize_url = authorize_url
         self.token_url = token_url
         self.client_id = client_id
         self.client_secret = client_secret
-
-    def redirect_url(self) -> str:
-        return f"{settings.FRONTEND_URL}/oauth/complete"
+        self.redirect_uri = redirect_uri
 
     def create_authorization_url(self, scopes: list[str], state: dict[str, str] | None = None) -> str:
         """Create the authorization url"""
         params = {
             "client_id": self.client_id,
-            "redirect_uri": self.redirect_url(),
+            "redirect_uri": self.redirect_uri,
             "scope": " ".join(scopes),
             "response_type": "code",
         }
 
         if state:
-            params["state"] = base64.b64encode(json.dumps(state).encode("utf8"))
+            params["state"] = base64.b64encode(json.dumps(state).encode("utf8")).decode("utf8")
 
         url = self.authorize_url + "?" + urllib.parse.urlencode(params)
 
@@ -45,7 +44,7 @@ class OAuthConnectorService:
             "code": code,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-            "redirect_uri": self.redirect_url(),
+            "redirect_uri": self.redirect_uri,
         }
 
         response = httpx.post(self.token_url, data=payload)

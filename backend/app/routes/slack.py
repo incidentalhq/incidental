@@ -63,6 +63,7 @@ def _create_openid_connector() -> OAuthConnectorService:
         token_url=settings.SLACK_OPENID_TOKEN_URL,
         client_id=settings.SLACK_CLIENT_ID,
         client_secret=settings.SLACK_CLIENT_SECRET,
+        redirect_uri=f"{settings.FRONTEND_URL}/oauth/complete",
     )
     return connector
 
@@ -73,6 +74,7 @@ def _create_oauth_connector() -> OAuthConnectorService:
         token_url=settings.SLACK_OAUTH_TOKEN_URL,
         client_id=settings.SLACK_CLIENT_ID,
         client_secret=settings.SLACK_CLIENT_SECRET,
+        redirect_uri=f"{settings.FRONTEND_URL}/slack/install/complete",
     )
     return connector
 
@@ -81,7 +83,7 @@ def _create_oauth_connector() -> OAuthConnectorService:
 async def slack_openid_login():
     """Login with slack oauth2"""
     connector = _create_openid_connector()
-    url = connector.create_authorization_url(scopes=["profile", "openid", "email"], state={"mode": "login"})
+    url = connector.create_authorization_url(scopes=["profile", "openid", "email"])
 
     return {"url": url}
 
@@ -90,7 +92,7 @@ async def slack_openid_login():
 async def slack_install_bot():
     """Install the slack app"""
     connector = _create_oauth_connector()
-    url = connector.create_authorization_url(scopes=bot_scopes, state={"mode": "installation"})
+    url = connector.create_authorization_url(scopes=bot_scopes)
 
     return {"url": url}
 
@@ -142,9 +144,13 @@ async def slack_oauth_complete(
         session.commit()
         return Response(status_code=status.HTTP_202_ACCEPTED)
 
+    # otherwise, we might have signed up with user + password
+    organisation = user.organisations[0]
+    organisation.slack_bot_token = token.access_token
+
     session.commit()
 
-    return "ok"
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 @router.post("/events")
@@ -193,9 +199,6 @@ async def slack_slash_command(
     session: Session = Depends(get_db),
 ):
     """Main endpoint to handle slack slash command /inc and /incident"""
-
-    # logger.info("slash command", cmd=command)
-
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
     form_repo = FormRepo(session=session)

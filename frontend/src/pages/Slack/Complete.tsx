@@ -1,9 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Box, Content } from '@/components/Theme/Styles'
-import useAuth from '@/hooks/useAuth'
+import useApiService from '@/hooks/useApi'
 import { RoutePaths } from '@/routes'
 
 const Root = styled.div`
@@ -15,17 +16,21 @@ const Root = styled.div`
   }
 `
 
-const OAuthComplete: React.FC = () => {
+const SlackInstallComplete: React.FC = () => {
   const [searchParams] = useSearchParams()
-  const { slackLogin } = useAuth()
+  const { apiService } = useApiService()
   const navigate = useNavigate()
+  const client = useQueryClient()
 
   const processOauth = useCallback(
     async (code: string) => {
-      await slackLogin(code)
+      await apiService.slackCompleteAppInstallation(code)
+      await client.invalidateQueries({
+        queryKey: ['world']
+      })
       navigate(RoutePaths.DASHBOARD)
     },
-    [slackLogin, navigate]
+    [apiService, navigate, client]
   )
 
   useEffect(() => {
@@ -36,15 +41,15 @@ const OAuthComplete: React.FC = () => {
     }
 
     processOauth(code)
-  }, [searchParams, slackLogin, processOauth])
+  }, [searchParams, processOauth])
 
   return (
     <Root>
       <Box>
-        <Content>Logging in...</Content>
+        <Content>Installing slack application...</Content>
       </Box>
     </Root>
   )
 }
 
-export default OAuthComplete
+export default SlackInstallComplete
