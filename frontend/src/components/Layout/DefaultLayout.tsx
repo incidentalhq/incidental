@@ -19,7 +19,7 @@ const RightColumn = styled.div`
 
 const LeftColumn = styled.div`
   padding: 1rem;
-  width: 10rem;
+  width: 220px;
   border-right: 1px solid var(--color-gray-200);
   height: 100vh;
 `
