@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Box, Content } from '@/components/Theme/Styles'
-import useApiService from '@/hooks/useApi'
 import useAuth from '@/hooks/useAuth'
 import { RoutePaths } from '@/routes'
 
@@ -16,42 +15,27 @@ const Root = styled.div`
   }
 `
 
-type State = {
-  mode: 'login' | 'installation'
-}
-
 const OAuthComplete: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { slackLogin } = useAuth()
-  const { apiService } = useApiService()
   const navigate = useNavigate()
 
   const processOauth = useCallback(
-    async (code: string, state: string) => {
-      const stateDecoded = JSON.parse(atob(state)) as State
-      if (stateDecoded.mode == 'login') {
-        await slackLogin(code)
-      } else {
-        await apiService.slackInstallation(code)
-      }
+    async (code: string) => {
+      await slackLogin(code)
       navigate(RoutePaths.DASHBOARD)
     },
-    [slackLogin, apiService, navigate]
+    [slackLogin, navigate]
   )
 
   useEffect(() => {
     const code = searchParams.get('code')
-    const state = searchParams.get('state')
     if (!code) {
       console.error('Unable to find code')
       return
     }
-    if (!state) {
-      console.error('Unable to find state')
-      return
-    }
 
-    processOauth(code, state)
+    processOauth(code)
   }, [searchParams, slackLogin, processOauth])
 
   return (

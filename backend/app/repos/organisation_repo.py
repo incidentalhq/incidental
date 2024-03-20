@@ -1,20 +1,27 @@
 from pydantic.alias_generators import to_snake
 from sqlalchemy import select
 
-from app.models import Organisation, OrganisationMember, User
+from app.models import MemberRole, Organisation, OrganisationMember, OrganisationTypes, User
 
 from .base_repo import BaseRepo
 
 
 class OrganisationRepo(BaseRepo):
     def create_organisation(
-        self, name: str, slack_team_name: str | None = None, slack_team_id: str | None = None
+        self,
+        name: str,
+        slack_team_name: str | None = None,
+        slack_team_id: str | None = None,
+        kind: OrganisationTypes | None = None,
     ) -> Organisation:
         organisation = Organisation()
         organisation.name = name
         organisation.slug = to_snake(name).replace("_", "-")  # kebab-case it
         organisation.slack_team_id = slack_team_id
         organisation.slack_team_name = slack_team_name
+
+        if kind:
+            organisation.kind = kind
 
         self.session.add(organisation)
         self.session.flush()
@@ -33,7 +40,7 @@ class OrganisationRepo(BaseRepo):
 
         return self.session.scalar(stmt)
 
-    def add_member(self, user: User, organisation: Organisation, role: str) -> OrganisationMember:
+    def create_member(self, user: User, organisation: Organisation, role: MemberRole) -> OrganisationMember:
         member = OrganisationMember()
         member.organisation_id = organisation.id
         member.user_id = user.id
@@ -43,6 +50,15 @@ class OrganisationRepo(BaseRepo):
         self.session.flush()
 
         return member
+
+    def add_member_if_not_exists(self, user: User, organisation: Organisation, role: MemberRole) -> OrganisationMember:
+        """Only add a member if they are not already part of the organisation"""
+        if member := self.get_member(user=user, organisation=organisation):
+            if member.role != role:
+                member.role = role
+            return member
+        else:
+            return self.create_member(user=user, organisation=organisation, role=role)
 
     def get_by_slack_team_id(self, slack_team_id: str) -> Organisation | None:
         query = select(Organisation).where(Organisation.slack_team_id == slack_team_id).limit(1)

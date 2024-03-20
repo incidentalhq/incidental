@@ -1,6 +1,13 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useState } from 'react'
 
-import { IForm, IIncidentSeverity, IIncidentStatus, IIncidentType, IOrganisation } from '@/types/models'
+import {
+  IForm,
+  IIncidentSeverity,
+  IIncidentStatus,
+  IIncidentType,
+  IOrganisation,
+  IOrganisationDetail
+} from '@/types/models'
 
 const useGlobalProvider = () => {
   const [organisation, setOrganisation] = useState<IOrganisation>()
@@ -8,8 +15,20 @@ const useGlobalProvider = () => {
   const [severityList, setSeverityList] = useState<IIncidentSeverity[]>([])
   const [forms, setForms] = useState<IForm[]>([])
   const [incidentTypes, setIncidentTypes] = useState<IIncidentType[]>([])
+  const [organisationDetails, setOrganisationDetails] = useState<IOrganisationDetail[]>([])
+
+  const setCurrentOrganisation = useCallback((organisationMembership: IOrganisationDetail) => {
+    setOrganisation(organisationMembership.organisation)
+    setStatusList(organisationMembership.statusList)
+    setSeverityList(organisationMembership.severityList)
+    setForms(organisationMembership.forms)
+    setIncidentTypes(organisationMembership.incidentTypes)
+  }, [])
 
   return {
+    organisationDetails,
+    setOrganisationDetails,
+    setCurrentOrganisation,
     organisation,
     setOrganisation,
     setStatusList,

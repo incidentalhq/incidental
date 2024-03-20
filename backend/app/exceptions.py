@@ -1,6 +1,6 @@
 from enum import Enum
 
-from starlette.status import HTTP_403_FORBIDDEN, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette import status
 
 
 class ErrorCodes(Enum):
@@ -17,7 +17,7 @@ class ApplicationException(Exception):
         self,
         message: str,
         code: ErrorCodes | None = None,
-        status_code: int = HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code: int = status.HTTP_400_BAD_REQUEST,
     ):
         self.message = message
         self.code = code
@@ -33,15 +33,15 @@ class FormFieldValidationError(ApplicationException):
 
 class ValidationError(ApplicationException):
     def __init__(self, message: str, code: ErrorCodes | None = None):
-        self.message = message
-        self.code = code
+        super().__init__(message, code)
+        self.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-class NotPermittedError(ValidationError):
+class NotPermittedError(ApplicationException):
     def __init__(
         self,
         message: str = "You do not have permissions to do this",
         code: ErrorCodes = ErrorCodes.NOT_ALLOWED,
     ):
         super().__init__(message, code)
-        self.status_code = HTTP_403_FORBIDDEN
+        self.status_code = status.HTTP_403_FORBIDDEN

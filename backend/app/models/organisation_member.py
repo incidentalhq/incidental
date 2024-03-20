@@ -1,9 +1,15 @@
+import enum
+
 from sqlalchemy import ForeignKey, String, UnicodeText, UniqueConstraint
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from app.db import Base
 
 from .mixins import TimestampMixin
+
+
+class MemberRole(str, enum.Enum):
+    MEMBER = "MEMBER"
 
 
 class OrganisationMember(Base, TimestampMixin):

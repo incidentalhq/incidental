@@ -19,18 +19,25 @@ def world_index(db: Session = Depends(get_db), user: User = Depends(get_current_
     severity_repo = SeverityRepo(session=db)
     form_repo = FormRepo(session=db)
 
-    status_list = incident_repo.get_all_incident_statuses(organisation=user.organisations[0])
-    severity_list = severity_repo.get_all(organisation=user.organisations[0])
-    forms = form_repo.search_forms(organisation=user.organisations[0])
-    incident_types = incident_repo.get_all_incident_types(organisation=user.organisations[0])
+    details = []
+    for organisation in user.organisations:
+        status_list = incident_repo.get_all_incident_statuses(organisation)
+        severity_list = severity_repo.get_all(organisation)
+        forms = form_repo.search_forms(organisation)
+        incident_types = incident_repo.get_all_incident_types(organisation)
+        details.append(
+            {
+                "organisation": organisation,
+                "status_list": status_list,
+                "severity_list": severity_list,
+                "forms": forms,
+                "incident_types": incident_types,
+            }
+        )
 
     world = {
         "user": user,
-        "status_list": status_list,
-        "severity_list": severity_list,
-        "organisations": user.organisations,
-        "forms": forms,
-        "incident_types": incident_types,
+        "organisation_details": details,
     }
 
     return world

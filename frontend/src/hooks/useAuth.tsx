@@ -12,7 +12,7 @@ const _userAuthProvider = () => {
   const { apiService } = useApiService()
 
   const slackLogin = async (code: string) => {
-    const data = await apiService.slackOpenIdLogin(code)
+    const data = await apiService.slackCompleteLogin(code)
     setUser(data)
     saveAuthToBrowser(data)
     apiService.setCurrentUser(data)

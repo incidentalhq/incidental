@@ -20,6 +20,7 @@ class FormRepo(BaseRepo):
         form.organisation_id = organisation.id
         form.name = name
         form.type = _type
+        form.is_published = True
 
         self.session.add(form)
         self.session.flush()

@@ -25,3 +25,8 @@ export enum FormType {
   CREATE_INCIDENT = 'CREATE_INCIDENT',
   UPDATE_INCIDENT = 'UPDATE_INCIDENT'
 }
+
+export enum OrganisationKind {
+  DEFAULT = 'default',
+  SLACK = 'slack'
+}

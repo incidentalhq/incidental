@@ -1,3 +1,4 @@
+import enum
 import typing
 
 from sqlalchemy import String, UnicodeText
@@ -18,8 +19,9 @@ if typing.TYPE_CHECKING:
     from .user import User
 
 
-class OrganisationTypes(object):
+class OrganisationTypes(str, enum.Enum):
     DEFAULT = "default"
+    SLACK = "slack"
 
 
 class Organisation(Base, TimestampMixin):
@@ -48,3 +50,7 @@ class Organisation(Base, TimestampMixin):
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"
+
+    @property
+    def slack_app_installed(self):
+        return self.slack_bot_token is not None

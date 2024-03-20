@@ -1,6 +1,6 @@
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
-import { IIncident, IIncidentUpdate, ILoggedInUser, IPublicUser, IUser, IWorld } from '@/types/models'
+import { IIncident, IIncidentUpdate, ILoggedInUser, IOrganisation, IPublicUser, IUser, IWorld } from '@/types/models'
 import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
@@ -53,14 +53,15 @@ export class ApiService {
     return callApi<IWorld>('GET', '/world/', { user: this.user })
   }
 
-  slackOpenIdLogin(code: string) {
+  slackCompleteLogin(code: string) {
     return callApi<ILoggedInUser>('POST', '/slack/openid/complete', {
       data: { code }
     })
   }
 
-  slackInstallation(code: string) {
-    return callApi<ILoggedInUser>('POST', '/slack/oauth/complete', {
+  slackCompleteAppInstallation(code: string) {
+    return callApi<IOrganisation>('POST', '/slack/oauth/complete', {
+      user: this.user,
       data: { code }
     })
   }
@@ -94,5 +95,13 @@ export class ApiService {
 
   createIncident(values: Record<string, string>) {
     return callApi<IIncident>('POST', `/incidents`, { user: this.user, data: values })
+  }
+
+  slackLoginUrl() {
+    return callApi<{ url: string }>('GET', `/slack/openid/login`)
+  }
+
+  slackAppInstallationUrl() {
+    return callApi<{ url: string }>('GET', `/slack/oauth/install`, { user: this.user })
   }
 }
