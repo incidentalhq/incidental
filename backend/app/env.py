@@ -10,10 +10,6 @@ class Settings(BaseSettings):
     DATABASE_PORT: str = ""
     DATABASE_USER: str = ""
 
-    AWS_REGION: str = ""
-    AWS_KEY_ID: str = ""
-    AWS_SECRET: str = ""
-
     FRONTEND_URL: str = ""
 
     # slack
