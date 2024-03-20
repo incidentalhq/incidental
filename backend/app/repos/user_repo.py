@@ -22,6 +22,14 @@ class UserRepo(BaseRepo):
     def get_by_email_address(self, email: str) -> User | None:
         return self.session.query(User).filter(User.email_address == email.lower()).first()
 
+    def get_by_slack_id_or_email_address(self, slack_id: str, email: str) -> User | None:
+        """Find by either slack id or email address. Prioritise slack ID"""
+        if user := self.get_by_slack_user_id(slack_user_id=slack_id):
+            return user
+        if user := self.get_by_email_address(email=email):
+            return user
+        return None
+
     def get_user_by_auth_token(self, token: str) -> User | None:
         user = self.session.query(User).filter(User.auth_token == token).first()
 

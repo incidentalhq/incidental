@@ -3,9 +3,13 @@ import typing
 from dataclasses import dataclass
 from datetime import datetime
 
+import structlog
+
 from app.models import User
 from app.repos import UserRepo
 from app.services.security import SecurityService
+
+logger = structlog.get_logger(logger_name=__name__)
 
 
 class LoginError(enum.Enum):
@@ -57,5 +61,7 @@ class LoginService:
         # password incorrect
         user.last_login_attempt_at = datetime.now()
         user.login_attempts += 1
+
+        logger.warning("Incorrect password", user_id=user.id, attempts=user.login_attempts)
 
         return LoginResult(False, user, LoginError.INCORRECT_PASSWORD)

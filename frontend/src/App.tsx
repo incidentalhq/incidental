@@ -9,17 +9,22 @@ import DefaultLayout from '@/components/Layout/DefaultLayout'
 import { ApiServiceProvider } from '@/hooks/useApi'
 import { AuthProvider } from '@/hooks/useAuth'
 import { GlobalProvider } from '@/hooks/useGlobal'
+import Login from '@/pages/Auth/EmailLogin'
+import Register from '@/pages/Auth/Register'
+import RegisterSuccess from '@/pages/Auth/Success'
 import Dashboard from '@/pages/Dashboard/Dashboard'
-import Login from '@/pages/Login/Login'
-import Register from '@/pages/Register/Register'
-import RegisterSuccess from '@/pages/Register/Success'
 
+import SlackInstallGuard from './components/Guard/SlackInstallGuard'
 import ModalProvider from './components/Modal/ModalProvider'
 
+import LoginSelector from './pages/Auth/LoginSelector'
+import SlackLogin from './pages/Auth/SlackLogin'
 import IncidentsList from './pages/Incidents/List'
 import ShowIncident from './pages/Incidents/Show'
 import OAuthComplete from './pages/OAuth/Complete'
 import SettingsIndex from './pages/Settings/Index'
+import SlackInstallComplete from './pages/Slack/Complete'
+import SlackInstall from './pages/Slack/Install'
 import { RoutePaths } from './routes'
 
 const queryClient = new QueryClient({
@@ -37,6 +42,8 @@ const DefaultLayoutRoutes = () => (
       <Route path={RoutePaths.INCIDENTS} element={<IncidentsList />} />
       <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
       <Route path={RoutePaths.SETTINGS} element={<SettingsIndex />} />
+      <Route path={RoutePaths.SLACK_INSTALL} element={<SlackInstall />} />
+      <Route path={RoutePaths.SLACK_INSTALL_COMPLETE} element={<SlackInstallComplete />} />
     </Routes>
   </DefaultLayout>
 )
@@ -44,9 +51,11 @@ const DefaultLayoutRoutes = () => (
 const AuthenticatedRoutes = () => (
   <AuthGuard>
     <ReadyGuard>
-      <Routes>
-        <Route path="/*" element={<DefaultLayoutRoutes />} />
-      </Routes>
+      <SlackInstallGuard>
+        <Routes>
+          <Route path="/*" element={<DefaultLayoutRoutes />} />
+        </Routes>
+      </SlackInstallGuard>
     </ReadyGuard>
   </AuthGuard>
 )
@@ -60,10 +69,12 @@ const App = () => {
             <ApiServiceProvider>
               <AuthProvider>
                 <Routes>
-                  <Route path={RoutePaths.LOGIN} element={<Login />} />
+                  <Route path={RoutePaths.LOGIN} element={<LoginSelector />} />
+                  <Route path={RoutePaths.EMAIL_LOGIN} element={<Login />} />
+                  <Route path={RoutePaths.SLACK_LOGIN} element={<SlackLogin />} />
                   <Route path={RoutePaths.REGISTER} element={<Register />} />
-                  <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
                   <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />
+                  <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
                   <Route path="/*" element={<AuthenticatedRoutes />} />
                 </Routes>
               </AuthProvider>

@@ -1,11 +1,16 @@
 export enum RoutePaths {
-  LOGIN = '/login',
   DASHBOARD = '/',
   REGISTER = '/register',
   REGISTER_SUCCESS = '/register/success',
   OAUTH_COMPLETE = '/oauth/complete',
+  LOGIN = '/login',
+  EMAIL_LOGIN = '/login/email',
+  SLACK_LOGIN = '/login/slack',
 
   INCIDENTS = '/incidents',
   SETTINGS = '/settings',
-  SHOW_INCIDENT = '/incidents/:id'
+  SHOW_INCIDENT = '/incidents/:id',
+
+  SLACK_INSTALL = '/slack/install',
+  SLACK_INSTALL_COMPLETE = '/slack/install/complete'
 }
