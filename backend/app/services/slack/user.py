@@ -53,7 +53,7 @@ class SlackUserService:
                 slack_user_id=slack_id,
             )
         )
-        self.organisation_repo.create_member(user, organisation, role="member")
+        self.organisation_repo.add_member_if_not_exists(user=user, organisation=organisation, role=MemberRole.MEMBER)
         logger.info(
             "Created new user from slack information",
             user_id=user.id,
@@ -100,7 +100,7 @@ class SlackUserService:
         team_name = response.data.get(team_name_key, "")
 
         organisation = self.organisation_repo.get_by_slack_team_id(team_id)
-        is_new_organisation = True
+        is_new_organisation = False
 
         if not organisation:
             organisation = self.organisation_repo.create_organisation(
