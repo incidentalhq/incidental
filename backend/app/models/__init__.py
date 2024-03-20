@@ -9,8 +9,8 @@ from .incident_severity import IncidentSeverity
 from .incident_status import IncidentStatus, IncidentStatusCategoryEnum
 from .incident_type import IncidentType
 from .incident_update import IncidentUpdate
-from .organisation import Organisation
-from .organisation_member import OrganisationMember
+from .organisation import Organisation, OrganisationTypes
+from .organisation_member import MemberRole, OrganisationMember
 from .settings import Settings
 from .slack_message import SlackMessage
 from .user import User

@@ -3,7 +3,7 @@
 
 import structlog
 
-from app.models import User
+from app.models import MemberRole, User
 from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import CreateUserSchema
 
@@ -20,7 +20,7 @@ class IdentityService:
         user = self.user_repo.create_user(create_in=create_in)
         organisation = self.organisation_repo.create_organisation("Default")
 
-        self.organisation_repo.add_member(user, organisation, role="member")
+        self.organisation_repo.create_member(user, organisation, role=MemberRole.MEMBER)
 
         logger.info("Created new account", user=user, organisation=organisation)
 

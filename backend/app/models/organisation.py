@@ -1,3 +1,4 @@
+import enum
 import typing
 
 from sqlalchemy import String, UnicodeText
@@ -18,8 +19,9 @@ if typing.TYPE_CHECKING:
     from .user import User
 
 
-class OrganisationTypes(object):
+class OrganisationTypes(str, enum.Enum):
     DEFAULT = "default"
+    SLACK = "slack"
 
 
 class Organisation(Base, TimestampMixin):

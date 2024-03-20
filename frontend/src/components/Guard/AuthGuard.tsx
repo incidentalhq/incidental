@@ -4,20 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import useApiService from '@/hooks/useApi'
 import useAuth from '@/hooks/useAuth'
 import { RoutePaths } from '@/routes'
-import { getAuthFromBrowser, pushOAuthRequest } from '@/utils/storage'
-
-// If Oauth request push request into a local queue
-const pushOAuthRequestsIfExists = () => {
-  const params = new URLSearchParams(window.location.search)
-  const code = params.get('code')
-  const state = params.get('state')
-
-  if (!code || !state) {
-    return
-  }
-
-  pushOAuthRequest(code, state)
-}
+import { getAuthFromBrowser } from '@/utils/storage'
 
 const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
   const [redirect, setRedirect] = useState(false)
@@ -41,7 +28,6 @@ const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
 
     // redirect to login page
     if (!user && !cookieData) {
-      pushOAuthRequestsIfExists()
       setRedirect(true)
     }
   }, [cookieData, user, setUser, navigate, location.pathname, apiService])

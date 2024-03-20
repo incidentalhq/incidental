@@ -16,7 +16,7 @@ const SlackInstallGuard: React.FC<PropsWithChildren> = ({ children }) => {
       return
     }
 
-    const ignoreCurrentPath = ignorePaths.includes(location.pathname)
+    const ignoreCurrentPath = ignorePaths.includes(location.pathname as RoutePaths)
 
     if (!organisation.slackAppInstalled && !ignoreCurrentPath) {
       setShouldRedirect(true)

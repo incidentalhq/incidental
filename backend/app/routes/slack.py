@@ -15,7 +15,7 @@ from app.repos import (
     UserRepo,
 )
 from app.schemas.actions import OAuth2AuthorizationResultSchema
-from app.schemas.models import UserSchema
+from app.schemas.models import OrganisationSchema, UserSchema
 from app.schemas.slack import (
     SlackCommandDataSchema,
     SlackEventCallbackSchema,
@@ -101,7 +101,7 @@ async def slack_install_bot():
 async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session: Session = Depends(get_db)):
     """Complete sign-in using slack"""
     connector = _create_openid_connector()
-    token = connector.complete(code=result.code)
+    credentials = connector.complete(code=result.code)
 
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
@@ -110,10 +110,10 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     incident_repo = IncidentRepo(session=session)
     announcement_repo = AnnouncementRepo(session=session)
 
-    slack_user_service = SlackUserService(
-        token=token.access_token, user_repo=user_repo, organisation_repo=organisation_repo
+    slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
+    create_result = slack_user_service.get_or_create_user_from_slack_user_credentials_token(
+        token=credentials.access_token
     )
-    create_result = slack_user_service.get_or_create_user_from_slack_credentials_token()
 
     onboarding_service = OnboardingService(
         form_repo=form_repo,
@@ -129,7 +129,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     return create_result.user
 
 
-@router.post("/oauth/complete")
+@router.post("/oauth/complete", response_model=OrganisationSchema)
 async def slack_oauth_complete(
     result: OAuth2AuthorizationResultSchema, user: CurrentUser, session: Session = Depends(get_db)
 ):
@@ -137,20 +137,29 @@ async def slack_oauth_complete(
     connector = _create_oauth_connector()
     token = connector.complete(code=result.code)
 
+    user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
-    organisation = organisation_repo.get_by_slack_team_id(token.original_data["team"]["id"])
-    if organisation:
-        organisation.slack_bot_token = token.access_token
-        session.commit()
-        return Response(status_code=status.HTTP_202_ACCEPTED)
+    form_repo = FormRepo(session=session)
+    severity_repo = SeverityRepo(session=session)
+    incident_repo = IncidentRepo(session=session)
+    announcement_repo = AnnouncementRepo(session=session)
 
-    # otherwise, we might have signed up with user + password
-    organisation = user.organisations[0]
-    organisation.slack_bot_token = token.access_token
+    onboarding_service = OnboardingService(
+        form_repo=form_repo,
+        severity_repo=severity_repo,
+        incident_repo=incident_repo,
+        announcement_repo=announcement_repo,
+    )
+
+    slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
+    creation_result = slack_user_service.update_slack_profile_from_app_install_credentials(user=user, credentials=token)
+
+    if creation_result.is_new_organisation:
+        onboarding_service.setup_organisation(organisation=creation_result.organisation)
 
     session.commit()
 
-    return Response(status_code=status.HTTP_202_ACCEPTED)
+    return creation_result.organisation
 
 
 @router.post("/events")
@@ -171,7 +180,6 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
             return
 
         slack_user_service = SlackUserService(
-            token=organisation.slack_bot_token,
             user_repo=user_repo,
             organisation_repo=organisation_repo,
         )
@@ -212,7 +220,6 @@ async def slack_slash_command(
         raise ApplicationException("Could not find related organisation")
 
     slack_user_service = SlackUserService(
-        token=organisation.slack_bot_token,
         user_repo=user_repo,
         organisation_repo=organisation_repo,
     )
@@ -268,7 +275,6 @@ def slack_interaction(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
     )
     slack_user_service = SlackUserService(
-        token=organisation.slack_bot_token,
         user_repo=user_repo,
         organisation_repo=organisation_repo,
     )

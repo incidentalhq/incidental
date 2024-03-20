@@ -16,7 +16,7 @@ const IncidentsList = () => {
   const { apiService } = useApiService()
 
   const activeIncidentsQuery = useQuery({
-    queryKey: ['incidents'],
+    queryKey: ['incident-list', { status: 'all' }],
     queryFn: () => apiService.searchIncidents({})
   })
 

@@ -17,7 +17,7 @@ class ApplicationException(Exception):
         self,
         message: str,
         code: ErrorCodes | None = None,
-        status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code: int = status.HTTP_400_BAD_REQUEST,
     ):
         self.message = message
         self.code = code

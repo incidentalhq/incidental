@@ -1,6 +1,6 @@
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
-import { IIncident, IIncidentUpdate, ILoggedInUser, IPublicUser, IUser, IWorld } from '@/types/models'
+import { IIncident, IIncidentUpdate, ILoggedInUser, IOrganisation, IPublicUser, IUser, IWorld } from '@/types/models'
 import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
@@ -60,7 +60,7 @@ export class ApiService {
   }
 
   slackCompleteAppInstallation(code: string) {
-    return callApi<ILoggedInUser>('POST', '/slack/oauth/complete', {
+    return callApi<IOrganisation>('POST', '/slack/oauth/complete', {
       user: this.user,
       data: { code }
     })

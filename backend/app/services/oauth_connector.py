@@ -38,7 +38,7 @@ class OAuthConnectorService:
 
         return url
 
-    def complete(self, code: str):
+    def complete(self, code: str) -> Credentials:
         """Complete oauth exchange"""
         payload = {
             "code": code,

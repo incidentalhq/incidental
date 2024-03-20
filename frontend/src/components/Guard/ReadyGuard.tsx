@@ -6,13 +6,14 @@ import useApiService from '@/hooks/useApi'
 import useAuth from '@/hooks/useAuth'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
+import { getPreference, PREF_SELECTED_ORGANISATION } from '@/utils/storage'
 
 type Props = PropsWithChildren
 
 const ReadyGuard: React.FC<Props> = ({ children }) => {
   const { apiService } = useApiService()
   const { logout } = useAuth()
-  const { setOrganisation, setStatusList, setSeverityList, setForms, setIncidentTypes } = useGlobal()
+  const { setCurrentOrganisation, setOrganisationDetails } = useGlobal()
 
   const worldQuery = useQuery({
     queryKey: ['world'],
@@ -31,22 +32,32 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
   }, [worldQuery.error, logout])
 
   useEffect(() => {
-    if (worldQuery.isSuccess) {
-      setOrganisation(worldQuery.data.organisations[0]) //TODO: support multi organisations
-      setStatusList(worldQuery.data.statusList)
-      setSeverityList(worldQuery.data.severityList)
-      setForms(worldQuery.data.forms)
-      setIncidentTypes(worldQuery.data.incidentTypes)
+    if (!worldQuery.isSuccess) {
+      return
     }
-  }, [
-    worldQuery.data,
-    worldQuery.isSuccess,
-    setOrganisation,
-    setStatusList,
-    setSeverityList,
-    setForms,
-    setIncidentTypes
-  ])
+
+    const selectedOrganisationId = getPreference<string>(PREF_SELECTED_ORGANISATION)
+
+    // fallback to first organisation
+    if (!selectedOrganisationId) {
+      const firstMembership = worldQuery.data.organisationDetails[0]
+      setCurrentOrganisation(firstMembership)
+      return
+    }
+
+    const organisationDetail = worldQuery.data.organisationDetails.find(
+      (it) => it.organisation.id === selectedOrganisationId
+    )
+    if (organisationDetail) {
+      setCurrentOrganisation(organisationDetail)
+      console.log('Selecting organisation via preferences', selectedOrganisationId)
+    } else {
+      const firstMembership = worldQuery.data.organisationDetails[0]
+      setCurrentOrganisation(firstMembership)
+    }
+
+    setOrganisationDetails(worldQuery.data.organisationDetails)
+  }, [worldQuery.data, worldQuery.isSuccess, setCurrentOrganisation, setOrganisationDetails])
 
   if (!worldQuery.isFetched) {
     return <p>Loading</p>

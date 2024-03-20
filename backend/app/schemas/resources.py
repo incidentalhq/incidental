@@ -26,15 +26,20 @@ class PaginatedResults(BaseSchema, Generic[DataT]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-class WorldSchema(BaseSchema):
-    user: UserSchema
+class OrganisationDetail(BaseSchema):
+    organisation: OrganisationSchema
     status_list: list[IncidentStatusSchema]
     severity_list: list[IncidentSeveritySchema]
-    organisations: list[OrganisationSchema]
     forms: list[FormSchema]
     incident_types: list[IncidentTypeSchema]
 
 
+class WorldSchema(BaseSchema):
+    user: UserSchema
+    organisation_details: list[OrganisationDetail]
+
+
+# - misc credentials
 class CreationResult(BaseSchema):
     user: User
     organisation: Organisation

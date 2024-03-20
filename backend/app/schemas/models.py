@@ -15,6 +15,7 @@ class ModelSchema(ModelIdSchema):
 
 
 class OrganisationSchema(ModelSchema):
+    slug: str
     name: str
     kind: str
     slack_team_id: str | None

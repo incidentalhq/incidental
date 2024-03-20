@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
@@ -31,14 +31,15 @@ const Dashboard = () => {
   const { apiService } = useApiService()
   const { setModal, closeModal } = useModal()
   const { forms } = useGlobal()
+  const queryClient = useQueryClient()
 
   const activeIncidentsQuery = useQuery({
-    queryKey: ['active-incidents'],
+    queryKey: ['incident-list', { status: 'active' }],
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.ACTIVE] })
   })
 
   const inTriageQuery = useQuery({
-    queryKey: ['triage-incidents'],
+    queryKey: ['incident-list', { status: 'triage' }],
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.TRIAGE] })
   })
 
@@ -46,13 +47,16 @@ const Dashboard = () => {
     async (values: DeclareIncidentFormValues) => {
       try {
         await apiService.createIncident(values)
+        queryClient.invalidateQueries({
+          queryKey: ['incident-list']
+        })
         toast('Incident declared', { type: 'success' })
         closeModal()
       } catch (e) {
         console.error('There was an issue creating the incident')
       }
     },
-    [apiService, closeModal]
+    [apiService, closeModal, queryClient]
   )
 
   const handleOpenDeclareModal = useCallback(

@@ -1,4 +1,4 @@
-import { FormFieldKind, FormType, IncidentRoleKind, IncidentStatusCategory } from './enums'
+import { FormFieldKind, FormType, IncidentRoleKind, IncidentStatusCategory, OrganisationKind } from './enums'
 
 export type ILoggedInUser = Required<IUser>
 
@@ -12,19 +12,25 @@ interface IModel {
 }
 
 export interface IOrganisation extends IModel {
+  slug: string
   name: string
   slackTeamName: string
   slackTeamId: string
   slackAppInstalled: boolean
+  kind: OrganisationKind
 }
 
-export interface IWorld {
-  user: IUser
-  organisations: IOrganisation[]
+export interface IOrganisationDetail {
+  organisation: IOrganisation
   statusList: IIncidentStatus[]
   severityList: IIncidentSeverity[]
   forms: IForm[]
   incidentTypes: IIncidentType[]
+}
+
+export interface IWorld {
+  user: IUser
+  organisationDetails: IOrganisationDetail[]
 }
 
 export interface IUser extends IModel {

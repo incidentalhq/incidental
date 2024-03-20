@@ -1,3 +1,5 @@
+import { faSpinner } from '@fortawesome/pro-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -6,6 +8,7 @@ import styled from 'styled-components'
 import { Box, Content } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import { RoutePaths } from '@/routes'
+import { PREF_SELECTED_ORGANISATION, setPreference } from '@/utils/storage'
 
 const Root = styled.div`
   width: 30rem;
@@ -24,7 +27,8 @@ const SlackInstallComplete: React.FC = () => {
 
   const processOauth = useCallback(
     async (code: string) => {
-      await apiService.slackCompleteAppInstallation(code)
+      const response = await apiService.slackCompleteAppInstallation(code)
+      setPreference(PREF_SELECTED_ORGANISATION, response.id)
       await client.invalidateQueries({
         queryKey: ['world']
       })
@@ -39,14 +43,15 @@ const SlackInstallComplete: React.FC = () => {
       console.error('Unable to find code')
       return
     }
-
     processOauth(code)
   }, [searchParams, processOauth])
 
   return (
     <Root>
       <Box>
-        <Content>Installing slack application...</Content>
+        <Content>
+          <FontAwesomeIcon spin icon={faSpinner} fixedWidth /> Installing slack application...
+        </Content>
       </Box>
     </Root>
   )
