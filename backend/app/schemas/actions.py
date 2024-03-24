@@ -80,6 +80,7 @@ class CreateIncidentSchema(BaseSchema):
 class CreateSeveritySchema(BaseSchema):
     name: str
     description: str
+    rating: int | None = None
 
 
 class PatchSeveritySchema(BaseSchema):

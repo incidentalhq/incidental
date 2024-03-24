@@ -51,7 +51,7 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
     owner: Mapped["User"] = relationship("User", back_populates="incidents_created")
     incident_type: Mapped["IncidentType"] = relationship("IncidentType")
     incident_status: Mapped["IncidentStatus"] = relationship("IncidentStatus")
-    incident_severity: Mapped["IncidentSeverity"] = relationship("IncidentSeverity")
+    incident_severity: Mapped["IncidentSeverity"] = relationship("IncidentSeverity", back_populates="incidents")
     incident_role_assignments: Mapped[list["IncidentRoleAssignment"]] = relationship(
         "IncidentRoleAssignment", back_populates="incident"
     )
