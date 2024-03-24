@@ -17,12 +17,12 @@ const useGlobalProvider = () => {
   const [incidentTypes, setIncidentTypes] = useState<IIncidentType[]>([])
   const [organisationDetails, setOrganisationDetails] = useState<IOrganisationDetail[]>([])
 
-  const setCurrentOrganisation = useCallback((organisationMembership: IOrganisationDetail) => {
-    setOrganisation(organisationMembership.organisation)
-    setStatusList(organisationMembership.statusList)
-    setSeverityList(organisationMembership.severityList)
-    setForms(organisationMembership.forms)
-    setIncidentTypes(organisationMembership.incidentTypes)
+  const setCurrentOrganisation = useCallback((organisationDetail: IOrganisationDetail) => {
+    setOrganisation(organisationDetail.organisation)
+    setStatusList(organisationDetail.statusList)
+    setSeverityList(organisationDetail.severityList)
+    setForms(organisationDetail.forms)
+    setIncidentTypes(organisationDetail.incidentTypes)
   }, [])
 
   return {

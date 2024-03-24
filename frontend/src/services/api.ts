@@ -1,9 +1,20 @@
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
-import { IIncident, IIncidentUpdate, ILoggedInUser, IOrganisation, IPublicUser, IUser, IWorld } from '@/types/models'
+import {
+  IIncident,
+  IIncidentUpdate,
+  ILoggedInUser,
+  IOrganisation,
+  IPublicUser,
+  IUser,
+  IWorld,
+  ModelID
+} from '@/types/models'
 import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
+
+const ORGANISATION_HEADER_KEY = 'x-organisation-id'
 
 interface ICreateUser {
   name: string
@@ -31,7 +42,7 @@ export class ApiService {
     this.user = user
   }
 
-  setOrganisation(organisation: string) {
+  setOrganisation(organisation: ModelID) {
     this.organisation = organisation
   }
 
@@ -70,7 +81,7 @@ export class ApiService {
     return callApi<PaginatedResults<IIncident>>('GET', `/incidents/search`, {
       user: this.user,
       headers: {
-        'x-organisation-id': this.organisation
+        [ORGANISATION_HEADER_KEY]: this.organisation
       },
       params: {
         q: query,
@@ -94,7 +105,13 @@ export class ApiService {
   }
 
   createIncident(values: Record<string, string>) {
-    return callApi<IIncident>('POST', `/incidents`, { user: this.user, data: values })
+    return callApi<IIncident>('POST', `/incidents`, {
+      user: this.user,
+      data: values,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
   }
 
   slackLoginUrl() {

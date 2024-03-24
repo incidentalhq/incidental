@@ -27,7 +27,6 @@ const ChangeStatusForm: React.FC<Props> = ({ statusList, incident, onSubmit }) =
   }
   const handleSubmit = useCallback(
     (values: FormValues, helpers: FormikHelpers<FormValues>) => {
-      console.log('xxx')
       onSubmit(values, helpers)
     },
     [onSubmit]

@@ -22,9 +22,9 @@ from .base_repo import BaseRepo
 
 
 class IncidentRepo(BaseRepo):
-    def get_incident_by_id(self, id: str) -> Incident:
+    def get_incident_by_id(self, id: str) -> Incident | None:
         stmt = select(Incident).where(Incident.id == id).limit(1)
-        return self.session.scalars(stmt).one()
+        return self.session.scalar(stmt)
 
     def create_incident_type(self, organisation: Organisation, name: str, description: str) -> IncidentType:
         model = IncidentType()
