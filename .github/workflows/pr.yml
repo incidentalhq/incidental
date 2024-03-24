@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: tetra/backend
+      IMAGE_NAME: incidental/backend
 
     steps:
       - uses: actions/checkout@v3
@@ -44,6 +44,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           outputs: type=docker
+
+      - name: Copy env file
+        run: cp .env.example .env
 
       - name: Create the docker compose stack
         run: docker-compose -f docker-compose.yml up -d
