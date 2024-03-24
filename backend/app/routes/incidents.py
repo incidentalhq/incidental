@@ -1,9 +1,10 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
-from app.deps import CurrentUser, DatabaseSession, OrganisationId
+from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
+from app.exceptions import ApplicationException
 from app.models import FormType
 from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
 from app.schemas.actions import (
@@ -26,11 +27,11 @@ async def incident_search(
     search_params: Annotated[IncidentSearchSchema, Depends(IncidentSearchSchema.as_query)],
     user: CurrentUser,
     db: DatabaseSession,
-    organisation_id: OrganisationId = None,
+    organisation: CurrentOrganisation,
 ):
     incident_repo = IncidentRepo(session=db)
     incidents = incident_repo.search_incidents(
-        organisation=user.organisations[0],
+        organisation=organisation,
         query=search_params.q,
         page=search_params.page,
         size=search_params.size,
@@ -41,14 +42,16 @@ async def incident_search(
 
 
 @router.post("", response_model=IncidentSchema)
-async def incident_create(user: CurrentUser, db: DatabaseSession, create_in: CreateIncidentSchema):
+async def incident_create(
+    user: CurrentUser, db: DatabaseSession, create_in: CreateIncidentSchema, organisation: CurrentOrganisation
+):
     form_repo = FormRepo(session=db)
     incident_repo = IncidentRepo(session=db)
     announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
-        organisation=user.organisations[0], incident_repo=incident_repo, announcement_repo=announcement_repo
+        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
     )
-    form = form_repo.get_form(organisation=user.organisations[0], form_type=FormType.CREATE_INCIDENT)
+    form = form_repo.get_form(organisation=organisation, form_type=FormType.CREATE_INCIDENT)
     if not form:
         raise ValueError("Could not find create incident form")
 
@@ -70,10 +73,12 @@ async def incident_get(id: str, db: DatabaseSession, user: CurrentUser):
 async def incident_patch(id: str, patch_in: PatchIncidentSchema, db: DatabaseSession, user: CurrentUser):
     incident_repo = IncidentRepo(session=db)
     incident = incident_repo.get_incident_by_id(id)
-    announcement_repo = AnnouncementRepo(session=db)
+    if not incident:
+        raise ApplicationException("Incident not found", status_code=status.HTTP_404_NOT_FOUND)
 
+    announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
-        organisation=user.organisations[0], incident_repo=incident_repo, announcement_repo=announcement_repo
+        organisation=incident.organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
     )
     incident_service.patch_incident(user=user, incident=incident, patch_in=patch_in)
 
@@ -91,6 +96,8 @@ async def incident_updates(
 ):
     incident_repo = IncidentRepo(session=db)
     incident = incident_repo.get_incident_by_id(id)
+    if not incident:
+        raise ApplicationException("Incident not found", status_code=status.HTTP_404_NOT_FOUND)
 
     results = incident_repo.get_incident_updates(
         incident=incident,

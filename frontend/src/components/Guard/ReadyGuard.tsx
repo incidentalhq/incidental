@@ -36,12 +36,15 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
       return
     }
 
+    setOrganisationDetails(worldQuery.data.organisationDetails)
+
     const selectedOrganisationId = getPreference<string>(PREF_SELECTED_ORGANISATION)
 
     // fallback to first organisation
     if (!selectedOrganisationId) {
-      const firstMembership = worldQuery.data.organisationDetails[0]
-      setCurrentOrganisation(firstMembership)
+      const first = worldQuery.data.organisationDetails[0]
+      setCurrentOrganisation(first)
+      apiService.setOrganisation(first.organisation.id)
       return
     }
 
@@ -50,14 +53,14 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
     )
     if (organisationDetail) {
       setCurrentOrganisation(organisationDetail)
+      apiService.setOrganisation(organisationDetail.organisation.id)
       console.log('Selecting organisation via preferences', selectedOrganisationId)
     } else {
-      const firstMembership = worldQuery.data.organisationDetails[0]
-      setCurrentOrganisation(firstMembership)
+      const first = worldQuery.data.organisationDetails[0]
+      setCurrentOrganisation(first)
+      apiService.setOrganisation(first.organisation.id)
     }
-
-    setOrganisationDetails(worldQuery.data.organisationDetails)
-  }, [worldQuery.data, worldQuery.isSuccess, setCurrentOrganisation, setOrganisationDetails])
+  }, [worldQuery.data, worldQuery.isSuccess, setCurrentOrganisation, setOrganisationDetails, apiService])
 
   if (!worldQuery.isFetched) {
     return <p>Loading</p>

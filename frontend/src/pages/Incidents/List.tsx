@@ -26,10 +26,10 @@ const IncidentsList = () => {
   const { apiService } = useApiService()
   const queryClient = useQueryClient()
   const { closeModal, setModal } = useModal()
-  const { forms } = useGlobal()
+  const { forms, organisation } = useGlobal()
 
   const activeIncidentsQuery = useQuery({
-    queryKey: ['incident-list', { status: 'all' }],
+    queryKey: ['incident-list', { status: 'all', organisation: organisation?.id }],
     queryFn: () => apiService.searchIncidents({})
   })
 
