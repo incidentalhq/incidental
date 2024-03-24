@@ -7,8 +7,10 @@ export enum RoutePaths {
   EMAIL_LOGIN = '/login/email',
   SLACK_LOGIN = '/login/slack',
 
+  SETTINGS_INDEX = '/:organisation/settings',
+  SETTINGS_SEVERITY = '/:organisation/settings/severity',
+
   INCIDENTS = '/incidents',
-  SETTINGS = '/settings',
   SHOW_INCIDENT = '/incidents/:id',
 
   SLACK_INSTALL = '/slack/install',

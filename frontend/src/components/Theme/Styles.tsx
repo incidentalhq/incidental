@@ -136,7 +136,6 @@ export const Header = styled.div<HeaderStyleProps>`
 `
 
 export const Content = styled.div`
-  position: relative;
   display: flex;
 `
 interface ContentMainProps {
