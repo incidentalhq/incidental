@@ -15,7 +15,7 @@ Requirements:
 - docker
 - docker-compose
 - pnpm
-- node v18.18.2
+- node v18
 
 To run locally for development:
 
@@ -23,7 +23,7 @@ To run locally for development:
 2. Copy `backend/.env.example` to `backend/.env` and update the slack specific environment variables
 3. Copy `frontend/.env.example` to `frontend/.env`
 4. In `backend` run `make run-dev`
-5. In `frontend` run `pnpm run dev`
+5. In `frontend` run `make run-dev`
 6. Goto `http://localhost:3000` and create an account
 
 # Resources

@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import slackMark from '@/assets/slack_mark.png'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
+import useGlobal from '@/hooks/useGlobal'
+import { RoutePaths } from '@/routes'
 
 const InstallSlackLink = styled.a`
   display: inline-block;
@@ -25,11 +29,22 @@ const InstallSlackLink = styled.a`
 
 const SlackInstall = () => {
   const { apiService } = useApiService()
+  const { organisation } = useGlobal()
+  const navigate = useNavigate()
 
   const query = useQuery({
     queryKey: ['slack-app-install'],
     queryFn: () => apiService.slackAppInstallationUrl()
   })
+
+  useEffect(() => {
+    if (!organisation) {
+      return
+    }
+    if (organisation.slackAppInstalled) {
+      navigate(RoutePaths.DASHBOARD)
+    }
+  }, [organisation, navigate])
 
   return (
     <>

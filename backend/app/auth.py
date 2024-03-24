@@ -1,11 +1,12 @@
 from fastapi import Depends, Header, HTTPException
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.db import get_db
 from app.repos import UserRepo
 
 
-async def get_current_user(db: None = Depends(get_db), authorization: str = Header(None)):
+async def get_current_user(db: Session = Depends(get_db), authorization: str = Header(None)):
     auth_token = None
     if authorization and "bearer" in authorization.lower():
         auth_token = authorization.split(" ")[1]

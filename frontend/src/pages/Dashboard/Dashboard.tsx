@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import EmptyTable from '@/components/Empty/EmptyTable'
 import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/components/Incident/DeclareIncidentForm'
 import IncidentRow from '@/components/Incident/IncidentRow'
+import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -30,16 +31,16 @@ const ModalContainer = styled.div`
 const Dashboard = () => {
   const { apiService } = useApiService()
   const { setModal, closeModal } = useModal()
-  const { forms } = useGlobal()
+  const { forms, organisation } = useGlobal()
   const queryClient = useQueryClient()
 
   const activeIncidentsQuery = useQuery({
-    queryKey: ['incident-list', { status: 'active' }],
+    queryKey: ['incident-list', { status: 'active', organisation: organisation?.id }],
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.ACTIVE] })
   })
 
   const inTriageQuery = useQuery({
-    queryKey: ['incident-list', { status: 'triage' }],
+    queryKey: ['incident-list', { status: 'triage', organisation: organisation?.id }],
     queryFn: () => apiService.searchIncidents({ statusCategory: [IncidentStatusCategory.TRIAGE] })
   })
 
@@ -93,6 +94,7 @@ const Dashboard = () => {
         </CategoryHeader>
         <Content>
           <ContentMain $padding={false}>
+            {activeIncidentsQuery.isFetching && <Loading text="Loading active incidents" />}
             {activeIncidentsQuery.isSuccess ? (
               <>
                 {activeIncidentsQuery.data.items.map((it) => (
@@ -109,6 +111,7 @@ const Dashboard = () => {
         </CategoryHeader>
         <Content>
           <ContentMain $padding={false}>
+            {inTriageQuery.isFetching && <Loading text="Loading incidents in triage" />}
             {inTriageQuery.isSuccess ? (
               <>
                 {inTriageQuery.data.items.map((it) => (
