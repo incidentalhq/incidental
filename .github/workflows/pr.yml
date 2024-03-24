@@ -51,7 +51,7 @@ jobs:
       - name: Create the docker compose stack
         run: docker-compose -f docker-compose.yml up -d
 
-      - name: Check local running docker contains
+      - name: Check local running docker containers
         run: docker ps -a
 
       - name: Migrate db
