@@ -139,4 +139,10 @@ export class ApiService {
       data: values
     })
   }
+
+  deleteSeverity(severity: IIncidentSeverity) {
+    return callApi<IIncidentSeverity>('DELETE', `/severities/${severity.id}`, {
+      user: this.user
+    })
+  }
 }
