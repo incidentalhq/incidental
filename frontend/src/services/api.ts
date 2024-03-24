@@ -2,6 +2,7 @@ import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IIncident,
+  IIncidentSeverity,
   IIncidentUpdate,
   ILoggedInUser,
   IOrganisation,
@@ -120,5 +121,22 @@ export class ApiService {
 
   slackAppInstallationUrl() {
     return callApi<{ url: string }>('GET', `/slack/oauth/install`, { user: this.user })
+  }
+
+  createSeverity(values: Omit<IIncidentSeverity, 'id' | 'rating' | 'createdAt'>) {
+    return callApi<IIncidentSeverity>('POST', `/severities`, {
+      user: this.user,
+      data: values,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchSeverity(severity: IIncidentSeverity, values: Partial<Omit<IIncidentSeverity, 'id'>>) {
+    return callApi<IIncidentSeverity>('PATCH', `/severities/${severity.id}`, {
+      user: this.user,
+      data: values
+    })
   }
 }

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.exceptions import ApplicationException, FormFieldValidationError
-from app.routes import forms, health, incidents, slack, users, world
+from app.routes import forms, health, incidents, severities, slack, users, world
 
 from .env import settings
 
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
     app.include_router(slack.router, prefix="/slack")
     app.include_router(incidents.router, prefix="/incidents")
     app.include_router(forms.router, prefix="/forms")
+    app.include_router(severities.router, prefix="/severities")
 
     return app
 
