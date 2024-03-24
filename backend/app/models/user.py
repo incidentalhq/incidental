@@ -70,3 +70,10 @@ class User(Base, TimestampMixin):
         if self.password is None:
             return False
         return pwd_context.verify(password, self._password)
+
+    def belongs_to(self, organisation: "Organisation") -> bool:
+        for org in self.organisations:
+            if org.id == organisation.id:
+                return True
+
+        return False

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { FormikHelpers } from 'formik'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { generatePath } from 'react-router-dom'
 import styled from 'styled-components'
 
 import useApiService from '@/hooks/useApi'
@@ -65,26 +66,28 @@ const SideBar: React.FC<Props> = () => {
 
   return (
     <Root>
-      <SwitchOrganisationWrapper>
-        {organisation && (
-          <SwitchOrganisationForm
-            onSubmit={handleSubmit}
-            organisations={organisations}
-            currentOrganisation={organisation}
-          />
-        )}
-      </SwitchOrganisationWrapper>
-      <MenuItems>
-        <Item to={RoutePaths.DASHBOARD}>
-          <FontAwesomeIcon icon={faHome} fixedWidth={true} /> Dashboard
-        </Item>
-        <Item to={RoutePaths.INCIDENTS}>
-          <FontAwesomeIcon icon={faBoltLightning} fixedWidth={true} /> Incidents
-        </Item>
-        <Item to={RoutePaths.SETTINGS}>
-          <FontAwesomeIcon icon={faCog} fixedWidth={true} /> Settings
-        </Item>
-      </MenuItems>
+      {organisation && (
+        <>
+          <SwitchOrganisationWrapper>
+            <SwitchOrganisationForm
+              onSubmit={handleSubmit}
+              organisations={organisations}
+              currentOrganisation={organisation}
+            />
+          </SwitchOrganisationWrapper>
+          <MenuItems>
+            <Item to={RoutePaths.DASHBOARD}>
+              <FontAwesomeIcon icon={faHome} fixedWidth={true} /> Dashboard
+            </Item>
+            <Item to={RoutePaths.INCIDENTS}>
+              <FontAwesomeIcon icon={faBoltLightning} fixedWidth={true} /> Incidents
+            </Item>
+            <Item to={generatePath(RoutePaths.SETTINGS_INDEX, { organisation: organisation!.slug })}>
+              <FontAwesomeIcon icon={faCog} fixedWidth={true} /> Settings
+            </Item>
+          </MenuItems>
+        </>
+      )}
     </Root>
   )
 }

@@ -71,7 +71,7 @@ class SlackInteractionService:
         # severity
         sev_field = self.form_repo.get_form_field_by_name(form=form, name="incident_severity")
         sev_id = form_state_values[f"block-{sev_field.id}"][sev_field.id]["selected_option"]["value"]
-        severity = self.incident_repo.get_incident_severity_by_id(id=sev_id)
+        severity = self.severity_repo.get_severity_by_id(id=sev_id)
 
         # incident type
         type_field = self.form_repo.get_form_field_by_name(form=form, name="incident_type")

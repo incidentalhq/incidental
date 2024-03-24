@@ -11,7 +11,7 @@ export interface ColumnProperty<T> {
 }
 
 interface TableProps<T> {
-  rowKey: string | ((row: T) => string)
+  rowKey: keyof T | ((row: T) => string)
   data: T[]
   columns: ColumnProperty<T>[]
   onRowClick?: (record: T) => void
@@ -91,7 +91,7 @@ const TableRow = <RecordType,>({ row, columns, onRowClick }: React.PropsWithChil
   )
 }
 
-const Table = <T extends Record<string, unknown>>({
+const Table = <T,>({
   rowKey,
   data,
   columns,

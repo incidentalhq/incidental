@@ -75,3 +75,14 @@ class CreateIncidentSchema(BaseSchema):
     summary: str | None = None
 
     model_config = ConfigDict(extra="allow")
+
+
+class CreateSeveritySchema(BaseSchema):
+    name: str
+    description: str
+
+
+class PatchSeveritySchema(BaseSchema):
+    name: str | None = None
+    description: str | None = None
+    rating: int | None = None
