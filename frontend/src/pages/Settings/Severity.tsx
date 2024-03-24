@@ -10,6 +10,7 @@ import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
+import { APIError } from '@/services/transport'
 import { IIncidentSeverity } from '@/types/models'
 
 import SeverityForm, { FormValues as SeverityFormValues } from './forms/SeverityForm'
@@ -75,8 +76,15 @@ const SettingsSeverity = () => {
     []
   )
 
-  const handleDelete = (severity: IIncidentSeverity) => {
-    console.log(severity)
+  const handleDelete = async (severity: IIncidentSeverity) => {
+    try {
+      await apiService.deleteSeverity(severity)
+      setSeverityList(severityList.filter((it) => it.id != severity.id))
+    } catch (error) {
+      if (error instanceof APIError) {
+        toast(error.message, { type: 'error' })
+      }
+    }
   }
 
   const handleAddSeverity = async (values: SeverityFormValues) => {
