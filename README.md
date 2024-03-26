@@ -1,3 +1,5 @@
+<img src="https://imgur.com/4zm0ju6.png" />
+
 <div style="display: flex; justify-content: center; gap: 16px; align-items: center;">
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
@@ -11,7 +13,7 @@
 
 # Incidental is an open-source incident management platform
 
-- [x] ChapOps: Declare and manage your incidents all within your Slack workspace
+- [x] ChatOps: Declare and manage your incidents all within your Slack workspace
 - [x] Web UI: Easy to use web interface to manage your incidents
 - [ ] Custom fields
 - [ ] Custom workflows
