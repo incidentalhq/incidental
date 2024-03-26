@@ -13,6 +13,10 @@
 
 # Incidental is an open-source incident management platform
 
+We're building Incidental to be a best in class platform for running your incidents.
+
+# Features
+
 - [x] ChatOps: Declare and manage your incidents all within your Slack workspace
 - [x] Web UI: Easy to use web interface to manage your incidents
 - [ ] Custom fields
