@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { IUser } from 'shared-types/types'
 import styled from 'styled-components'
 
 import Dropdown from '@/components/Dropdown/Dropdown'
 import useAuth from '@/hooks/useAuth'
+import { IUser } from '@/types/models'
 
 const Root = styled.div`
   display: flex;
