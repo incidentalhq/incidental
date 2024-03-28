@@ -42,7 +42,7 @@ const variants = {
   }
 }
 
-const Dropdown: React.FC<Props> = ({ label, children, closeOnClick }) => {
+const Dropdown: React.FC<Props> = ({ label, children }) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
   const buttonRef = useRef(null)

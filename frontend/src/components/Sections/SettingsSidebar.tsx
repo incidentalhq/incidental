@@ -1,4 +1,4 @@
-import { faBuilding, faHome } from '@fortawesome/pro-duotone-svg-icons'
+import { faBuilding } from '@fortawesome/pro-duotone-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useCallback } from 'react'
 import { generatePath, Link } from 'react-router-dom'

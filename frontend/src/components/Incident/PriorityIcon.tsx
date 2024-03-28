@@ -10,7 +10,7 @@ interface Props {
   totalRankings: number
 }
 
-const PriorityIcon: React.FC<Props> = ({ ranking, totalRankings = 3 }) => {
+const PriorityIcon: React.FC<Props> = () => {
   return (
     <Root>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="#858699" role="img" focusable="false">

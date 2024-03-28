@@ -1,8 +1,10 @@
 import { Form, Formik, FormikHelpers } from 'formik'
-import { IUser } from 'shared-types/types'
 import styled from 'styled-components'
-import { Button, Field } from 'ui'
 import * as Yup from 'yup'
+
+import Field from '@/components/Form/Field'
+import { Button } from '@/components/Theme/Styles'
+import { IUser } from '@/types/models'
 
 const NameRowEl = styled.div`
   display: flex;
