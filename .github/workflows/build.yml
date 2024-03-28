@@ -42,7 +42,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Create the docker compose stack
-        run: docker-compose -f docker-compose.test.yml up -d
+        run: docker-compose -f docker-compose.yml up -d
 
       - name: Check local running docker contains
         run: docker ps -a
