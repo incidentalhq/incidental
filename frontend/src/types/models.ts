@@ -110,3 +110,12 @@ export interface IForm extends IModel {
   type: FormType
   formFields: IFormField[]
 }
+
+export interface IInvite extends IModel {
+  createdAt: string
+  emailAddress: string
+}
+
+export interface ITeam extends IModel {
+  name: string
+}

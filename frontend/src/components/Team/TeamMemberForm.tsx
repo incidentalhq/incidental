@@ -1,9 +1,9 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 
-import Field from 'ui/components/Form/Field'
-import GeneralError from 'ui/components/Form/GeneralError'
-import { Button } from 'ui/components/Theme/Styles'
+import Field from '@/components/Form/Field'
+import GeneralError from '@/components/Form/GeneralError'
+import { Button } from '@/components/Theme/Styles'
 
 interface Props {
   onSubmit: (values: TeamMemberFormValues, helpers: FormikHelpers<TeamMemberFormValues>) => void

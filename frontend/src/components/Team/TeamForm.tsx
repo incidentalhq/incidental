@@ -1,10 +1,10 @@
 import { Form, Formik, FormikHelpers } from 'formik'
-import { ITeam } from 'shared-types/models'
 import * as Yup from 'yup'
 
-import Field from 'ui/components/Form/Field'
-import GeneralError from 'ui/components/Form/GeneralError'
-import { Button } from 'ui/components/Theme/Styles'
+import Field from '@/components/Form/Field'
+import GeneralError from '@/components/Form/GeneralError'
+import { Button } from '@/components/Theme/Styles'
+import { ITeam } from '@/types/models'
 
 interface Props {
   team?: ITeam
