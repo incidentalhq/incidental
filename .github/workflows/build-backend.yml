@@ -1,4 +1,4 @@
-name: Build image
+name: Build and push backend image
 
 on:
   push:
@@ -6,20 +6,20 @@ on:
     paths:
       - backend/**
 
-env:
-  ECR_REPO: registry.digitalocean.com/incidental-backend
-  IMAGE_NAME: incidental/backend
-
 jobs:
-  build:
+  build-and-push-backend:
+    environment: production
     defaults:
       run:
         working-directory: backend
+    env:
+      IMAGE_NAME: incidental/backend
+      ECR_REPO: registry.digitalocean.com/incidental
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
@@ -60,7 +60,7 @@ jobs:
 
       - name: Push image
         run: |
-          doctl registry login --expire-seconds 300
+          doctl registry login --expiry-seconds 300
           docker push ${ECR_REPO}/${IMAGE_NAME}:latest
           docker push ${ECR_REPO}/${IMAGE_NAME}:1.0.${GITHUB_RUN_NUMBER}
 

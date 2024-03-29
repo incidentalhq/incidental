@@ -1,0 +1,66 @@
+name: Build frontend image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - frontend/**
+
+jobs:
+  build-and-push-frontend:
+    environment: production
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      IMAGE_NAME: incidental/frontend
+      ECR_REPO: registry.digitalocean.com/incidental
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-verion-file: '.nvmrc'
+
+      - name: Build frontend
+        run: |
+          npm install -g pnpm
+          pnpm install
+          pnpm build
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          tags: ${{env.IMAGE_NAME}}:latest,${{env.ECR_REPO}}/${{env.IMAGE_NAME}}:latest,${{env.ECR_REPO}}/${{env.IMAGE_NAME}}:1.0.${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Push image
+        run: |
+          doctl registry login --expiry-seconds 300
+          docker push ${ECR_REPO}/${IMAGE_NAME}:latest
+          docker push ${ECR_REPO}/${IMAGE_NAME}:1.0.${GITHUB_RUN_NUMBER}
+
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "A new frontend has been pushed: 1.0.${{ github.run_number }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
