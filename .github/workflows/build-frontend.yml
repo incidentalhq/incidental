@@ -29,6 +29,7 @@ jobs:
 
       - name: Build frontend
         run: |
+          npm install -g pnpm
           pnpm install
           pnpm build
 
