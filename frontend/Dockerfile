@@ -8,10 +8,12 @@ RUN apt-get update && \
     nginx \
     npm
 
+# nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
 COPY . .
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY conf/website.conf /etc/nginx/conf.d/default.conf
+COPY conf/nginx.conf /etc/nginx/nginx.conf
 
 RUN . ~/.bashrc && nvm install
 RUN npm install -g pnpm

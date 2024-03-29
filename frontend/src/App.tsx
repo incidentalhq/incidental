@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 
 import AuthGuard from '@/components/Guard/AuthGuard'
@@ -27,6 +27,8 @@ import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
 import { RoutePaths } from '@/routes'
 
+import PageNotFound from './pages/Error/PageNotFound'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,19 +41,7 @@ const AuthenticatedRoutes = () => (
   <AuthGuard>
     <ReadyGuard>
       <SlackInstallGuard>
-        <Routes>
-          <Route element={<DefaultLayout />}>
-            <Route path={RoutePaths.DASHBOARD} element={<Dashboard />} />
-            <Route path={RoutePaths.INCIDENTS} element={<IncidentsList />} />
-            <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
-            <Route path={RoutePaths.SLACK_INSTALL} element={<SlackInstall />} />
-            <Route path={RoutePaths.SLACK_INSTALL_COMPLETE} element={<SlackInstallComplete />} />
-          </Route>
-          <Route element={<SettingsLayout />}>
-            <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />
-            <Route path={RoutePaths.SETTINGS_SEVERITY} element={<SettingsSeverity />} />
-          </Route>
-        </Routes>
+        <Outlet />
       </SlackInstallGuard>
     </ReadyGuard>
   </AuthGuard>
@@ -72,7 +62,20 @@ const App = () => {
                   <Route path={RoutePaths.REGISTER} element={<Register />} />
                   <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />
                   <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
-                  <Route path="/*" element={<AuthenticatedRoutes />} />
+                  <Route element={<AuthenticatedRoutes />}>
+                    <Route element={<DefaultLayout />}>
+                      <Route path={RoutePaths.DASHBOARD} element={<Dashboard />} />
+                      <Route path={RoutePaths.INCIDENTS} element={<IncidentsList />} />
+                      <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
+                      <Route path={RoutePaths.SLACK_INSTALL} element={<SlackInstall />} />
+                      <Route path={RoutePaths.SLACK_INSTALL_COMPLETE} element={<SlackInstallComplete />} />
+                    </Route>
+                    <Route element={<SettingsLayout />}>
+                      <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />
+                      <Route path={RoutePaths.SETTINGS_SEVERITY} element={<SettingsSeverity />} />
+                    </Route>
+                  </Route>
+                  <Route path="*" element={<PageNotFound />} />
                 </Routes>
               </AuthProvider>
             </ApiServiceProvider>
