@@ -2,9 +2,9 @@ name: Build frontend image
 
 on:
   push:
-    #branches: [main]
-    #paths:
-    #  - frontend/**
+    branches: [main]
+    paths:
+      - frontend/**
 
 jobs:
   build-and-push-frontend:
