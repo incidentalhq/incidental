@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-and-push-frontend:
+    environment: production
     defaults:
       run:
         working-directory: frontend
