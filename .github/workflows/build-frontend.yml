@@ -23,12 +23,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - uses: actions/setup-node@v4
+        with:
+          node-verion-file: '.nvmrc'
 
       - name: Build frontend
         run: |
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-          bash ~/.bashrc && nvm install
-          nvm use
           pnpm install
           pnpm build
 
