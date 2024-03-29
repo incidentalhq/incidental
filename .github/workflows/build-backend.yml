@@ -59,7 +59,7 @@ jobs:
 
       - name: Push image
         run: |
-          doctl registry login --expire-seconds 300
+          doctl registry login --expiry-seconds 300
           docker push ${ECR_REPO}/${IMAGE_NAME}:latest
           docker push ${ECR_REPO}/${IMAGE_NAME}:1.0.${GITHUB_RUN_NUMBER}
 
