@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-and-push-backend:
+    environment: production
     defaults:
       run:
         working-directory: backend
