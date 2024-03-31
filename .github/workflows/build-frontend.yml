@@ -26,7 +26,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-verion-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Build frontend
         run: |
@@ -63,4 +63,3 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-

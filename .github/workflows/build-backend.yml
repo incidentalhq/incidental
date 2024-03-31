@@ -24,10 +24,14 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Create version file
+        run: |
+          git rev-parse --short HEAD > .version
 
       - name: Build image
         uses: docker/build-push-action@v5
@@ -73,4 +77,3 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-
