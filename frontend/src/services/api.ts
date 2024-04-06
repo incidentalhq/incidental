@@ -62,7 +62,7 @@ export class ApiService {
   }
 
   getWorld() {
-    return callApi<IWorld>('GET', '/world/', { user: this.user })
+    return callApi<IWorld>('GET', '/world', { user: this.user })
   }
 
   slackCompleteLogin(code: string) {
