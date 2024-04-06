@@ -45,7 +45,7 @@ def user_register(create_in: CreateUserSchema, session: Session = Depends(get_db
     return user
 
 
-@router.post("/auth/", response_model=UserSchema)
+@router.post("/auth", response_model=UserSchema)
 def authenticate_user(item: AuthUserSchema, db: Session = Depends(get_db)):
     """Auth user"""
     repo = UserRepo(db)
@@ -73,7 +73,7 @@ def authenticate_user(item: AuthUserSchema, db: Session = Depends(get_db)):
     return result.user
 
 
-@router.get("/me/", response_model=UserSchema)
+@router.get("/me", response_model=UserSchema)
 def me(
     user: User = Depends(get_current_user),
 ):
