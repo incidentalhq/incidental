@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version-file: "frontend/.nvmrc"
 
       - name: Build frontend
         run: |
