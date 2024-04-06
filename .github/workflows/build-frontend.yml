@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - frontend/**
+      - .github/workflows/frontend.yml
 
 jobs:
   build-and-push-frontend:
@@ -33,6 +34,8 @@ jobs:
           npm install -g pnpm
           pnpm install
           pnpm build
+        env:
+          VITE_API_BASE_URL: https://api.incidental.dev
 
       - name: Build image
         uses: docker/build-push-action@v5
