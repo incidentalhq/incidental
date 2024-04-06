@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - backend/**
+      - .github/workflows/build-backend.yml
 
 jobs:
   build-and-push-backend:

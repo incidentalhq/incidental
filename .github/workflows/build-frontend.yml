@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - frontend/**
-      - .github/workflows/frontend.yml
+      - .github/workflows/build-frontend.yml
 
 jobs:
   build-and-push-frontend:
