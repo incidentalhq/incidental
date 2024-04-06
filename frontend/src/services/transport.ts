@@ -12,7 +12,7 @@ axios.defaults.paramsSerializer = (params: Record<string, unknown>): string => {
 export const getBaseUrl = (): string => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL
   if (!baseUrl) {
-    throw new Error('BASE_URL not defined')
+    throw new Error('API_BASE_URL not defined')
   }
   return baseUrl
 }
