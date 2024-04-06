@@ -9,7 +9,7 @@ from app.schemas.models import FormSchema
 router = APIRouter(tags=["Forms"])
 
 
-@router.get("/search/", response_model=list[FormSchema])
+@router.get("/search", response_model=list[FormSchema])
 def form_search(user: CurrentUser, organisation: CurrentOrganisation, db: Session = Depends(get_db)):
     """Search for forms"""
     form_repo = FormRepo(session=db)

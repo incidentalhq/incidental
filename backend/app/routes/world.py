@@ -12,7 +12,7 @@ router = APIRouter(tags=["World"])
 logger = structlog.get_logger(logger_name=__name__)
 
 
-@router.get("/", response_model=WorldSchema)
+@router.get("", response_model=WorldSchema)
 def world_index(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """Get world"""
     incident_repo = IncidentRepo(session=db)

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 router = APIRouter(tags=["Health"])
 
 
-@router.get("/")
+@router.get("")
 def health_index(request: Request):
     return {
         "health": "good",
