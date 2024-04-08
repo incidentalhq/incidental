@@ -1,4 +1,4 @@
-<img src="https://imgur.com/4zm0ju6.png" />
+<img src="https://imgur.com/cFmM428.png" />
 
 <div style="display: flex; justify-content: center; gap: 16px; align-items: center;">
 
