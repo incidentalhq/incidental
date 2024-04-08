@@ -2,7 +2,7 @@ from typing import Any
 
 import structlog
 
-from app.models import Incident, IncidentSeverity, IncidentStatus, User
+from app.models import IncidentUpdate, User
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -11,16 +11,13 @@ class IncidentUpdateRenderer:
     def __init__(
         self,
         creator: User,
-        incident: Incident,
-        new_status: IncidentStatus | None = None,
-        new_severity: IncidentSeverity | None = None,
+        incident_update: IncidentUpdate,
         summary: str | None = None,
     ):
         self.creator = creator
-        self.incident = incident
-        self.new_status = new_status
-        self.new_severity = new_severity
+        self.incident = incident_update
         self.summary = summary
+        self.incident_update = incident_update
 
     def render(self) -> list[dict[str, Any]]:
         blocks: list[dict[str, Any]] = [
@@ -30,23 +27,23 @@ class IncidentUpdateRenderer:
             }
         ]
 
-        if self.new_status and self.new_status.id != self.incident.incident_status.id:
+        if self.incident_update.new_incident_status:
             blocks.append(
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Status: {self.incident.incident_status.name} -> {self.new_status.name}",
+                        "text": f"Status: {self.incident_update.previous_incident_status.name} -> {self.incident_update.new_incident_status.name}",
                     },
                 }
             )
-        if self.new_severity and self.new_severity.id != self.incident.incident_severity.id:
+        if self.incident_update.new_incident_severity:
             blocks.append(
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Severity: {self.incident.incident_severity.name} -> {self.new_severity.name}",
+                        "text": f"Severity: {self.incident_update.previous_incident_severity.name} -> {self.incident_update.new_incident_severity.name}",
                     },
                 }
             )
