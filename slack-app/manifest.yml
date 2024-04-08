@@ -1,0 +1,70 @@
+display_information:
+  name: Incidental
+  description: Opensource incident management
+  background_color: "#1c0f00"
+features:
+  bot_user:
+    display_name: Incidental
+    always_online: true
+  slash_commands:
+    - command: /inc
+      url: https://api.incidental.dev/slack/slash-command
+      description: Launch or manage an incident
+      should_escape: true
+    - command: /incident
+      url: https://api.incidental.dev/slack/slash-command
+      description: Launch or manage an incident
+      should_escape: true
+oauth_config:
+  redirect_urls:
+    - https://app.incidental.dev/oauth/complete
+    - https://app.incidental.dev/slack/install/complete
+  scopes:
+    user:
+      - reactions:read
+      - users:read.email
+      - users:read
+    bot:
+      - app_mentions:read
+      - bookmarks:read
+      - channels:join
+      - channels:manage
+      - channels:read
+      - chat:write
+      - chat:write.public
+      - commands
+      - files:read
+      - groups:read
+      - groups:write
+      - im:read
+      - mpim:read
+      - pins:read
+      - pins:write
+      - reactions:read
+      - team:read
+      - usergroups:read
+      - users.profile:read
+      - users:read
+      - users:read.email
+      - bookmarks:write
+settings:
+  event_subscriptions:
+    request_url: https://api.incidental.dev/slack/events
+    bot_events:
+      - app_mention
+      - channel_archive
+      - channel_created
+      - channel_deleted
+      - channel_left
+      - channel_rename
+      - channel_unarchive
+      - member_joined_channel
+      - member_left_channel
+      - reaction_added
+      - reaction_removed
+  interactivity:
+    is_enabled: true
+    request_url: https://api.incidental.dev/slack/interaction
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
