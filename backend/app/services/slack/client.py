@@ -94,10 +94,8 @@ class SlackClientService:
     ) -> SlackMessage:
         renderer = IncidentUpdateRenderer(
             creator=creator,
-            incident=incident,
-            new_severity=incident_update.new_incident_severity,
-            new_status=incident_update.new_incident_status,
             summary=incident_update.summary,
+            incident_update=incident_update,
         )
         blocks = renderer.render()
 
