@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="600px" height="600px" viewBox="0 0 600 600" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Artboard Copy 4</title>
+    <title>without_border</title>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Artboard-Copy-3" transform="translate(-100, -100)">
-            <rect id="Rectangle" fill="#FF9B02" x="100" y="100" width="600" height="600" rx="15"></rect>
-            <g id="lightning-bolt-black-shape-svgrepo-com" transform="translate(272, 100)" fill="#000000" fill-rule="nonzero">
+        <g id="no_border" transform="translate(-100, -100)">
+            <rect id="Rectangle" fill="#B2EA9E" x="100" y="100" width="600" height="600" rx="15"></rect>
+            <g id="lightning-bolt-black-shape-svgrepo-com" transform="translate(258, 100)" fill="#000000" fill-rule="nonzero">
                 <path d="M64.2153259,600 C64.2153259,600 272.419309,148.192449 272.445011,148.127128 L284,122.430557 C239.210763,135.301865 139.138561,159.804467 138.818362,160.801405 C149.284248,131.51436 194.323004,0 196.263471,0 C153.453254,0 110.643037,0 67.8338902,0 L54.8042745,62.0414195 L0,286.909173 L144.775768,247.496413 L64.2153259,600 Z" id="Path"></path>
             </g>
         </g>
