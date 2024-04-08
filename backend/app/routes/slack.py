@@ -37,6 +37,7 @@ router = APIRouter(tags=["Slack"])
 bot_scopes = [
     "app_mentions:read",
     "bookmarks:read",
+    "bookmarks:write",
     "channels:join",
     "channels:manage",
     "channels:read",
