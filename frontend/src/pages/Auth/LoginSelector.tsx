@@ -1,11 +1,11 @@
-import { faSlack } from '@fortawesome/free-brands-svg-icons'
-import { faEnvelope } from '@fortawesome/pro-duotone-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import email from '@/assets/icons/email.svg'
+import slack from '@/assets/icons/slack.svg'
 import logo from '@/assets/mark_noborder.png'
+import Icon from '@/components/Icon/Icon'
 import useApiService from '@/hooks/useApi'
 import { RoutePaths } from '@/routes'
 
@@ -33,11 +33,10 @@ const LoginSelector: React.FC = () => {
       <Logo src={logo} />
       <>
         <LoginButton to={RoutePaths.EMAIL_LOGIN}>
-          <FontAwesomeIcon icon={faEnvelope} fixedWidth /> Email login
+          <Icon icon={email} fixedWidth /> Email login
         </LoginButton>
         <LoginButton to={slackLoginQuery.data?.url ?? ''}>
-          <FontAwesomeIcon icon={faSlack} fixedWidth />
-          Slack login
+          <Icon icon={slack} fixedWidth /> Slack login
         </LoginButton>
       </>
     </Root>

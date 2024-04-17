@@ -43,9 +43,9 @@ const SelectField: React.FC<Props> = ({
   // set class name if there is an error
   useEffect(() => {
     if (meta.error && meta.touched) {
-      setClassName(`${className} is-invalid`)
+      setClassName((className) => `${className} is-invalid`)
     } else {
-      setClassName(className)
+      setClassName((className) => className)
     }
   }, [meta.error, meta.touched])
 

@@ -1,11 +1,11 @@
-import { faSlack } from '@fortawesome/free-brands-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { MouseEvent, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import slack from '@/assets/icons/slack.svg'
+import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
@@ -172,7 +172,7 @@ const ShowIncident = () => {
                   <FieldName>Slack</FieldName>
                   <FieldValue>
                     <a href={slackUrl} target="_blank">
-                      <FontAwesomeIcon icon={faSlack} fixedWidth /> Open channel
+                      <Icon icon={slack} fixedWidth /> Open channel
                     </a>
                   </FieldValue>
                 </Field>

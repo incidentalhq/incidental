@@ -1,6 +1,7 @@
-import { faSpinner } from '@fortawesome/pro-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
+
+import spinner from '@/assets/icons/spinner.svg'
+import Icon from '@/components/Icon/Icon'
 
 interface Props {
   text?: string
@@ -8,7 +9,7 @@ interface Props {
 
 const Loading: React.FC<Props> = ({ text = 'Loading...' }) => (
   <div>
-    <FontAwesomeIcon icon={faSpinner} spin={true} fixedWidth={true} /> {text}
+    <Icon icon={spinner} spin={true} /> {text}
   </div>
 )
 

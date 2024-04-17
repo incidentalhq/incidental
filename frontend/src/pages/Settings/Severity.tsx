@@ -1,10 +1,11 @@
-import { faTrash } from '@fortawesome/pro-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMemo } from 'react'
+import { useAsyncValue } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
+import trash from '@/assets/icons/trash.svg'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
+import Icon from '@/components/Icon/Icon'
 import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
@@ -66,7 +67,7 @@ const SettingsSeverity = () => {
                   onConfirm={() => handleDelete(v)}
                   message="Are you sure you want to delete this severity?"
                 >
-                  <FontAwesomeIcon icon={faTrash} fixedWidth />
+                  <Icon icon={trash} fixedWidth />
                 </ConfirmDelete>
               </div>
             </Controls>
