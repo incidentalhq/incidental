@@ -1,13 +1,13 @@
-import { faSpinner } from '@fortawesome/pro-duotone-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Form, Formik, FormikHelpers } from 'formik'
 import camelCase from 'lodash/camelCase'
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 import * as Yup from 'yup'
 
+import spinner from '@/assets/icons/spinner.svg'
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
+import Icon from '@/components/Icon/Icon'
 import { Button } from '@/components/Theme/Styles'
 import useGlobal from '@/hooks/useGlobal'
 import { FormFieldKind } from '@/types/enums'
@@ -137,7 +137,7 @@ const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
           {fields}
           <div>
             <Button $primary={true} type="submit" disabled={isSubmitting}>
-              {isSubmitting && <FontAwesomeIcon spin icon={faSpinner} />} Declare incident
+              {isSubmitting && <Icon icon={spinner} spin={true} />} Declare incident
             </Button>
           </div>
         </Form>

@@ -4,7 +4,7 @@ const PREFERENCE_PREFIX = 'preference'
 // local preference keys
 export const PREF_SELECTED_ORGANISATION = 'SELECTED_ORGANISATION'
 
-export const saveAuthToBrowser = (data: any) => {
+export const saveAuthToBrowser = (data: unknown) => {
   localStorage.setItem(AUTH_KEY, JSON.stringify(data))
 }
 

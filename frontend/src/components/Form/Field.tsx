@@ -10,7 +10,6 @@ type CustomFieldAttributes<T> = FieldAttributes<T> & {
   help?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Field = <T,>(props: CustomFieldAttributes<T>) => {
   const [field, meta] = useField(props)
   let className = props.className

@@ -1,11 +1,13 @@
-import { faBoltLightning, faCog, faHome } from '@fortawesome/pro-duotone-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { FormikHelpers } from 'formik'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { generatePath } from 'react-router-dom'
 import styled from 'styled-components'
 
+import bolt from '@/assets/icons/bolt.svg'
+import gear from '@/assets/icons/gear.svg'
+import home from '@/assets/icons/home.svg'
+import Icon from '@/components/Icon/Icon'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { RoutePaths } from '@/routes'
@@ -77,13 +79,13 @@ const SideBar: React.FC<Props> = () => {
           </SwitchOrganisationWrapper>
           <MenuItems>
             <Item to={RoutePaths.DASHBOARD}>
-              <FontAwesomeIcon icon={faHome} fixedWidth={true} /> Dashboard
+              <Icon icon={home} fixedWidth /> Dashboard
             </Item>
             <Item to={RoutePaths.INCIDENTS}>
-              <FontAwesomeIcon icon={faBoltLightning} fixedWidth={true} /> Incidents
+              <Icon icon={bolt} fixedWidth /> Incidents
             </Item>
             <Item to={generatePath(RoutePaths.SETTINGS_INDEX, { organisation: organisation!.slug })}>
-              <FontAwesomeIcon icon={faCog} fixedWidth={true} /> Settings
+              <Icon icon={gear} fixedWidth /> Settings
             </Item>
           </MenuItems>
         </>

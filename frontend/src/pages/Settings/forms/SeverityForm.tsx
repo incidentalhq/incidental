@@ -1,10 +1,10 @@
-import { faSpinner } from '@fortawesome/pro-duotone-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 
+import spinner from '@/assets/icons/spinner.svg'
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
+import Icon from '@/components/Icon/Icon'
 import { Button } from '@/components/Theme/Styles'
 import { IIncidentSeverity } from '@/types/models'
 
@@ -50,7 +50,7 @@ const SeverityForm: React.FC<Props> = ({ onSubmit, severity }) => {
           </div>
           <div>
             <Button $primary={true} type="submit" disabled={isSubmitting}>
-              {isSubmitting && <FontAwesomeIcon spin icon={faSpinner} />} {severity ? 'Update' : 'Create'}
+              {isSubmitting && <Icon spin={true} icon={spinner} />} {severity ? 'Update' : 'Create'}
             </Button>
           </div>
         </Form>

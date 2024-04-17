@@ -1,10 +1,10 @@
-import { faSpinner } from '@fortawesome/pro-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import spinner from '@/assets/icons/spinner.svg'
+import Icon from '@/components/Icon/Icon'
 import { Box, Content } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import { RoutePaths } from '@/routes'
@@ -50,7 +50,7 @@ const SlackInstallComplete: React.FC = () => {
     <Root>
       <Box>
         <Content>
-          <FontAwesomeIcon spin icon={faSpinner} fixedWidth /> Installing slack application...
+          <Icon spin={true} icon={spinner} /> Installing slack application...
         </Content>
       </Box>
     </Root>

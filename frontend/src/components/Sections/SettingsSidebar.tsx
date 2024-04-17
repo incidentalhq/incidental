@@ -1,9 +1,9 @@
-import { faBuilding } from '@fortawesome/pro-duotone-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useCallback } from 'react'
 import { generatePath, Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import home from '@/assets/icons/home.svg'
+import Icon from '@/components/Icon/Icon'
 import useGlobal from '@/hooks/useGlobal'
 import { RoutePaths } from '@/routes'
 import { IUser } from '@/types/models'
@@ -66,7 +66,7 @@ const SettingsSidebar: React.FC<Props> = () => {
 
             <SubMenu>
               <SubMenuTitle>
-                <FontAwesomeIcon icon={faBuilding} fixedWidth={true} /> Workspace
+                <Icon icon={home} fixedWidth={true} /> Workspace
               </SubMenuTitle>
               <SubItems>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_INDEX)}>Overview</Item>

@@ -1,10 +1,10 @@
-import { faSync } from '@fortawesome/pro-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useFormikContext } from 'formik'
 import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 
-import { Button } from '../Theme/Styles'
+import spinner from '@/assets/icons/spinner.svg'
+import Icon from '@/components/Icon/Icon'
+import { Button } from '@/components/Theme/Styles'
 
 interface Props {
   debounceMs?: number
@@ -33,7 +33,7 @@ const AutoSave: React.FC<Props> = ({ debounceMs = 3000, button = false }) => {
     if (formik.isSubmitting) {
       setLabel(
         <>
-          <FontAwesomeIcon icon={faSync} spin={true} /> Auto saving...
+          <Icon icon={spinner} spin={true} /> Auto saving...
         </>
       )
     } else {

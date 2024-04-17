@@ -3,7 +3,7 @@ import set from 'lodash/set'
 import { APIError } from '@/services/transport'
 
 export const apiErrorsToFormikErrors = (e: APIError) => {
-  const formErrors: Record<string, any> = {}
+  const formErrors: Record<string, unknown> = {}
 
   if (!e.errors) {
     formErrors['general'] = e.detail
