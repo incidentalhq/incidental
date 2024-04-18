@@ -61,17 +61,17 @@ const deleteButtonCss = css`
 `
 
 const primaryButtonCss = css`
-  background: linear-gradient(45deg, #ea30e6, #f03378);
-  color: #fff;
-  box-shadow: 0 2px 4px 0 rgba(14, 30, 37, 0.12);
-  background-size: 200% 200%;
+  background: var(--color-brand);
+  color: var(--color-brand-dark);
+  box-shadow: 0 2px 4px 0 rgba(8, 57, 0, 0.3);
+  font-weight: 500;
 
   &:hover {
     animation: ${BtnAnimation} 2s ease infinite;
-    color: #fff;
+    background-color: #9edf86;
   }
   &:visited {
-    color: #fff;
+    color: var(--color-brand-dark);
   }
 `
 
