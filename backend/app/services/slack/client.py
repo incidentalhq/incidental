@@ -7,7 +7,7 @@ from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from app.env import settings
-from app.exceptions import SlackAPIError
+from app.exceptions import ErrorCodes, ExternalApiError
 from app.models import Announcement, Incident, IncidentRoleKind, IncidentUpdate, Organisation, SlackMessage, User
 from app.models.slack_bookmark import SlackBookmarkKind
 from app.models.slack_message import SlackMessageKind
@@ -84,7 +84,7 @@ class SlackClientService:
         channel_id = channel_create_response.get("channel", dict()).get("id")  # type: ignore
         return channel_id
 
-    def join_channel(self, incident: Incident) -> None:
+    def join_incident_channel(self, incident: Incident) -> None:
         """Join a channel"""
         self.client.conversations_join(channel=incident.slack_channel_id)
 
@@ -217,11 +217,11 @@ class SlackClientService:
                 slack_bookmark_data: dict[str, Any] | None = bookmark_add_response.get("bookmark")
                 if not slack_bookmark_data:
                     logger.error("Bookmark data not found in response", response=bookmark_add_response.data)
-                    raise SlackAPIError("Bookmark data not found in response")
+                    raise ExternalApiError("Bookmark data not found in response", code=ErrorCodes.SLACK_API_ERROR)
 
                 slack_bookmark_id: str | None = slack_bookmark_data.get("id")
                 if not slack_bookmark_id:
-                    raise SlackAPIError("ID not found in bookmark data")
+                    raise ExternalApiError("ID not found in bookmark data", code=ErrorCodes.SLACK_API_ERROR)
 
                 self.slack_bookmark_repo.create_bookmark(
                     incident=incident, bookmark_id=slack_bookmark_id, kind=bookmark_kind
@@ -229,3 +229,21 @@ class SlackClientService:
 
     def invite_user_to_incident_channel(self, incident: Incident, user: User):
         self.client.conversations_invite(channel=incident.slack_channel_id, users=[user.slack_user_id])
+
+    def invite_user_to_announcements_channel(self, organisation: Organisation, user: User):
+        # app must be in announcements channel
+        try:
+            self.client.conversations_join(channel=organisation.settings.slack_announcement_channel_id)
+        except SlackApiError:
+            raise
+
+        # then invite creator of incident to the announcements channel
+        try:
+            self.client.conversations_invite(
+                channel=organisation.settings.slack_announcement_channel_id, users=[user.slack_user_id]
+            )
+        except SlackApiError as e:
+            if e.response.get("error") == "already_in_channel":
+                pass
+            else:
+                raise
