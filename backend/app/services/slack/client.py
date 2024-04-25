@@ -1,16 +1,25 @@
 from datetime import datetime, timezone
-from typing import Tuple
+from typing import Any, Callable, Tuple
 
+import structlog
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from app.env import settings
+from app.exceptions import SlackAPIError
 from app.models import Announcement, Incident, IncidentRoleKind, IncidentUpdate, Organisation, SlackMessage, User
+from app.models.slack_bookmark import SlackBookmarkKind
 from app.models.slack_message import SlackMessageKind
-from app.repos import SlackMessageRepo
+from app.repos import SlackBookmarkRepo, SlackMessageRepo
 from app.services.slack.renderer import AnnouncementRenderer, IncidentInformationMessageRenderer, IncidentUpdateRenderer
 from app.utils import to_channel_name
+
+logger = structlog.get_logger(logger_name=__name__)
+
+
+class LeadNotAssignedError(ValueError):
+    pass
 
 
 class SlackClientService:
@@ -18,6 +27,7 @@ class SlackClientService:
         self.auth_token = auth_token
         self.client = WebClient(token=auth_token)
         self.slack_message_repo = SlackMessageRepo(session=session)
+        self.slack_bookmark_repo = SlackBookmarkRepo(session=session)
 
     def _generate_slack_channel_name(self, organisation: Organisation, incident_name: str) -> str:
         now = datetime.now(tz=timezone.utc)
@@ -74,15 +84,19 @@ class SlackClientService:
         channel_id = channel_create_response.get("channel", dict()).get("id")  # type: ignore
         return channel_id
 
+    def join_channel(self, incident: Incident) -> None:
+        """Join a channel"""
+        self.client.conversations_join(channel=incident.slack_channel_id)
+
     def post_announcement(self, channel_id: str, announcement: Announcement, incident: Incident) -> SlackMessage:
         renderer = AnnouncementRenderer(announcement=announcement, incident=incident)
         blocks = renderer.render()
 
-        posted_message = self.client.chat_postMessage(channel=channel_id, blocks=blocks)
+        posted_message_response = self.client.chat_postMessage(channel=channel_id, blocks=blocks)
 
         slack_message = self.slack_message_repo.create_slack_message(
             organisation=incident.organisation,
-            response=posted_message.data,
+            response=posted_message_response.data,
             kind=SlackMessageKind.ANNOUNCEMENT_POST,
             announcement=announcement,
         )
@@ -91,7 +105,7 @@ class SlackClientService:
 
     def create_incident_update(
         self, creator: User, incident: Incident, incident_update: IncidentUpdate
-    ) -> SlackMessage:
+    ) -> SlackMessage | None:
         renderer = IncidentUpdateRenderer(
             creator=creator,
             summary=incident_update.summary,
@@ -100,13 +114,15 @@ class SlackClientService:
         blocks = renderer.render()
 
         try:
-            posted_message = self.client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
+            posted_message_response = self.client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
             return self.slack_message_repo.create_slack_message(
-                organisation=incident.organisation, response=posted_message.data, kind=SlackMessageKind.INCIDENT_UPDATE
+                organisation=incident.organisation,
+                response=posted_message_response.data,
+                kind=SlackMessageKind.INCIDENT_UPDATE,
             )
         except SlackApiError as e:
             if e.response.get("error") == "is_archived":
-                pass
+                return None
             else:
                 raise
 
@@ -129,39 +145,87 @@ class SlackClientService:
         self.client.conversations_setTopic(channel=incident.slack_channel_id, topic=incident.reference)
 
     def set_incident_channel_bookmarks(self, incident: Incident):
+        """Update bookmarks for a incident channel"""
+
         incident_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
-        self.client.bookmarks_add(
-            channel_id=incident.slack_channel_id, title="Homepage", link=incident_url, emoji=":house:", type="link"
-        )
-
         status_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
-        self.client.bookmarks_add(
-            channel_id=incident.slack_channel_id,
-            title=f"Status: {incident.incident_status.name}",
-            link=status_url,
-            emoji=":traffic_light:",
-            type="link",
-        )
-
         sev_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
-        self.client.bookmarks_add(
-            channel_id=incident.slack_channel_id,
-            title=f"Severity: {incident.incident_severity.name}",
-            link=sev_url,
-            emoji=":zap:",
-            type="link",
-        )
-
         lead = incident.get_user_for_role(IncidentRoleKind.LEAD)
-        if lead:
+
+        def render_lead(incident: Incident) -> dict[str, str]:
+            if not lead:
+                raise LeadNotAssignedError("No lead assigned to this incident")
+
             lead_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
-            self.client.bookmarks_add(
-                channel_id=incident.slack_channel_id,
-                title=f"Lead: {lead.name}",
-                link=lead_url,
-                emoji=":firefighter:",
-                type="link",
-            )
+            return {
+                "title": f"Lead: {lead.name}",
+                "link": lead_url,
+                "emoji": ":firefighter:",
+                "type": "link",
+            }
+
+        bookmark_descriptors: dict[SlackBookmarkKind, Callable[[Incident], dict[str, str]]] = {
+            SlackBookmarkKind.HOMEPAGE: lambda i: {
+                "title": "Homepage",
+                "link": incident_url,
+                "emoji": ":house:",
+                "type": "link",
+            },
+            SlackBookmarkKind.SEVERITY: lambda i: {
+                "title": f"Severity: {incident.incident_severity.name}",
+                "link": sev_url,
+                "emoji": ":zap:",
+                "type": "link",
+            },
+            SlackBookmarkKind.STATUS: lambda i: {
+                "title": f"Status: {incident.incident_status.name}",
+                "link": status_url,
+                "emoji": ":traffic_light:",
+                "type": "link",
+            },
+            SlackBookmarkKind.LEAD: render_lead,
+        }
+
+        current_bookmarks = self.slack_bookmark_repo.get_all_for_channel(slack_channel_id=incident.slack_channel_id)
+        current_bookmarks_map = {bookmark.kind: bookmark for bookmark in current_bookmarks}
+
+        # depending on whether bookmark exists on slack or not, we will update or create it
+        for bookmark_kind in list(bookmark_descriptors.keys()):
+            try:
+                bookmark_data = bookmark_descriptors[bookmark_kind](incident)
+            # if lead not assigned, don't create this bookmark
+            except LeadNotAssignedError:
+                continue
+
+            # update bookmark if it already exists
+            if bookmark_kind in current_bookmarks_map.keys():
+                bookmark = current_bookmarks_map[bookmark_kind]
+                self.client.bookmarks_edit(
+                    bookmark_id=bookmark.slack_bookmark_id,
+                    channel_id=incident.slack_channel_id,
+                    title=bookmark_data["title"],
+                )
+            # create new bookmark
+            else:
+                bookmark_add_response = self.client.bookmarks_add(
+                    channel_id=incident.slack_channel_id,
+                    title=bookmark_data["title"],
+                    type=bookmark_kind,
+                    emoji=bookmark_data["emoji"],
+                    link=bookmark_data["link"],
+                )
+                slack_bookmark_data: dict[str, Any] | None = bookmark_add_response.get("bookmark")
+                if not slack_bookmark_data:
+                    logger.error("Bookmark data not found in response", response=bookmark_add_response.data)
+                    raise SlackAPIError("Bookmark data not found in response")
+
+                slack_bookmark_id: str | None = slack_bookmark_data.get("id")
+                if not slack_bookmark_id:
+                    raise SlackAPIError("ID not found in bookmark data")
+
+                self.slack_bookmark_repo.create_bookmark(
+                    incident=incident, bookmark_id=slack_bookmark_id, kind=bookmark_kind
+                )
 
     def invite_user_to_incident_channel(self, incident: Incident, user: User):
         self.client.conversations_invite(channel=incident.slack_channel_id, users=[user.slack_user_id])

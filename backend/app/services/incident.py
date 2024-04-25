@@ -93,6 +93,9 @@ class IncidentService:
 
         self.incident_repo.assign_role(incident=incident, role=role, user=creator)
 
+        # join channel
+        self.slack_service.join_channel(incident=incident)
+
         # invite user to channel
         self.slack_service.invite_user_to_incident_channel(incident=incident, user=creator)
 
@@ -105,7 +108,7 @@ class IncidentService:
         self.slack_service.create_pinned_message(incident=incident)
 
         # add bookmarks
-        self.add_bookmarks(incident)
+        self.update_bookmarks(incident)
 
         return incident
 
@@ -142,11 +145,12 @@ class IncidentService:
             summary=summary,
         )
         self.slack_service.create_incident_update(creator=creator, incident=incident, incident_update=incident_update)
+        self.slack_service.set_incident_channel_bookmarks(incident=incident)
 
     def set_topic(self, incident: Incident):
         self.slack_service.set_incident_channel_topic(incident=incident)
 
-    def add_bookmarks(self, incident: Incident):
+    def update_bookmarks(self, incident: Incident):
         """Add channel bookmarks"""
         self.slack_service.set_incident_channel_bookmarks(incident=incident)
 

@@ -12,5 +12,6 @@ from .incident_update import IncidentUpdate
 from .organisation import Organisation, OrganisationTypes
 from .organisation_member import MemberRole, OrganisationMember
 from .settings import Settings
+from .slack_bookmark import SlackBookmark
 from .slack_message import SlackMessage
 from .user import User

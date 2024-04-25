@@ -2,7 +2,7 @@ from typing import Any
 
 import structlog
 
-from app.models import Form, FormField
+from app.models import Form, FormField, User
 from app.schemas.slack import SlackInteractionSchema
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -12,10 +12,10 @@ class BaseForm:
     def render(self) -> dict[str, Any]:
         raise NotImplementedError()
 
-    def handle_submit(self, interaction: SlackInteractionSchema):
+    def handle_submit(self, interaction: SlackInteractionSchema, user: User):
         raise NotImplementedError()
 
-    def get_field_value(self, form: Form, interaction: SlackInteractionSchema, field_name: str) -> None:
+    def get_field_value(self, form: Form, interaction: SlackInteractionSchema, field_name: str) -> str:
         field: FormField | None = None
         for it in form.form_fields:
             if it.name == field_name:

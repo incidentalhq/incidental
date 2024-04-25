@@ -10,6 +10,7 @@ class ErrorCodes(Enum):
     EXCEEDED_MAX_LOGIN_ATTEMPTS = "EXCEEDED_MAX_LOGIN_ATTEMPTS"
     USER_NOT_VERIFIED = "USER_NOT_VERIFIED"
     INCORRECT_CODE = "INCORRECT_CODE"
+    SLACK_API_ERROR = "SLACK_API_ERROR"
 
 
 class ApplicationException(Exception):
@@ -45,3 +46,8 @@ class NotPermittedError(ApplicationException):
     ):
         super().__init__(message, code)
         self.status_code = status.HTTP_403_FORBIDDEN
+
+
+class SlackAPIError(ApplicationException):
+    def __init__(self, message: str, status_code: int = status.HTTP_400_BAD_REQUEST):
+        super().__init__(message=message, code=ErrorCodes.SLACK_API_ERROR, status_code=status_code)

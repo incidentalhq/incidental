@@ -11,6 +11,10 @@
     {
       "name": "frontend",
       "path": "./frontend"
+    },
+    {
+      "name": "slack-app",
+      "path": "./slack-app"
     }
   ],
   "settings": {
@@ -36,6 +40,7 @@
       "jsonable",
       "ondelete",
       "onupdate",
+      "passlib",
       "primaryjoin",
       "pydantic",
       "pytest",

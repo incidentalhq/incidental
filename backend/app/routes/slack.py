@@ -35,14 +35,12 @@ logger = structlog.get_logger(logger_name=__name__)
 
 router = APIRouter(tags=["Slack"])
 bot_scopes = [
-    "app_mentions:read",
     "bookmarks:read",
     "bookmarks:write",
     "channels:join",
     "channels:manage",
     "channels:read",
     "chat:write",
-    "chat:write.public",
     "commands",
     "files:read",
     "groups:read",
@@ -50,9 +48,7 @@ bot_scopes = [
     "im:read",
     "pins:read",
     "pins:write",
-    "reactions:read",
     "team:read",
-    "usergroups:read",
     "users.profile:read",
     "users:read",
     "users:read.email",

@@ -19,7 +19,7 @@ class AnnouncementRepo(BaseRepo):
     def create_slack_message(self, announcement: Announcement, slack_message_id: str) -> SlackMessage:
         model = SlackMessage()
         model.announcement_id = announcement.id
-        model.slack_message_id = slack_message_id
+        model.slack_message_ts = slack_message_id
 
         self.session.add(model)
         self.session.flush()
