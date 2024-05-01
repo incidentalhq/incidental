@@ -1,0 +1,69 @@
+display_information:
+  name: Incidental
+  description: Opensource incident management
+  background_color: "#001a03"
+  long_description: "Automate your incident management process with Incidental. \r
+
+    \r
+
+    - Automate the creation of dedicated slack channels to co-ordinate your incident response\r
+
+    - Assign roles to the right users\r
+
+    - Manage everything within the comfort of Slack\r
+
+    - Fully open-source platform"
+features:
+  bot_user:
+    display_name: Incidental
+    always_online: true
+  slash_commands:
+    - command: /inc
+      url: BASE_URL/slack/slash-command
+      description: Launch or manage an incident
+      should_escape: true
+    - command: /incident
+      url: BASE_URL/slack/slash-command
+      description: Launch or manage an incident
+      should_escape: true
+oauth_config:
+  redirect_urls:
+    - BASE_URL/oauth/complete
+    - BASE_URL/slack/install/complete
+  scopes:
+    bot:
+      - bookmarks:read
+      - bookmarks:write
+      - channels:join
+      - channels:manage
+      - channels:read
+      - chat:write
+      - commands
+      - files:read
+      - groups:read
+      - groups:write
+      - pins:read
+      - pins:write
+      - team:read
+      - users.profile:read
+      - users:read
+      - users:read.email
+settings:
+  event_subscriptions:
+    request_url: BASE_URL/slack/events
+    bot_events:
+      - channel_archive
+      - channel_created
+      - channel_deleted
+      - channel_left
+      - channel_rename
+      - channel_unarchive
+      - member_joined_channel
+      - member_left_channel
+  interactivity:
+    is_enabled: true
+    request_url: BASE_URL/slack/interaction
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
+

@@ -11,10 +11,6 @@
     {
       "name": "frontend",
       "path": "./frontend"
-    },
-    {
-      "name": "slack-app",
-      "path": "./slack-app"
     }
   ],
   "settings": {

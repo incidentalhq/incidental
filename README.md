@@ -33,7 +33,7 @@ Requirements:
 
 To run locally for development:
 
-1. Create a new slack application here: https://api.slack.com/apps
+1. Create a new slack application here: https://api.slack.com/apps, use the slack-manifest.yml as a template and replace BASE_URL with the url where you are hosting your app.
 2. Copy `backend/.env.example` to `backend/.env` and update the slack specific environment variables
 3. Copy `frontend/.env.example` to `frontend/.env`
 4. In `backend` run `make run-dev`
