@@ -85,8 +85,12 @@ class SlackClientService:
         return channel_id
 
     def join_incident_channel(self, incident: Incident) -> None:
-        """Join a channel"""
+        """Put application into incident channel"""
         self.client.conversations_join(channel=incident.slack_channel_id)
+
+    def join_announcements_channel(self, incident: Incident) -> None:
+        """Put application into announcements channel"""
+        self.client.conversations_join(channel=incident.organisation.settings.slack_announcement_channel_id)
 
     def post_announcement(self, channel_id: str, announcement: Announcement, incident: Incident) -> SlackMessage:
         renderer = AnnouncementRenderer(announcement=announcement, incident=incident)

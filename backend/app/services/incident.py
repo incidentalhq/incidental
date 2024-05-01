@@ -93,8 +93,9 @@ class IncidentService:
 
         self.incident_repo.assign_role(incident=incident, role=role, user=creator)
 
-        # app user should join the channel
+        # app user should be in announcements and incident channel
         self.slack_service.join_incident_channel(incident=incident)
+        self.slack_service.join_announcements_channel(incident=incident)
 
         # invite user to channel
         self.slack_service.invite_user_to_incident_channel(incident=incident, user=creator)
