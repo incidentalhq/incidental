@@ -6,6 +6,7 @@ import structlog
 from passlib.totp import TOTP, TokenError
 from sqlalchemy.orm import Session
 
+from app.env import settings
 from app.exceptions import ErrorCodes, ValidationError
 from app.models import User
 
@@ -26,28 +27,31 @@ class SecurityService:
     ):
         self.session = session
 
+    def _get_user_key(self, user: User) -> bytes:
+        return f"{settings.APP_SECRET}:{user.id}".encode("utf8")
+
     def generate_otp_code(self, user: User) -> str:
         """
         Generate an OTP code for a user
         """
-        private_bytes = user.private_key.encode("utf8")
-        generator = TOTP(key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
+        key = self._get_user_key(user)
+        generator = TOTP(key=key, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
         token = generator.generate()
 
         return token.token
 
     def validate_otp_code(self, user: User, code: str) -> None:
         """Validate the OTP code"""
-        private_bytes = user.private_key.encode("utf8")
-        totp = TOTP(key=private_bytes, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
+        key = self._get_user_key(user)
+        totp = TOTP(key=key, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
 
-        if self.is_user_account_in_cool_off_period(user):
+        if self._is_user_account_in_cool_off_period(user):
             raise ValidationError(
                 "Max login attempts attempted on account, please wait 15m before trying again",
                 ErrorCodes.EXCEEDED_MAX_LOGIN_ATTEMPTS,
             )
 
-        self.reset_cool_off_if_possible(user)
+        self._reset_cool_off_if_possible(user)
 
         try:
             totp.match(code)
@@ -60,7 +64,7 @@ class SecurityService:
 
         user.login_attempts = 0
 
-    def is_user_account_in_cool_off_period(self, user: User) -> bool:
+    def _is_user_account_in_cool_off_period(self, user: User) -> bool:
         """
         Has the user's account reached max attempts, and are we still within the cool off window
         """
@@ -73,7 +77,7 @@ class SecurityService:
         else:
             return False
 
-    def reset_cool_off_if_possible(self, user: User) -> bool:
+    def _reset_cool_off_if_possible(self, user: User) -> bool:
         """
         If max attempts was reached, but we're outside the cool off window, reset the login attempts
         """

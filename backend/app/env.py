@@ -23,5 +23,7 @@ class Settings(BaseSettings):
     SLACK_OAUTH_AUTHORIZE_URL: str = ""
     SLACK_OAUTH_TOKEN_URL: str = ""
 
+    APP_SECRET: str = ""
+
 
 settings = Settings()

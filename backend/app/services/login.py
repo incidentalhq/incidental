@@ -46,11 +46,11 @@ class LoginService:
             return LoginResult(False, user, LoginError.NOT_VERIFIED)
 
         # too many login attempts
-        if self.security_service.is_user_account_in_cool_off_period(user):
+        if self.security_service._is_user_account_in_cool_off_period(user):
             return LoginResult(False, user, LoginError.EXCEEDED_MAX_LOGIN_ATTEMPTS)
 
         # cool off period has expired, so reset login attempts
-        self.security_service.reset_cool_off_if_possible(user)
+        self.security_service._reset_cool_off_if_possible(user)
 
         # successful login
         if user.check_password(password):
