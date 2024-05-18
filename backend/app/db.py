@@ -24,7 +24,7 @@ def serializer(val: Any) -> str:
 
 
 postgres_dsn = f"postgresql://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
-engine = create_engine(postgres_dsn, json_serializer=serializer)
+engine = create_engine(postgres_dsn, json_serializer=serializer, pool_size=100)
 session_factory = sessionmaker(bind=engine)
 
 

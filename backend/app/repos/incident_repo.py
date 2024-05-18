@@ -15,7 +15,7 @@ from app.models import (
     Organisation,
     User,
 )
-from app.schemas.actions import PatchIncidentSchema
+from app.schemas.actions import ExtendedPatchIncidentSchema
 from app.schemas.resources import PaginatedResults
 
 from .base_repo import BaseRepo
@@ -101,8 +101,8 @@ class IncidentRepo(BaseRepo):
         severity: IncidentSeverity,
         type: IncidentType,
         reference: str,
-        slack_channel_id: str,
-        slack_channel_name: str,
+        slack_channel_id: str | None = None,
+        slack_channel_name: str | None = None,
     ) -> Incident:
         model = Incident()
         model.organisation_id = organisation.id
@@ -278,7 +278,7 @@ class IncidentRepo(BaseRepo):
 
         return PaginatedResults(total=total, page=page, size=size, items=results)
 
-    def patch_incident(self, incident: Incident, patch_in: PatchIncidentSchema) -> None:
+    def patch_incident(self, incident: Incident, patch_in: ExtendedPatchIncidentSchema) -> None:
         for field, value in patch_in.model_dump(exclude_unset=True).items():
             if field == "incident_status":
                 incident.incident_status_id = value["id"]
@@ -288,3 +288,9 @@ class IncidentRepo(BaseRepo):
                 setattr(incident, field, value)
 
         self.session.flush()
+
+    def get_incident_update_by_id(self, id: str) -> IncidentUpdate | None:
+        """Get incident update"""
+        stmt = select(IncidentUpdate).where(IncidentUpdate.id == id, IncidentUpdate.deleted_at.is_(None))
+
+        return self.session.scalar(stmt)

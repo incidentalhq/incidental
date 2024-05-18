@@ -25,5 +25,8 @@ class Settings(BaseSettings):
 
     APP_SECRET: str = ""
 
+    # kafka
+    KAFKA_BOOTSTRAP_SERVERS: str = ""
+
 
 settings = Settings()

@@ -1,6 +1,7 @@
 from .announcement_repo import AnnouncementRepo  # noqa: F401
 from .form_repo import FormRepo  # noqa: F401
 from .incident_repo import IncidentRepo  # noqa: F401
+from .job_repo import TaskRepo  # noqa: F401
 from .organisation_repo import OrganisationRepo  # noqa: F401
 from .severity_repo import SeverityRepo  # noqa: F401
 from .slack_bookmark import SlackBookmarkRepo  # noqa: F401

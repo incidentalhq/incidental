@@ -62,6 +62,11 @@ class PatchIncidentSchema(BaseSchema):
     incident_severity: ModelIdSchema | None = None
 
 
+class ExtendedPatchIncidentSchema(PatchIncidentSchema):
+    slack_channel_name: str | None = None
+    slack_channel_id: str | None = None
+
+
 class AllowAllSchema(BaseSchema):
     """Allows any/all values"""
 

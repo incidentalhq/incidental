@@ -9,6 +9,7 @@ from .incident_severity import IncidentSeverity
 from .incident_status import IncidentStatus, IncidentStatusCategoryEnum
 from .incident_type import IncidentType
 from .incident_update import IncidentUpdate
+from .job import Job
 from .organisation import Organisation, OrganisationTypes
 from .organisation_member import MemberRole, OrganisationMember
 from .settings import Settings

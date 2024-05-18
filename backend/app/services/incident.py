@@ -1,9 +1,23 @@
 import structlog
 
 from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
-from app.repos import AnnouncementRepo, IncidentRepo
-from app.schemas.actions import CreateIncidentSchema, PatchIncidentSchema
+from app.repos import AnnouncementRepo, IncidentRepo, TaskRepo
+from app.schemas import events
+from app.schemas.actions import CreateIncidentSchema, ExtendedPatchIncidentSchema, PatchIncidentSchema
+from app.services.bg.event_emitter import EventEmitter
 from app.services.slack.client import SlackClientService
+from app.tasks import (
+    CreateAnnouncementTask,
+    CreateAnnouncementTaskParameters,
+    CreatePinnedMessageTask,
+    CreatePinnedMessageTaskParameters,
+    InviteUserToChannel,
+    InviteUserToChannelParams,
+    SetChannelTopicParameters,
+    SetChannelTopicTask,
+)
+from app.tasks.create_incident_update import CreateIncidentUpdateParameters, CreateIncidentUpdateTask
+from app.tasks.sync_bookmarks import SyncBookmarksTask, SyncBookmarksTaskParameters
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -19,6 +33,8 @@ class IncidentService:
         self.incident_repo = incident_repo
         self.announcement_repo = announcement_repo
         self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token, session=incident_repo.session)
+        self.task_repo = TaskRepo(session=incident_repo.session)
+        self.event_emitter = EventEmitter()
 
     def generate_incident_reference(self) -> str:
         total_incidents = self.incident_repo.get_total_incidents(organisation=self.organisation)
@@ -43,7 +59,7 @@ class IncidentService:
 
         return self.create_incident(
             name=create_in.incident_name,
-            summary=create_in.summary,
+            summary=create_in.summary or "",
             creator=user,
             incident_severity=incident_severity,
             incident_type=incident_type,
@@ -65,14 +81,8 @@ class IncidentService:
         if not initial_status:
             raise Exception(f"Could not find status: {initial_status_name}")
 
+        # create incident model
         reference = self.generate_incident_reference()
-
-        # create the channel in slack
-        slack_channel_id, channel_name = self.slack_service.create_incident_channel(
-            organisation=self.organisation, name=name
-        )
-
-        # finally create the incident
         incident = self.incident_repo.create_incident(
             organisation=self.organisation,
             user=creator,
@@ -82,9 +92,9 @@ class IncidentService:
             severity=incident_severity,
             type=incident_type,
             reference=reference,
-            slack_channel_id=slack_channel_id,
-            slack_channel_name=channel_name,
         )
+
+        self.event_emitter.emit(events.IncidentModelCreated(incident_id=incident.id))
 
         # assign role
         role = self.incident_repo.get_incident_role(organisation=self.organisation, kind=IncidentRoleKind.REPORTER)
@@ -92,46 +102,79 @@ class IncidentService:
             raise ValueError("Could not find role reporter")
 
         self.incident_repo.assign_role(incident=incident, role=role, user=creator)
+        self.event_emitter.emit(
+            events.IncidentRoleAssigned(incident_id=incident.id, role_id=role.id, user_id=creator.id)
+        )
+
+        # create the channel in slack
+        slack_channel_id, channel_name = self.slack_service.create_incident_channel(
+            organisation=self.organisation, name=name
+        )
+
+        # set the slack fields on the incident
+        self.incident_repo.patch_incident(
+            incident=incident,
+            patch_in=ExtendedPatchIncidentSchema(slack_channel_id=slack_channel_id, slack_channel_name=channel_name),
+        )
+        if not incident.slack_channel_id:
+            raise Exception("incident slack channel Id not set")
 
         # app user should be in announcements and incident channel
         self.slack_service.join_incident_channel(incident=incident)
         self.slack_service.join_announcements_channel(incident=incident)
 
         # invite user to channel
-        self.slack_service.invite_user_to_incident_channel(incident=incident, user=creator)
+        self.task_repo.queue_task(
+            InviteUserToChannel,
+            payload=InviteUserToChannelParams(
+                user_id=creator.id, slack_channel_id=incident.slack_channel_id, organisation_id=incident.organisation_id
+            ),
+        )
 
         # create an announcement in the #incidents channel
-        self.create_announcement(incident)
+        self._create_announcement(incident)
 
         # invite user to the announcements channel too
-        self.slack_service.invite_user_to_announcements_channel(organisation=incident.organisation, user=creator)
+        self.task_repo.queue_task(
+            InviteUserToChannel,
+            payload=InviteUserToChannelParams(
+                user_id=creator.id,
+                slack_channel_id=incident.organisation.settings.slack_announcement_channel_id,
+                organisation_id=incident.organisation_id,
+            ),
+        )
 
-        self.set_topic(incident)
+        # set topic
+        self.task_repo.queue_task(
+            SetChannelTopicTask,
+            payload=SetChannelTopicParameters(
+                organisation_id=incident.organisation_id,
+                topic=incident.reference,
+                slack_channel_id=incident.slack_channel_id,
+            ),
+        )
 
         # pin a message into the channel
-        self.slack_service.create_pinned_message(incident=incident)
+        self.task_repo.queue_task(
+            CreatePinnedMessageTask, payload=CreatePinnedMessageTaskParameters(incident_id=incident.id)
+        )
 
         # add bookmarks
-        self.update_bookmarks(incident)
+        self.task_repo.queue_task(SyncBookmarksTask, payload=SyncBookmarksTaskParameters(incident_id=incident.id))
 
         return incident
 
-    def create_announcement(self, incident: Incident):
+    def _create_announcement(self, incident: Incident):
         """Announce the incident"""
-
-        # create the announcements channel
-        announcements_channel_name = incident.organisation.settings.slack_announcement_channel_name
-        channel_id = self.slack_service.create_channel_if_not_exists(channel_name=announcements_channel_name)
-
-        if incident.organisation.settings.slack_announcement_channel_id != channel_id:
-            incident.organisation.settings.slack_announcement_channel_id = channel_id
-
         # get announcement
         announcement = self.announcement_repo.get_announcement(organisation=incident.organisation)
         if not announcement:
             raise Exception("Could not find announcement")
 
-        self.slack_service.post_announcement(channel_id=channel_id, announcement=announcement, incident=incident)
+        self.task_repo.queue_task(
+            CreateAnnouncementTask,
+            payload=CreateAnnouncementTaskParameters(incident_id=incident.id, announcement_id=announcement.id),
+        )
 
     def create_update(
         self,
@@ -148,15 +191,15 @@ class IncidentService:
             new_severity=new_severity,
             summary=summary,
         )
-        self.slack_service.create_incident_update(creator=creator, incident=incident, incident_update=incident_update)
-        self.slack_service.set_incident_channel_bookmarks(incident=incident)
+        self.event_emitter.emit(events.IncidentUpdateModelCreated(incident_update_id=incident_update.id))
 
-    def set_topic(self, incident: Incident):
-        self.slack_service.set_incident_channel_topic(incident=incident)
-
-    def update_bookmarks(self, incident: Incident):
-        """Add channel bookmarks"""
-        self.slack_service.set_incident_channel_bookmarks(incident=incident)
+        self.task_repo.queue_task(
+            CreateIncidentUpdateTask,
+            payload=CreateIncidentUpdateParameters(
+                incident_id=incident.id, incident_update_id=incident_update.id, creator_id=creator.id
+            ),
+        )
+        self.task_repo.queue_task(SyncBookmarksTask, payload=SyncBookmarksTaskParameters(incident_id=incident.id))
 
     def patch_incident(self, user: User, incident: Incident, patch_in: PatchIncidentSchema):
         new_status = None

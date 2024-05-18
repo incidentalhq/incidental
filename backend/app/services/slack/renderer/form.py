@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Sequence
 
 import structlog
 from pydantic import BaseModel, ConfigDict
@@ -26,9 +26,9 @@ class RenderContext(BaseModel):
 class FormRenderer:
     def __init__(
         self,
-        severities: list[IncidentSeverity],
-        incident_types: list[IncidentType],
-        incident_statuses: list[IncidentStatus],
+        severities: Sequence[IncidentSeverity],
+        incident_types: Sequence[IncidentType],
+        incident_statuses: Sequence[IncidentStatus],
     ):
         self.severities = severities
         self.incident_types = incident_types

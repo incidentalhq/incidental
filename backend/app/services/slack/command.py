@@ -148,6 +148,7 @@ class SlackCommandService:
         # add lead to bookmarks
         bookmarks_response = self.slack_client.bookmarks_list(channel_id=command.channel_id)
         has_lead_bookmark = False
+
         for bookmark in bookmarks_response.get("bookmarks", []):
             if bookmark["title"].startswith("Lead:"):
                 has_lead_bookmark = True
