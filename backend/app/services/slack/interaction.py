@@ -3,7 +3,7 @@ from typing import Any
 
 import structlog
 
-from app.models import Form, Incident, IncidentRoleKind, Organisation, User
+from app.models import Form, Incident, Organisation, User
 from app.models.form import FormType
 from app.repos import FormRepo, IncidentRepo, SeverityRepo
 from app.schemas.slack import SlackInteractionSchema

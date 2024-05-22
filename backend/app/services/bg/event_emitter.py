@@ -1,4 +1,5 @@
 from kafka import KafkaProducer
+from shortuuid import uuid
 
 from app.env import settings
 from app.schemas.events import BaseEvent
@@ -16,4 +17,8 @@ class EventEmitter:
         self.producer = global_producer
 
     def emit(self, event: BaseEvent):
-        self.producer.send(event._topic.value, value=event.model_dump_json().encode("utf8"))
+        self.producer.send(
+            event._topic.value,
+            value=event.model_dump_json().encode("utf8"),
+            headers=[("event_id", uuid().encode("utf8"))],
+        )

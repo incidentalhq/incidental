@@ -36,8 +36,11 @@ class BackgroundJobScheduler:
         # for normal Unix usage
         signal.signal(signal.SIGTERM, self.signal_handler)
 
+    def add_task(self, func):
+        pass
+
     def start(self):
-        logger.info("Starting")
+        logger.info("Starting", max_tasks=self.max_tasks)
 
         while True:
             if self.exit_flag:
