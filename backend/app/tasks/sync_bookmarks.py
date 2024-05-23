@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar, Type
 
 import structlog
 from pydantic import BaseModel
@@ -15,16 +15,8 @@ from .base import BaseTask
 logger = structlog.get_logger(logger_name=__name__)
 
 
-class LeadNotAssignedError(Exception):
-    ...
-
-
-class SyncBookmarksTaskParameters(BaseModel):
-    incident_id: str
-
-
-class SyncBookmarksTask(BaseTask[SyncBookmarksTaskParameters]):
-    def execute(self, parameters: SyncBookmarksTaskParameters):
+class SyncBookmarksTask(BaseTask["SyncBookmarksTaskParameters"]):
+    def execute(self, parameters: "SyncBookmarksTaskParameters"):
         incident_repo = IncidentRepo(session=self.session)
         bookmark_repo = SlackBookmarkRepo(session=self.session)
 
@@ -120,3 +112,8 @@ class SyncBookmarksTask(BaseTask[SyncBookmarksTaskParameters]):
             "emoji": ":house:",
             "type": "link",
         }
+
+
+class SyncBookmarksTaskParameters(BaseModel):
+    task: ClassVar[Type[SyncBookmarksTask]] = SyncBookmarksTask
+    incident_id: str

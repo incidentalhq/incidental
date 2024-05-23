@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Sequence, Type
+from typing import Sequence
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -6,9 +6,6 @@ from sqlalchemy.orm import Session
 
 from app.models import Job
 from app.models.job import JobStatus
-
-if TYPE_CHECKING:
-    from app.jobs.base import BaseTask
 
 
 class TaskRepo:
@@ -30,25 +27,15 @@ class TaskRepo:
 
     def queue_task(
         self,
-        name_or_class: str | Type["BaseTask"],
+        task_params: BaseModel,
         queue: str | None = None,
-        payload: dict[str, Any] | BaseModel | None = None,
     ) -> Job:
         job = Job()
 
-        if isinstance(name_or_class, str):
-            job.name = name_or_class
-        else:
-            job.name = name_or_class.__name__
-
+        job.name = task_params.task.__name__
         job.queue = queue if queue else self.DEFAULT_QUEUE
         job.status = JobStatus.PENDING
-
-        if payload is not None:
-            if isinstance(payload, dict):
-                job.payload = payload
-            elif isinstance(payload, BaseModel):
-                job.payload = payload.model_dump()
+        job.payload = task_params.model_dump(exclude=set(["task"]))
 
         self.session.add(job)
         self.session.flush()

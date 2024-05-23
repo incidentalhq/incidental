@@ -1,3 +1,5 @@
+from typing import ClassVar, Type
+
 from pydantic import BaseModel
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -9,14 +11,8 @@ from app.services.slack.renderer import IncidentUpdateRenderer
 from .base import BaseTask
 
 
-class CreateIncidentUpdateParameters(BaseModel):
-    incident_id: str
-    incident_update_id: str
-    creator_id: str
-
-
-class CreateIncidentUpdateTask(BaseTask[CreateIncidentUpdateParameters]):
-    def execute(self, parameters: CreateIncidentUpdateParameters):
+class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
+    def execute(self, parameters: "CreateIncidentUpdateParameters"):
         incident_repo = IncidentRepo(session=self.session)
         user_repo = UserRepo(session=self.session)
         slack_message_repo = SlackMessageRepo(session=self.session)
@@ -58,3 +54,10 @@ class CreateIncidentUpdateTask(BaseTask[CreateIncidentUpdateParameters]):
                 return None
             else:
                 raise
+
+
+class CreateIncidentUpdateParameters(BaseModel):
+    task: ClassVar[Type[CreateIncidentUpdateTask]] = CreateIncidentUpdateTask
+    incident_id: str
+    incident_update_id: str
+    creator_id: str

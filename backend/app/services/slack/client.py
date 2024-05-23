@@ -12,10 +12,6 @@ from app.utils import to_channel_name
 logger = structlog.get_logger(logger_name=__name__)
 
 
-class LeadNotAssignedError(ValueError):
-    pass
-
-
 class SlackClientService:
     def __init__(self, auth_token: str, session: Session):
         self.auth_token = auth_token

@@ -1,3 +1,5 @@
+from typing import ClassVar, Type
+
 from pydantic import BaseModel
 from slack_sdk import WebClient
 
@@ -8,12 +10,8 @@ from app.services.slack.renderer import IncidentInformationMessageRenderer
 from .base import BaseTask
 
 
-class CreatePinnedMessageTaskParameters(BaseModel):
-    incident_id: str
-
-
-class CreatePinnedMessageTask(BaseTask[CreatePinnedMessageTaskParameters]):
-    def execute(self, parameters: CreatePinnedMessageTaskParameters):
+class CreatePinnedMessageTask(BaseTask["CreatePinnedMessageTaskParameters"]):
+    def execute(self, parameters: "CreatePinnedMessageTaskParameters"):
         incident_repo = IncidentRepo(session=self.session)
         slack_message_repo = SlackMessageRepo(session=self.session)
 
@@ -39,3 +37,8 @@ class CreatePinnedMessageTask(BaseTask[CreatePinnedMessageTaskParameters]):
         slack_message_repo.create_slack_message(
             organisation=incident.organisation, response=response.data, kind=SlackMessageKind.CHANNEL_PINNED_POST
         )
+
+
+class CreatePinnedMessageTaskParameters(BaseModel):
+    task: ClassVar[Type[CreatePinnedMessageTask]] = CreatePinnedMessageTask
+    incident_id: str

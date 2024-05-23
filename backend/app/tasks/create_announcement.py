@@ -1,21 +1,17 @@
+from typing import ClassVar, Type
+
 from pydantic import BaseModel
 from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
 
 from app.models.slack_message import SlackMessageKind
-from app.repos import AnnouncementRepo, IncidentRepo, OrganisationRepo, SlackMessageRepo, UserRepo
+from app.repos import AnnouncementRepo, IncidentRepo, SlackMessageRepo
 from app.services.slack.renderer import AnnouncementRenderer
 
 from .base import BaseTask
 
 
-class CreateAnnouncementTaskParameters(BaseModel):
-    incident_id: str
-    announcement_id: str
-
-
-class CreateAnnouncementTask(BaseTask[CreateAnnouncementTaskParameters]):
-    def execute(self, parameters: CreateAnnouncementTaskParameters):
+class CreateAnnouncementTask(BaseTask["CreateAnnouncementTaskParameters"]):
+    def execute(self, parameters: "CreateAnnouncementTaskParameters"):
         announcement_repo = AnnouncementRepo(session=self.session)
         incident_repo = IncidentRepo(session=self.session)
         slack_message_repo = SlackMessageRepo(session=self.session)
@@ -66,3 +62,9 @@ class CreateAnnouncementTask(BaseTask[CreateAnnouncementTaskParameters]):
         channel_create_response = client.conversations_create(name=channel_name)
         channel_id = channel_create_response.get("channel", dict()).get("id")  # type: ignore
         return channel_id
+
+
+class CreateAnnouncementTaskParameters(BaseModel):
+    task: ClassVar[Type[CreateAnnouncementTask]] = CreateAnnouncementTask
+    incident_id: str
+    announcement_id: str
