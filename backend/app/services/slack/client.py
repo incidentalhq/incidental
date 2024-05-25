@@ -5,7 +5,7 @@ import structlog
 from slack_sdk import WebClient
 from sqlalchemy.orm import Session
 
-from app.models import Incident, Organisation
+from app.models import Organisation
 from app.repos import SlackBookmarkRepo, SlackMessageRepo
 from app.utils import to_channel_name
 
@@ -58,11 +58,3 @@ class SlackClientService:
         response = self.client.conversations_create(name=channel_name, team_id=organisation.slack_team_id)
         slack_channel_id = response.get("channel", {}).get("id", None)  # type: ignore
         return slack_channel_id, channel_name
-
-    def join_incident_channel(self, incident: Incident) -> None:
-        """Put application into incident channel"""
-        self.client.conversations_join(channel=incident.slack_channel_id)
-
-    def join_announcements_channel(self, incident: Incident) -> None:
-        """Put application into announcements channel"""
-        self.client.conversations_join(channel=incident.organisation.settings.slack_announcement_channel_id)

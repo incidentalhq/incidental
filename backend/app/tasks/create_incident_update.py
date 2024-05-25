@@ -1,14 +1,15 @@
-from typing import ClassVar, Type
-
-from pydantic import BaseModel
+import structlog
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 from app.models.slack_message import SlackMessageKind
 from app.repos import IncidentRepo, SlackMessageRepo, UserRepo
+from app.schemas.tasks import CreateIncidentUpdateParameters
 from app.services.slack.renderer import IncidentUpdateRenderer
 
 from .base import BaseTask
+
+logger = structlog.get_logger(logger_name=__name__)
 
 
 class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
@@ -42,6 +43,7 @@ class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
             raise RuntimeError("channel id must be set on incident before posting an incident update in slack")
 
         try:
+            logger.info("posting incident update")
             posted_message_response = client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
 
             return slack_message_repo.create_slack_message(
@@ -54,10 +56,3 @@ class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
                 return None
             else:
                 raise
-
-
-class CreateIncidentUpdateParameters(BaseModel):
-    task: ClassVar[Type[CreateIncidentUpdateTask]] = CreateIncidentUpdateTask
-    incident_id: str
-    incident_update_id: str
-    creator_id: str

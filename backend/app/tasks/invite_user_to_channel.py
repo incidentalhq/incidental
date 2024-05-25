@@ -1,18 +1,16 @@
-from typing import ClassVar, Type
-
 import structlog
-from pydantic import BaseModel
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 from app.repos import OrganisationRepo, UserRepo
+from app.schemas.tasks import InviteUserToChannelParams
 
 from .base import BaseTask
 
 logger = structlog.get_logger(logger_name=__name__)
 
 
-class InviteUserToChannel(BaseTask["InviteUserToChannelParams"]):
+class InviteUserToChannelTask(BaseTask["InviteUserToChannelParams"]):
     def execute(self, parameters: "InviteUserToChannelParams"):
         user_repo = UserRepo(session=self.session)
         organisation_repo = OrganisationRepo(session=self.session)
@@ -36,10 +34,3 @@ class InviteUserToChannel(BaseTask["InviteUserToChannelParams"]):
                 logger.warning("user is already in channel")
             else:
                 raise
-
-
-class InviteUserToChannelParams(BaseModel):
-    task: ClassVar[Type[InviteUserToChannel]] = InviteUserToChannel
-    user_id: str
-    organisation_id: str
-    slack_channel_id: str

@@ -1,14 +1,14 @@
-from typing import Any, Callable, ClassVar, Type
+from typing import Any, Callable
 
 import structlog
-from pydantic import BaseModel
 from slack_sdk import WebClient
 
 from app.env import settings
 from app.exceptions import ErrorCodes, ExternalApiError
 from app.models import Incident, IncidentRoleKind
 from app.models.slack_bookmark import SlackBookmarkKind
-from app.repos import IncidentRepo, SlackBookmarkRepo
+from app.repos import IncidentRepo
+from app.schemas.tasks import SyncBookmarksTaskParameters
 
 from .base import BaseTask
 
@@ -18,7 +18,6 @@ logger = structlog.get_logger(logger_name=__name__)
 class SyncBookmarksTask(BaseTask["SyncBookmarksTaskParameters"]):
     def execute(self, parameters: "SyncBookmarksTaskParameters"):
         incident_repo = IncidentRepo(session=self.session)
-        bookmark_repo = SlackBookmarkRepo(session=self.session)
 
         incident = incident_repo.get_incident_by_id(id=parameters.incident_id)
         if not incident:
@@ -36,8 +35,10 @@ class SyncBookmarksTask(BaseTask["SyncBookmarksTaskParameters"]):
             SlackBookmarkKind.LEAD: self.render_lead,
         }
 
-        current_bookmarks = bookmark_repo.get_all_for_channel(slack_channel_id=incident.slack_channel_id)
-        current_bookmarks_map = {bookmark.kind: bookmark for bookmark in current_bookmarks}
+        # remove existing bookmarks
+        bookmarks_response = client.bookmarks_list(channel_id=incident.slack_channel_id)
+        for item in bookmarks_response.get("bookmarks") or []:
+            client.bookmarks_remove(bookmark_id=item["id"], channel_id=incident.slack_channel_id)
 
         # depending on whether bookmark exists on slack or not, we will update or create it
         for bookmark_kind in list(bookmark_renderers.keys()):
@@ -45,33 +46,17 @@ class SyncBookmarksTask(BaseTask["SyncBookmarksTaskParameters"]):
             if not bookmark_block:
                 continue
 
-            # update bookmark if it already exists
-            if bookmark_kind in current_bookmarks_map.keys():
-                bookmark = current_bookmarks_map[bookmark_kind]
-                client.bookmarks_edit(
-                    bookmark_id=bookmark.slack_bookmark_id,
-                    channel_id=incident.slack_channel_id,
-                    title=bookmark_block["title"],
-                )
-            # create new bookmark
-            else:
-                bookmark_add_response = client.bookmarks_add(
-                    channel_id=incident.slack_channel_id,
-                    title=bookmark_block["title"],
-                    type=bookmark_kind,
-                    emoji=bookmark_block["emoji"],
-                    link=bookmark_block["link"],
-                )
-                slack_bookmark_data: dict[str, Any] | None = bookmark_add_response.get("bookmark")
-                if not slack_bookmark_data:
-                    logger.error("Bookmark data not found in response", response=bookmark_add_response.data)
-                    raise ExternalApiError("Bookmark data not found in response", code=ErrorCodes.SLACK_API_ERROR)
-
-                slack_bookmark_id: str | None = slack_bookmark_data.get("id")
-                if not slack_bookmark_id:
-                    raise ExternalApiError("ID not found in bookmark data", code=ErrorCodes.SLACK_API_ERROR)
-
-                bookmark_repo.create_bookmark(incident=incident, bookmark_id=slack_bookmark_id, kind=bookmark_kind)
+            bookmark_add_response = client.bookmarks_add(
+                channel_id=incident.slack_channel_id,
+                title=bookmark_block["title"],
+                type=bookmark_kind,
+                emoji=bookmark_block["emoji"],
+                link=bookmark_block["link"],
+            )
+            slack_bookmark_data: dict[str, Any] | None = bookmark_add_response.get("bookmark")
+            if not slack_bookmark_data:
+                logger.error("Bookmark data not found in response", response=bookmark_add_response.data)
+                raise ExternalApiError("Bookmark data not found in response", code=ErrorCodes.SLACK_API_ERROR)
 
     def render_lead(self, incident: Incident) -> dict[str, str] | None:
         lead = incident.get_user_for_role(IncidentRoleKind.LEAD)
@@ -112,8 +97,3 @@ class SyncBookmarksTask(BaseTask["SyncBookmarksTaskParameters"]):
             "emoji": ":house:",
             "type": "link",
         }
-
-
-class SyncBookmarksTaskParameters(BaseModel):
-    task: ClassVar[Type[SyncBookmarksTask]] = SyncBookmarksTask
-    incident_id: str

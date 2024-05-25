@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
 import structlog
 from slack_sdk import WebClient
@@ -8,12 +8,15 @@ from app.models import IncidentRoleKind, Organisation, User
 from app.models.form import FormType
 from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
 from app.schemas.slack import SlackCommandDataSchema
-from app.services.incident import IncidentService
-from app.services.slack.forms.update_incident import UpdateIncidentForm
-from app.services.slack.renderer.form import FormRenderer
+from app.schemas.tasks import SyncBookmarksTaskParameters
+from app.services.events import Events
+from app.services.slack.renderer.form import FormRenderer, RenderContext
 from app.services.slack.user import SlackUserService
 
 logger = structlog.get_logger(logger_name=__name__)
+
+if TYPE_CHECKING:
+    from app.services.incident import IncidentService
 
 
 class CommandError(Exception):
@@ -53,7 +56,8 @@ class SlackCommandService:
         incident_repo: IncidentRepo,
         user_repo: UserRepo,
         slack_user_service: SlackUserService,
-        incident_service: IncidentService,
+        incident_service: "IncidentService",
+        events: Events,
     ):
         self.severity_repo = severity_repo
         self.incident_repo = incident_repo
@@ -63,6 +67,7 @@ class SlackCommandService:
         self.user_repo = user_repo
         self.slack_user_service = slack_user_service
         self.incident_service = incident_service
+        self.events = events
 
     def handle_command(self, command: SlackCommandDataSchema, user: User):
         try:
@@ -145,24 +150,12 @@ class SlackCommandService:
 
         # TODO: send a ephemeral message to the user who has the new role about what the expectations are for the role
 
-        # add lead to bookmarks
-        bookmarks_response = self.slack_client.bookmarks_list(channel_id=command.channel_id)
-        has_lead_bookmark = False
-
-        for bookmark in bookmarks_response.get("bookmarks", []):
-            if bookmark["title"].startswith("Lead:"):
-                has_lead_bookmark = True
-                break
-
-        if not has_lead_bookmark:
-            lead_url = f"{settings.FRONTEND_URL}/incident/{incident.id}"
-            self.slack_client.bookmarks_add(
-                channel_id=incident.slack_channel_id,
-                title=f"Lead: {user.name}",
-                link=lead_url,
-                emoji=":firefighter:",
-                type="link",
+        # will add lead info to bookmarks
+        self.events.queue_job(
+            SyncBookmarksTaskParameters(
+                incident_id=incident.id,
             )
+        )
 
     def update_status(self, command: SlackCommandDataSchema, params: list[str]):
         """Show the update status form"""
@@ -182,14 +175,9 @@ class SlackCommandService:
             incident_types=self.incident_repo.get_all_incident_types(self.organisation),
             incident_statuses=self.incident_repo.get_all_incident_statuses(self.organisation),
         )
-        update_incident_form = UpdateIncidentForm(
-            form=update_incident_form_model,
-            incident=incident,
-            form_renderer=form_renderer,
-            incident_repo=self.incident_repo,
-            incident_service=self.incident_service,
+        rendered_form_view = form_renderer.render(
+            form=update_incident_form_model, context=RenderContext(incident=incident)
         )
-        rendered_form_view = update_incident_form.render()
         self.slack_client.views_open(trigger_id=command.trigger_id, view=rendered_form_view)
 
     def show_commands_help(self, command: SlackCommandDataSchema):

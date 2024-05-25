@@ -4,33 +4,24 @@ from app.models import Form, Incident, User
 from app.repos import IncidentRepo
 from app.schemas.slack import SlackInteractionSchema
 from app.services.incident import IncidentService
-from app.services.slack.renderer.form import FormRenderer, RenderContext
-
-from .base import BaseForm
+from app.services.slack.forms.base import BaseForm
 
 logger = structlog.get_logger(logger_name=__name__)
 
 
-class UpdateIncidentForm(BaseForm):
+class UpdateIncidentInteraction(BaseForm):
     def __init__(
         self,
         form: Form,
         incident: Incident,
-        form_renderer: FormRenderer,
         incident_repo: IncidentRepo,
         incident_service: IncidentService,
     ):
         self.form = form
         self.incident = incident
-        self.form_renderer = form_renderer
         self.incident_repo = incident_repo
         self.session = self.incident_repo.session
         self.incident_service = incident_service
-
-    def render(self):
-        context = RenderContext(incident=self.incident)
-        modal = self.form_renderer.render(form=self.form, context=context)
-        return modal
 
     def handle_submit(self, interaction: SlackInteractionSchema, user: User):
         incident_severity = self.get_field_value(self.form, interaction, field_name="incident_severity")
@@ -38,7 +29,12 @@ class UpdateIncidentForm(BaseForm):
         summary = self.get_field_value(self.form, interaction, field_name="summary")
 
         severity = self.incident_repo.get_incident_severity_by_id(incident_severity)
+        if not severity:
+            raise RuntimeError("Could not find severity")
+
         status = self.incident_repo.get_incident_status_by_id(incident_status)
+        if not status:
+            raise RuntimeError("Could not find status")
 
         # only create an update if something has changed
         if (

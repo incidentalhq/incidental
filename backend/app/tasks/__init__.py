@@ -1,7 +1,9 @@
 # flake8: noqa: F401
-from .create_announcement import CreateAnnouncementTask, CreateAnnouncementTaskParameters
-from .create_incident_update import CreateIncidentUpdateParameters, CreateIncidentUpdateTask
-from .create_pinned_message import CreatePinnedMessageTask, CreatePinnedMessageTaskParameters
-from .invite_user_to_channel import InviteUserToChannel, InviteUserToChannelParams
-from .set_channel_topic import SetChannelTopicParameters, SetChannelTopicTask
-from .sync_bookmarks import SyncBookmarksTask, SyncBookmarksTaskParameters
+from .create_announcement import CreateAnnouncementTask
+from .create_incident_update import CreateIncidentUpdateTask
+from .create_pinned_message import CreatePinnedMessageTask
+from .invite_user_to_channel import InviteUserToChannelTask
+from .join_channel import JoinChannelTask
+from .set_channel_topic import SetChannelTopicTask
+from .slash_command import HandleSlashCommandTask
+from .sync_bookmarks import SyncBookmarksTask
