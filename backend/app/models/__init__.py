@@ -1,3 +1,4 @@
+# flake8: noqa: F401
 from .announcement import Announcement, AnnouncementActions, AnnouncementFields
 from .custom_field import CustomField
 from .form import Form, FormType

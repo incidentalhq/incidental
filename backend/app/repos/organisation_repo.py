@@ -68,3 +68,7 @@ class OrganisationRepo(BaseRepo):
     def get_by_id(self, id: str) -> Organisation | None:
         stmt = select(Organisation).where(Organisation.id == id).limit(1)
         return self.session.scalar(stmt)
+
+    def get_by_id_or_raise(self, id: str) -> Organisation:
+        stmt = select(Organisation).where(Organisation.id == id).limit(1)
+        return self.session.execute(stmt).scalar_one()

@@ -27,6 +27,9 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    image: redis:7
+
 volumes:
   postgresdata:
     driver: local

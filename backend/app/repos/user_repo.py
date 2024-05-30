@@ -10,10 +10,11 @@ from .base_repo import BaseRepo
 
 
 class UserRepo(BaseRepo):
-    def get_by_id(self, id: int) -> User | None:
-        return self.session.query(User).get(id)
+    def get_by_id(self, id: str) -> User | None:
+        stmt = select(User).where(User.id == id).limit(1)
+        return self.session.scalar(stmt)
 
-    def get_by_id_or_throw(self, id: int) -> User:
+    def get_by_id_or_raise(self, id: str) -> User:
         user = self.session.query(User).get(id)
         if not user:
             raise ValidationError("Could not find user", code=ErrorCodes.MODEL_NOT_FOUND)

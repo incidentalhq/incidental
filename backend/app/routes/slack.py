@@ -1,19 +1,11 @@
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import CurrentUser
+from app.deps import CurrentUser, EventsService
 from app.env import settings
-from app.exceptions import ApplicationException
-from app.repos import (
-    AnnouncementRepo,
-    FormRepo,
-    IncidentRepo,
-    OrganisationRepo,
-    SeverityRepo,
-    UserRepo,
-)
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, UserRepo
 from app.schemas.actions import OAuth2AuthorizationResultSchema
 from app.schemas.models import OrganisationSchema, UserSchema
 from app.schemas.slack import (
@@ -23,10 +15,10 @@ from app.schemas.slack import (
     SlackInteractionSchema,
     SlackUrlVerificationHandshakeSchema,
 )
+from app.schemas.tasks import HandleSlashCommandTaskParameters
 from app.services.incident import IncidentService
 from app.services.oauth_connector import OAuthConnectorService
 from app.services.onboarding import OnboardingService
-from app.services.slack.command import SlackCommandService
 from app.services.slack.events import SlackEventsService
 from app.services.slack.interaction import SlackInteractionService
 from app.services.slack.user import SlackUserService
@@ -162,6 +154,8 @@ async def slack_oauth_complete(
 
 @router.post("/events")
 async def slack_events(slack_event: SlackEventSchema, session: Session = Depends(get_db)):
+    """This handles events from slack, which are things like user joining a channel, message sent to channel, etc.."""
+
     # initial verification for this endpoint
     if isinstance(slack_event, SlackUrlVerificationHandshakeSchema):
         return {"challenge": slack_event.challenge}
@@ -200,63 +194,22 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
 
 @router.post("/slash-command")
 async def slack_slash_command(
-    background_tasks: BackgroundTasks,
+    events: EventsService,
     command: SlackCommandDataSchema = Depends(SlackCommandDataSchema.as_form),
     session: Session = Depends(get_db),
 ):
     """Main endpoint to handle slack slash command /inc and /incident"""
-    user_repo = UserRepo(session=session)
-    organisation_repo = OrganisationRepo(session=session)
-    form_repo = FormRepo(session=session)
-    severity_repo = SeverityRepo(session=session)
-    incident_repo = IncidentRepo(session=session)
-    user_repo = UserRepo(session=session)
-    announcement_repo = AnnouncementRepo(session=session)
-
-    organisation = organisation_repo.get_by_slack_team_id(command.team_id)
-    if not organisation:
-        raise ApplicationException("Could not find related organisation")
-
-    slack_user_service = SlackUserService(
-        user_repo=user_repo,
-        organisation_repo=organisation_repo,
-    )
-    incident_service = IncidentService(
-        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
-    )
-
-    user = slack_user_service.get_or_create_user_from_slack_id(slack_id=command.user_id, organisation=organisation)
-
-    slack_command_service = SlackCommandService(
-        organisation=organisation,
-        form_repo=form_repo,
-        severity_repo=severity_repo,
-        incident_repo=incident_repo,
-        user_repo=user_repo,
-        slack_user_service=slack_user_service,
-        incident_service=incident_service,
-    )
-
-    try:
-        # TODO: use celery to run async jobs
-        def task(session: Session):
-            slack_command_service.handle_command(command=command, user=user)
-            session.commit()
-
-        background_tasks.add_task(task, session)
-
-    except Exception:
-        logger.exception("There was an error sending slack message")
-
+    events.queue_job(HandleSlashCommandTaskParameters(command=command))
     return Response(status_code=status.HTTP_200_OK)
 
 
 @router.post("/interaction")
 def slack_interaction(
-    background_tasks: BackgroundTasks,
+    events: EventsService,
     session: Session = Depends(get_db),
     interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form),
 ):
+    """This handles user interaction with UI elements created within Slack"""
     organisation_repo = OrganisationRepo(session=session)
     form_repo = FormRepo(session=session)
     incident_repo = IncidentRepo(session=session)
@@ -270,7 +223,10 @@ def slack_interaction(
         return Response(status_code=status.HTTP_200_OK)
 
     incident_service = IncidentService(
-        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
+        organisation=organisation,
+        incident_repo=incident_repo,
+        announcement_repo=announcement_repo,
+        events=events,
     )
     slack_user_service = SlackUserService(
         user_repo=user_repo,
@@ -288,11 +244,7 @@ def slack_interaction(
         severity_repo=severity_repo,
     )
 
-    # TODO: use celery to run async jobs
-    def task():
-        slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation, user=user)
-        session.commit()
-
-    background_tasks.add_task(task)
+    slack_interaction_service.handle_interaction(interaction=interaction, organisation=organisation, user=user)
+    session.commit()
 
     return Response(status_code=status.HTTP_200_OK)

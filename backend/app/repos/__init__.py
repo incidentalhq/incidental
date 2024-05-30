@@ -1,8 +1,9 @@
-from .announcement_repo import AnnouncementRepo  # noqa: F401
-from .form_repo import FormRepo  # noqa: F401
-from .incident_repo import IncidentRepo  # noqa: F401
-from .organisation_repo import OrganisationRepo  # noqa: F401
-from .severity_repo import SeverityRepo  # noqa: F401
-from .slack_bookmark import SlackBookmarkRepo  # noqa: F401
-from .slack_message import SlackMessageRepo  # noqa: F401
-from .user_repo import UserRepo  # noqa: F401
+# flake8: noqa: F401
+from .announcement_repo import AnnouncementRepo
+from .form_repo import FormRepo
+from .incident_repo import IncidentRepo
+from .organisation_repo import OrganisationRepo
+from .severity_repo import SeverityRepo
+from .slack_bookmark import SlackBookmarkRepo
+from .slack_message import SlackMessageRepo
+from .user_repo import UserRepo

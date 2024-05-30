@@ -37,6 +37,9 @@ def archive_org_channels(organisation_id: str, prefix: str = "inc-", dry_run: bo
     if settings.ENV != "development":
         raise Exception("Will only run on development environment")
 
+    if dry_run:
+        logger.info("Dry run mode")
+
     session = session_factory()
     organisation_repo = OrganisationRepo(session=session)
     organisation = organisation_repo.get_by_id(organisation_id)

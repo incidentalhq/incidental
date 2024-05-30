@@ -25,5 +25,8 @@ class Settings(BaseSettings):
 
     APP_SECRET: str = ""
 
+    # celery
+    CELERY_BROKER_URL: str = ""
+
 
 settings = Settings()
