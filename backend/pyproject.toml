@@ -25,7 +25,6 @@ boto3 = "^1.28.23"
 pytest = "^7.4.0"
 slack-sdk = "^3.26.2"
 httpx = "^0.26.0"
-kafka-python-ng = "^2.2.2"
 celery = "^5.4.0"
 redis = "^5.0.4"
 

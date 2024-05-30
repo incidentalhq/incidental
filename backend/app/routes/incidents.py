@@ -3,7 +3,7 @@ from typing import Annotated
 import structlog
 from fastapi import APIRouter, Depends, status
 
-from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
+from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import ApplicationException
 from app.models import FormType
 from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
@@ -43,13 +43,17 @@ async def incident_search(
 
 @router.post("", response_model=IncidentSchema)
 async def incident_create(
-    user: CurrentUser, db: DatabaseSession, create_in: CreateIncidentSchema, organisation: CurrentOrganisation
+    user: CurrentUser,
+    db: DatabaseSession,
+    create_in: CreateIncidentSchema,
+    organisation: CurrentOrganisation,
+    events: EventsService,
 ):
     form_repo = FormRepo(session=db)
     incident_repo = IncidentRepo(session=db)
     announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
-        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
+        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo, events=events
     )
     form = form_repo.get_form(organisation=organisation, form_type=FormType.CREATE_INCIDENT)
     if not form:
@@ -70,7 +74,9 @@ async def incident_get(id: str, db: DatabaseSession, user: CurrentUser):
 
 
 @router.patch("/{id}", response_model=IncidentSchema)
-async def incident_patch(id: str, patch_in: PatchIncidentSchema, db: DatabaseSession, user: CurrentUser):
+async def incident_patch(
+    id: str, patch_in: PatchIncidentSchema, db: DatabaseSession, user: CurrentUser, events: EventsService
+):
     incident_repo = IncidentRepo(session=db)
     incident = incident_repo.get_incident_by_id(id)
     if not incident:
@@ -78,7 +84,10 @@ async def incident_patch(id: str, patch_in: PatchIncidentSchema, db: DatabaseSes
 
     announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
-        organisation=incident.organisation, incident_repo=incident_repo, announcement_repo=announcement_repo
+        organisation=incident.organisation,
+        incident_repo=incident_repo,
+        announcement_repo=announcement_repo,
+        events=events,
     )
     incident_service.patch_incident(user=user, incident=incident, patch_in=patch_in)
 

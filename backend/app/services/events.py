@@ -15,8 +15,8 @@ class Events:
         self.queued_events.append(model)
 
     def build_lookup(self):
-        # load all celery tasks
-        from app.tasks import celerytasks
+        # load all celery tasks, do it here to avoid circular imports
+        from app.tasks import celerytasks  # noqa: F401
 
         lookup = {}
 

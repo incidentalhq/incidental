@@ -1,7 +1,7 @@
 """make slack fields optional
 
 Revision ID: 91a050e23239
-Revises: ca73b4793d1a
+Revises: 7ea94dc22604
 Create Date: 2024-05-17 16:44:46.183162
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "91a050e23239"
-down_revision: Union[str, None] = "ca73b4793d1a"
+down_revision: Union[str, None] = "7ea94dc22604"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

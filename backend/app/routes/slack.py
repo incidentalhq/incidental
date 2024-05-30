@@ -1,5 +1,5 @@
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -206,7 +206,6 @@ async def slack_slash_command(
 @router.post("/interaction")
 def slack_interaction(
     events: EventsService,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_db),
     interaction: SlackInteractionSchema = Depends(SlackInteractionSchema.as_form),
 ):
