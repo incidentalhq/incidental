@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Sequence
+from typing import Any, Sequence
 
 from pydantic import EmailStr
 
@@ -69,17 +69,37 @@ class IncidentRoleAssignmentSchema(ModelSchema):
     incident_role: IncidentRoleSchema
 
 
+class TimestampRuleSchema(BaseSchema):
+    first: bool = False
+    last: bool = False
+    on_event: str
+
+
+class TimestampSchema(ModelSchema):
+    label: str
+    kind: str
+    rank: int
+    rules: list[TimestampRuleSchema]
+    can_delete: bool
+
+
+class TimestampValueSchema(ModelSchema):
+    timestamp: TimestampSchema
+    value: datetime | None
+
+
 class IncidentSchema(ModelSchema):
     name: str
     description: str | None
     reference: str
     slack_channel_id: str
     slack_channel_name: str
-    owner: PublicUserSchema
+    creator: PublicUserSchema
     incident_type: IncidentTypeSchema
     incident_status: IncidentStatusSchema
     incident_severity: IncidentSeveritySchema
     incident_role_assignments: Sequence[IncidentRoleAssignmentSchema]
+    timestamp_values: list[TimestampValueSchema]
 
 
 class IncidentUpdateSchema(ModelSchema):

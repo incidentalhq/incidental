@@ -92,3 +92,12 @@ class PatchSeveritySchema(BaseSchema):
     name: str | None = None
     description: str | None = None
     rating: int | None = None
+
+
+class PatchTimestampSchema(BaseSchema):
+    pass
+
+
+class CreateTimestampSchema(BaseSchema):
+    label: str
+    description: str

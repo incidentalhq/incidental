@@ -4,6 +4,8 @@ from app.schemas.tasks import (
     CreateIncidentUpdateParameters,
     CreatePinnedMessageTaskParameters,
     HandleSlashCommandTaskParameters,
+    IncidentDeclaredTaskParameters,
+    IncidentStatusUpdatedTaskParameters,
     InviteUserToChannelParams,
     JoinChannelTaskParameters,
     SetChannelTopicParameters,
@@ -14,6 +16,8 @@ from app.tasks import (
     CreateIncidentUpdateTask,
     CreatePinnedMessageTask,
     HandleSlashCommandTask,
+    IncidentDeclaredTask,
+    IncidentStatusUpdatedTask,
     InviteUserToChannelTask,
     JoinChannelTask,
     SetChannelTopicTask,
@@ -69,3 +73,15 @@ def create_pinned_message(params: CreatePinnedMessageTaskParameters):
 def sync_bookmarks(params: SyncBookmarksTaskParameters):
     with session_factory() as session:
         SyncBookmarksTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def incident_declared(params: IncidentDeclaredTaskParameters):
+    with session_factory() as session:
+        IncidentDeclaredTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def incident_status_updated(params: IncidentStatusUpdatedTaskParameters):
+    with session_factory() as session:
+        IncidentStatusUpdatedTask(session=session).execute(parameters=params)

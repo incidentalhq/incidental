@@ -83,12 +83,24 @@ class IncidentRepo(BaseRepo):
 
         return self.session.scalars(stmt).all()
 
-    def get_incident_severity_by_id(self, id: str) -> IncidentSeverity | None:
+    def get_incident_severity_by_id_or_throw(self, id: str) -> IncidentSeverity:
         stmt = select(IncidentSeverity).where(IncidentSeverity.id == id, IncidentSeverity.deleted_at.is_(None)).limit(1)
-        return self.session.scalar(stmt)
+        return self.session.scalars(stmt).one()
 
     def get_incident_type_by_id(self, id: str) -> IncidentType | None:
         stmt = select(IncidentType).where(IncidentType.id == id, IncidentType.deleted_at.is_(None)).limit(1)
+        return self.session.scalar(stmt)
+
+    def get_incident_type_by_name(self, organisation: Organisation, name: str) -> IncidentType | None:
+        stmt = (
+            select(IncidentType)
+            .where(
+                IncidentType.name == name,
+                IncidentType.deleted_at.is_(None),
+                IncidentType.organisation_id == organisation.id,
+            )
+            .limit(1)
+        )
         return self.session.scalar(stmt)
 
     def create_incident(
@@ -121,9 +133,9 @@ class IncidentRepo(BaseRepo):
 
         return model
 
-    def get_incident_status_by_id(self, id: str) -> IncidentStatus | None:
+    def get_incident_status_by_id_or_throw(self, id: str) -> IncidentStatus:
         stmt = select(IncidentStatus).where(IncidentStatus.id == id, IncidentStatus.deleted_at.is_(None)).limit(1)
-        return self.session.scalar(stmt)
+        return self.session.scalars(stmt).one()
 
     def create_incident_status(
         self,

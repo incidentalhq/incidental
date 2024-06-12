@@ -1,0 +1,43 @@
+
+timestamps:
+  - kind: REPORTED_AT
+    label: "Reported At"
+    rule:
+      on_event: incident.declared
+      first: true
+
+  - kind: ACCEPTED_AT
+    label: Accepted at
+    rule:
+      on_event: incident.accepted
+      first: true
+
+  - kind: DECLINED_AT
+    label: Declined At
+    rule:
+      on_event: incident.declined
+      first: true
+
+  - kind: MERGED_AT
+    label: Merged at
+    rule:
+      on_event: incident.merged
+      first: true
+
+  - kind: CANCELLED_AT
+    label: Cancelled at
+    rule:
+      on_event: incident.cancelled
+      first: true
+
+  - kind: RESOLVED_AT
+    label: Resolved at
+    rule:
+      first: true
+      on_event: incident.resolved
+
+  - kind: CLOSED_AT
+    label: Closed at
+    rule:
+      on_event: incident.closed
+      last: true

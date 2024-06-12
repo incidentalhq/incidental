@@ -53,4 +53,5 @@ celery.conf.update(
     result_accept_content=["application/json", "application/x-pydantic"],
     imports=("app.tasks.celerytasks",),
     broker_url=settings.CELERY_BROKER_URL,
+    broker_connection_retry_on_startup=True,
 )

@@ -48,11 +48,32 @@ export interface IIncident extends IModel {
   reference: string
   slackChannelId: string
   slackChannelName: string
-  owner: IPublicUser
+  creator: IPublicUser
   incidentType: IIncidentType
   incidentStatus: IIncidentStatus
   incidentSeverity: IIncidentSeverity
   incidentRoleAssignments: Array<IIncidentRoleAssignment>
+  timestampValues: Array<ITimestampValue>
+}
+
+export interface ITimestampValue extends IModel {
+  value: string
+  timestamp: ITimestamp
+}
+
+export interface ITimestamp extends IModel {
+  label: string
+  description: string
+  kind: string
+  rules: Array<ITimestampRule>
+  rank: number
+  canDelete: boolean
+}
+
+export interface ITimestampRule {
+  first: boolean
+  last: boolean
+  onEvent: string
 }
 
 export interface IIncidentType extends IModel {

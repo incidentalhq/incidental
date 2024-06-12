@@ -3,21 +3,17 @@ from typing import Tuple
 
 import structlog
 from slack_sdk import WebClient
-from sqlalchemy.orm import Session
 
 from app.models import Organisation
-from app.repos import SlackBookmarkRepo, SlackMessageRepo
 from app.utils import to_channel_name
 
 logger = structlog.get_logger(logger_name=__name__)
 
 
 class SlackClientService:
-    def __init__(self, auth_token: str, session: Session):
+    def __init__(self, auth_token: str):
         self.auth_token = auth_token
         self.client = WebClient(token=auth_token)
-        self.slack_message_repo = SlackMessageRepo(session=session)
-        self.slack_bookmark_repo = SlackBookmarkRepo(session=session)
 
     def _generate_slack_channel_name(self, organisation: Organisation, incident_name: str) -> str:
         now = datetime.now(tz=timezone.utc)
@@ -34,11 +30,22 @@ class SlackClientService:
         suffix = to_channel_name(incident_name)
         channel_name = f"{channel_name}-{suffix}"
 
-        conversation_list_response = self.client.conversations_list(types=["private_channel", "public_channel"])
+        # find all used channel names
         used_names: set[str] = set()
+        cursor = None
+        size = 100
+        while True:
+            conversation_list_response = self.client.conversations_list(
+                types=["private_channel", "public_channel"], limit=size, cursor=cursor
+            )
 
-        for channel_data in conversation_list_response.get("channels", []):  # type: ignore
-            used_names.add(channel_data["name"])
+            for channel_data in conversation_list_response.get("channels", []):  # type: ignore
+                used_names.add(channel_data["name"])
+
+            if cursor := conversation_list_response.get("response_metadata", {}).get("next_cursor"):
+                pass
+            else:
+                break
 
         # generate a name that doesn't clash with an existing one
         idx = 1

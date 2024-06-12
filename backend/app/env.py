@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     ENV: str = ""
+    DOC_TITLE: str = "Incidental"
 
     DATABASE_HOST: str = ""
     DATABASE_NAME: str = ""
@@ -27,6 +28,10 @@ class Settings(BaseSettings):
 
     # celery
     CELERY_BROKER_URL: str = ""
+
+    # redis
+    REDIS_HOST: str = ""
+    REDIS_PORT: int = 6379
 
 
 settings = Settings()

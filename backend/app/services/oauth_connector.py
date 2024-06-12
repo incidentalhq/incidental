@@ -54,7 +54,6 @@ class OAuthConnectorService:
             raise ApplicationException("There was a problem completing Google oauth")
 
         data = response.json()
-        logger.info("Oauth response", data=data)
 
         if "error" in data:
             raise ApplicationException("Error with Oauth2 token exchange")

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import ApplicationException
-from app.models import FormType
+from app.models import FormKind
 from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
@@ -55,7 +55,7 @@ async def incident_create(
     incident_service = IncidentService(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo, events=events
     )
-    form = form_repo.get_form(organisation=organisation, form_type=FormType.CREATE_INCIDENT)
+    form = form_repo.get_form(organisation=organisation, form_type=FormKind.CREATE_INCIDENT)
     if not form:
         raise ValueError("Could not find create incident form")
 

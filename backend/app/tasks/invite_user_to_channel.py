@@ -20,7 +20,7 @@ class InviteUserToChannelTask(BaseTask["InviteUserToChannelParams"]):
 
         client = WebClient(token=organisation.slack_bot_token)
 
-        # app must be in announcements channel
+        # app must be in channel first
         try:
             client.conversations_join(channel=parameters.slack_channel_id)
         except SlackApiError:

@@ -9,6 +9,8 @@ from app.schemas.tasks import (
     CreateAnnouncementTaskParameters,
     CreateIncidentUpdateParameters,
     CreatePinnedMessageTaskParameters,
+    IncidentDeclaredTaskParameters,
+    IncidentStatusUpdatedTaskParameters,
     InviteUserToChannelParams,
     JoinChannelTaskParameters,
     SetChannelTopicParameters,
@@ -16,10 +18,10 @@ from app.schemas.tasks import (
 )
 from app.services.slack.client import SlackClientService
 
+logger = structlog.get_logger(logger_name=__name__)
+
 if typing.TYPE_CHECKING:
     from app.services.events import Events
-
-logger = structlog.get_logger(logger_name=__name__)
 
 
 class IncidentService:
@@ -33,7 +35,7 @@ class IncidentService:
         self.organisation = organisation
         self.incident_repo = incident_repo
         self.announcement_repo = announcement_repo
-        self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token, session=incident_repo.session)
+        self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token)
         self.events = events
 
     def generate_incident_reference(self) -> str:
@@ -50,7 +52,7 @@ class IncidentService:
         return reference
 
     def create_incident_from_schema(self, create_in: CreateIncidentSchema, user: User):
-        incident_severity = self.incident_repo.get_incident_severity_by_id(create_in.incident_severity)
+        incident_severity = self.incident_repo.get_incident_severity_by_id_or_throw(create_in.incident_severity)
         if not incident_severity:
             raise ValueError("Could not find severity")
 
@@ -115,20 +117,13 @@ class IncidentService:
             patch_in=ExtendedPatchIncidentSchema(slack_channel_id=slack_channel_id, slack_channel_name=channel_name),
         )
         if not incident.slack_channel_id:
-            raise Exception("incident slack channel Id not set")
+            raise Exception("incident slack channel id not set")
 
-        # app user should be in announcements and incident channel
+        # add app to the incident channel
         self.events.queue_job(
             JoinChannelTaskParameters(
                 organisation_id=incident.organisation_id,
                 slack_channel_id=incident.slack_channel_id,
-            )
-        )
-
-        self.events.queue_job(
-            JoinChannelTaskParameters(
-                organisation_id=incident.organisation_id,
-                slack_channel_id=incident.organisation.settings.slack_announcement_channel_id,
             )
         )
 
@@ -139,16 +134,9 @@ class IncidentService:
             ),
         )
 
-        # create an announcement in the #incidents channel
-        self._create_announcement(incident)
-
-        # invite user to the announcements channel too
+        # create an announcement in the configured announcements channel
         self.events.queue_job(
-            InviteUserToChannelParams(
-                user_id=creator.id,
-                slack_channel_id=incident.organisation.settings.slack_announcement_channel_id,
-                organisation_id=incident.organisation_id,
-            ),
+            CreateAnnouncementTaskParameters(incident_id=incident.id),
         )
 
         # set topic
@@ -166,18 +154,10 @@ class IncidentService:
         # add bookmarks
         self.events.queue_job(SyncBookmarksTaskParameters(incident_id=incident.id))
 
+        # incident has been declared
+        self.events.queue_job(IncidentDeclaredTaskParameters(incident_id=incident.id))
+
         return incident
-
-    def _create_announcement(self, incident: Incident):
-        """Announce the incident"""
-        # get announcement
-        announcement = self.announcement_repo.get_announcement(organisation=incident.organisation)
-        if not announcement:
-            raise Exception("Could not find announcement")
-
-        self.events.queue_job(
-            CreateAnnouncementTaskParameters(incident_id=incident.id, announcement_id=announcement.id),
-        )
 
     def create_update(
         self,
@@ -209,10 +189,15 @@ class IncidentService:
         new_sev = None
 
         if patch_in.incident_status and patch_in.incident_status.id != incident.incident_status_id:
-            new_status = self.incident_repo.get_incident_status_by_id(patch_in.incident_status.id)
+            new_status = self.incident_repo.get_incident_status_by_id_or_throw(patch_in.incident_status.id)
+            self.events.queue_job(
+                IncidentStatusUpdatedTaskParameters(
+                    incident_id=incident.id, new_status_id=new_status.id, old_status_id=incident.incident_status_id
+                )
+            )
 
         if patch_in.incident_severity and patch_in.incident_severity.id != incident.incident_severity_id:
-            new_sev = self.incident_repo.get_incident_severity_by_id(patch_in.incident_severity.id)
+            new_sev = self.incident_repo.get_incident_severity_by_id_or_throw(patch_in.incident_severity.id)
 
         if new_sev or new_status:
             self.create_update(

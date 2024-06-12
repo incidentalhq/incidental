@@ -9,6 +9,18 @@ from .base_repo import BaseRepo
 
 
 class SeverityRepo(BaseRepo):
+    def get_severity_by_name(self, organisation: Organisation, name: str) -> IncidentSeverity | None:
+        stmt = (
+            select(IncidentSeverity)
+            .where(
+                IncidentSeverity.name == name,
+                IncidentSeverity.deleted_at.is_(None),
+                IncidentSeverity.organisation_id == organisation.id,
+            )
+            .limit(1)
+        )
+        return self.session.scalar(stmt)
+
     def get_severity_by_id(self, id: str) -> IncidentSeverity | None:
         stmt = select(IncidentSeverity).where(IncidentSeverity.id == id, IncidentSeverity.deleted_at.is_(None)).limit(1)
         return self.session.scalar(stmt)

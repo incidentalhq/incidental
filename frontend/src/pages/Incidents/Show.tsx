@@ -27,7 +27,7 @@ const Description = styled.div`
 
 const Field = styled.div`
   display: flex;
-  padding: 1rem;
+  padding: 1rem 0 0.5rem 1rem;
 `
 const FieldName = styled.div`
   width: 90px;
@@ -45,6 +45,16 @@ const FlatButton = styled.button`
 
   &:hover {
     background-color: var(--color-gray-200);
+  }
+`
+const SidebarHeader = styled.div`
+  padding: 1rem 0 0 1rem;
+  font-weight: 500;
+  color: var(--color-gray-400);
+`
+const RelatedFields = styled.div`
+  ${Field} {
+    padding-bottom: 0;
   }
 `
 
@@ -204,10 +214,16 @@ const ShowIncident = () => {
                     </FieldValue>
                   </Field>
                 ))}
-                <Field>
-                  <FieldName>Reported at</FieldName>
-                  <FieldValue>{format(incidentQuery.data.createdAt, 'd MMM yyyy K:maaa')}</FieldValue>
-                </Field>
+
+                <SidebarHeader>Timestamps</SidebarHeader>
+                <RelatedFields>
+                  {incidentQuery.data.timestampValues.map((it) => (
+                    <Field>
+                      <FieldName>{it.timestamp.label}</FieldName>
+                      <FieldValue>{format(it.value, 'd MMM yyyy K:maaa')}</FieldValue>
+                    </Field>
+                  ))}
+                </RelatedFields>
               </ContentSidebar>
             </Content>
           </>

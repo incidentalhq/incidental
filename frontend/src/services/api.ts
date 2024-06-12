@@ -1,4 +1,4 @@
-import { PaginatedResults } from '@/types/core'
+import { IErrorItem, PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IIncident,
@@ -7,6 +7,7 @@ import {
   ILoggedInUser,
   IOrganisation,
   IPublicUser,
+  ITimestamp,
   IUser,
   IWorld,
   ModelID
@@ -143,6 +144,34 @@ export class ApiService {
   deleteSeverity(severity: IIncidentSeverity) {
     return callApi<IIncidentSeverity>('DELETE', `/severities/${severity.id}`, {
       user: this.user
+    })
+  }
+
+  getTimestamps() {
+    return callApi<PaginatedResults<ITimestamp>>('GET', `/timestamps/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  createTimestamp(timestamp: Pick<ITimestamp, 'label' | 'description'>) {
+    return callApi<ITimestamp>('POST', `/timestamps`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      data: timestamp
+    })
+  }
+
+  deleteTimestamp(timestamp: ITimestamp) {
+    return callApi<ITimestamp>('DELETE', `/timestamps/${timestamp.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
     })
   }
 }

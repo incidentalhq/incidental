@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import CurrentUser, EventsService
 from app.env import settings
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, UserRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, TimestampRepo, UserRepo
 from app.schemas.actions import OAuth2AuthorizationResultSchema
 from app.schemas.models import OrganisationSchema, UserSchema
 from app.schemas.slack import (
@@ -99,6 +99,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     severity_repo = SeverityRepo(session=session)
     incident_repo = IncidentRepo(session=session)
     announcement_repo = AnnouncementRepo(session=session)
+    timestamp_repo = TimestampRepo(session=session)
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
     create_result = slack_user_service.get_or_create_user_from_slack_user_credentials_token(
@@ -110,6 +111,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
         severity_repo=severity_repo,
         incident_repo=incident_repo,
         announcement_repo=announcement_repo,
+        timestamp_repo=timestamp_repo,
     )
     if create_result.is_new_organisation:
         onboarding_service.setup_organisation(organisation=create_result.organisation)
@@ -133,12 +135,14 @@ async def slack_oauth_complete(
     severity_repo = SeverityRepo(session=session)
     incident_repo = IncidentRepo(session=session)
     announcement_repo = AnnouncementRepo(session=session)
+    timestamp_repo = TimestampRepo(session=session)
 
     onboarding_service = OnboardingService(
         form_repo=form_repo,
         severity_repo=severity_repo,
         incident_repo=incident_repo,
         announcement_repo=announcement_repo,
+        timestamp_repo=timestamp_repo,
     )
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)

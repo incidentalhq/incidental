@@ -28,11 +28,11 @@ class UpdateIncidentInteraction(BaseForm):
         incident_status = self.get_field_value(self.form, interaction, field_name="incident_status")
         summary = self.get_field_value(self.form, interaction, field_name="summary")
 
-        severity = self.incident_repo.get_incident_severity_by_id(incident_severity)
+        severity = self.incident_repo.get_incident_severity_by_id_or_throw(incident_severity)
         if not severity:
             raise RuntimeError("Could not find severity")
 
-        status = self.incident_repo.get_incident_status_by_id(incident_status)
+        status = self.incident_repo.get_incident_status_by_id_or_throw(incident_status)
         if not status:
             raise RuntimeError("Could not find status")
 

@@ -1,4 +1,5 @@
 from pydantic.alias_generators import to_snake
+from shortuuid import uuid
 from sqlalchemy import select
 
 from app.models import MemberRole, Organisation, OrganisationMember, OrganisationTypes, User
@@ -14,9 +15,12 @@ class OrganisationRepo(BaseRepo):
         slack_team_id: str | None = None,
         kind: OrganisationTypes | None = None,
     ) -> Organisation:
+        slug = to_snake(name).replace("_", "-")  # kebab-case it
+        unique_slug = f"{slug}-{uuid()}"
+
         organisation = Organisation()
         organisation.name = name
-        organisation.slug = to_snake(name).replace("_", "-")  # kebab-case it
+        organisation.slug = unique_slug
         organisation.slack_team_id = slack_team_id
         organisation.slack_team_name = slack_team_name
 
