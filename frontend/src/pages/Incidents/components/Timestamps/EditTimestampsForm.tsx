@@ -14,7 +14,9 @@ interface Props {
   onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void
 }
 
-export interface FormValues {}
+export interface FormValues {
+  [key: ModelID]: string
+}
 
 type GroupedTimestamps = { custom: Array<ITimestamp>; system: Array<ITimestamp> }
 

@@ -10,12 +10,11 @@ import wrench from '@/assets/icons/wrench.svg'
 import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
-import { Box, Button, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
 import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
-import { ModelID } from '@/types/models'
 import { getLocalTimeZone } from '@/utils/time'
 
 import ChangeSeverityForm, {
@@ -25,7 +24,7 @@ import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './compon
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import Timeline from './components/IncidentUpdate/Timeline'
-import EditTimestampsForm from './components/Timestamps/EditTimestampsForm'
+import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
 
 const Description = styled.div`
   margin-bottom: 2rem;
@@ -164,6 +163,36 @@ const ShowIncident = () => {
     [apiService, id, incidentQuery]
   )
 
+  const handleUpdateTimestampValues = useCallback(
+    async (values: TimestampFormValues) => {
+      try {
+        const normalizedValues = Object.keys(values).reduce(
+          (prev, key) => {
+            const value = values[key as keyof TimestampFormValues]
+            if (value === '') {
+              prev[key] = null
+            } else {
+              prev[key] = value
+            }
+            return prev
+          },
+          {} as Record<string, string | null>
+        )
+        await apiService.updateTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
+        toast('Timestamps updated', { type: 'success' })
+        incidentQuery.refetch()
+        closeModal()
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.detail, { type: 'error' })
+        } else {
+          toast('There was a problem updating timestamps', { type: 'error' })
+        }
+      }
+    },
+    [apiService, incidentQuery, closeModal]
+  )
+
   const handleShowEditTimestampsModal = useCallback(
     (evt: MouseEvent<HTMLAnchorElement>) => {
       evt.preventDefault()
@@ -179,35 +208,8 @@ const ShowIncident = () => {
         </ModalContainer>
       )
     },
-    [incidentQuery.data, setModal]
+    [incidentQuery.data, setModal, handleUpdateTimestampValues]
   )
-
-  const handleUpdateTimestampValues = async (values: Record<ModelID, string>) => {
-    try {
-      const normalizedValues = Object.keys(values).reduce(
-        (prev, key) => {
-          const value = values[key]
-          if (value === '') {
-            prev[key] = null
-          } else {
-            prev[key] = value
-          }
-          return prev
-        },
-        {} as Record<ModelID, string | null>
-      )
-      await apiService.updateTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
-      toast('Timestamps updated', { type: 'success' })
-      incidentQuery.refetch()
-      closeModal()
-    } catch (e) {
-      if (e instanceof APIError) {
-        toast(e.detail, { type: 'error' })
-      } else {
-        toast('There was a problem updating timestamps', { type: 'error' })
-      }
-    }
-  }
 
   const slackUrl = `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
 
