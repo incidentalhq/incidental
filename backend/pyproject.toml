@@ -28,6 +28,7 @@ httpx = "^0.26.0"
 celery = "^5.4.0"
 redis = "^5.0.4"
 pyyaml = "^6.0.1"
+pytz = "^2024.1"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -6,12 +6,13 @@ from fastapi import APIRouter, Depends, status
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import ApplicationException
 from app.models import FormKind
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, TimestampRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
     PatchIncidentSchema,
+    UpdateIncidentTimestampsSchema,
 )
 from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
@@ -115,3 +116,23 @@ async def incident_updates(
     )
 
     return results
+
+
+@router.put("/{id}/timestamps")
+async def incident_update_timestamps(
+    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentTimestampsSchema
+):
+    incident_repo = IncidentRepo(session=db)
+    timestamp_repo = TimestampRepo(session=db)
+    incident = incident_repo.get_incident_by_id(id)
+    if not incident:
+        raise ApplicationException("Incident not found", status_code=status.HTTP_404_NOT_FOUND)
+
+    if not user.belongs_to(incident.organisation):
+        raise ApplicationException("Not allowed", status_code=status.HTTP_403_FORBIDDEN)
+
+    timestamp_repo.bulk_update_incident_timestamps(incident=incident, put_in=put_in)
+
+    db.commit()
+
+    return None

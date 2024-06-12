@@ -174,4 +174,17 @@ export class ApiService {
       }
     })
   }
+
+  updateTimestampValues = (incident: IIncident, timestampsValues: Record<ModelID, string | null>, timezone: string) => {
+    return callApi('PUT', `/incidents/${incident.id}/timestamps`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      data: {
+        values: timestampsValues,
+        timezone: timezone
+      }
+    })
+  }
 }

@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Annotated
 
+import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, StringConstraints
+from pydantic import ConfigDict, EmailStr, StringConstraints, validator
 
 from app.models import IncidentStatusCategoryEnum
 
@@ -101,3 +103,14 @@ class PatchTimestampSchema(BaseSchema):
 class CreateTimestampSchema(BaseSchema):
     label: str
     description: str
+
+
+class UpdateIncidentTimestampsSchema(BaseSchema):
+    timezone: str
+    values: dict[str, datetime | None]
+
+    @validator("timezone")
+    def validate_timezone(cls, v):
+        if v not in pytz.all_timezones:
+            raise ValueError(f"Invalid timezone: {v}")
+        return v

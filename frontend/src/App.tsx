@@ -53,9 +53,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <GlobalProvider>
-          <ModalProvider>
-            <ApiServiceProvider>
-              <AuthProvider>
+          <ApiServiceProvider>
+            <AuthProvider>
+              <ModalProvider>
                 <Routes>
                   <Route path={RoutePaths.LOGIN} element={<LoginSelector />} />
                   <Route path={RoutePaths.EMAIL_LOGIN} element={<Login />} />
@@ -79,9 +79,9 @@ const App = () => {
                   </Route>
                   <Route path="*" element={<PageNotFound />} />
                 </Routes>
-              </AuthProvider>
-            </ApiServiceProvider>
-          </ModalProvider>
+              </ModalProvider>
+            </AuthProvider>
+          </ApiServiceProvider>
         </GlobalProvider>
       </BrowserRouter>
       <ToastContainer hideProgressBar={true} autoClose={2000} />
