@@ -15,6 +15,7 @@ import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
+import { rankSorter } from '@/utils/sort'
 import { getLocalTimeZone } from '@/utils/time'
 
 import ChangeSeverityForm, {
@@ -178,7 +179,7 @@ const ShowIncident = () => {
           },
           {} as Record<string, string | null>
         )
-        await apiService.updateTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
+        await apiService.patchTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
         toast('Timestamps updated', { type: 'success' })
         incidentQuery.refetch()
         closeModal()
@@ -285,12 +286,14 @@ const ShowIncident = () => {
                   </div>
                 </SidebarHeader>
                 <RelatedFields>
-                  {incidentQuery.data.timestampValues.map((it) => (
-                    <Field key={it.id}>
-                      <FieldName>{it.timestamp.label}</FieldName>
-                      <FieldValue>{format(it.value, 'dd MMM yyyy h:mmaaa')}</FieldValue>
-                    </Field>
-                  ))}
+                  {incidentQuery.data.timestampValues
+                    .sort((a, b) => rankSorter(a.timestamp, b.timestamp))
+                    .map((it) => (
+                      <Field key={it.id}>
+                        <FieldName>{it.timestamp.label}</FieldName>
+                        <FieldValue>{format(it.value, 'dd MMM yyyy h:mmaaa')}</FieldValue>
+                      </Field>
+                    ))}
                 </RelatedFields>
               </ContentSidebar>
             </Content>

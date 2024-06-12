@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Sequence
 
 import pytz
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.models import Incident, Organisation, Timestamp, TimestampKind, TimestampRule, TimestampValue
 from app.schemas.actions import CreateTimestampSchema, PatchTimestampSchema, UpdateIncidentTimestampsSchema
@@ -24,6 +24,7 @@ class TimestampRepo(BaseRepo):
         model.kind = TimestampKind.CUSTOM
         model.rules = [TimestampRule(on_event="manual", first=False, last=False).model_dump()]
         model.can_delete = True
+        model.rank = self.get_next_timestamp_rank(organisation=organisation)
 
         self.session.add(model)
         self.session.flush()
@@ -102,9 +103,13 @@ class TimestampRepo(BaseRepo):
 
     def get_timestamps_for_organisation(self, organisation: Organisation) -> Sequence[Timestamp]:
         """Get timestamps for an organisation"""
-        query = select(Timestamp).where(
-            Timestamp.organisation_id == organisation.id,
-            Timestamp.deleted_at.is_(None),
+        query = (
+            select(Timestamp)
+            .where(
+                Timestamp.organisation_id == organisation.id,
+                Timestamp.deleted_at.is_(None),
+            )
+            .order_by(Timestamp.rank.asc())
         )
 
         return self.session.scalars(query).all()
@@ -137,3 +142,7 @@ class TimestampRepo(BaseRepo):
         if timestamp_value:
             self.session.delete(timestamp_value)
             self.session.flush()
+
+    def get_next_timestamp_rank(self, organisation: Organisation) -> int:
+        stmt = select(func.max(Timestamp.rank)).where(Timestamp.organisation_id == organisation.id)
+        return self.session.scalar(stmt) + 1

@@ -118,8 +118,8 @@ async def incident_updates(
     return results
 
 
-@router.put("/{id}/timestamps")
-async def incident_update_timestamps(
+@router.patch("/{id}/timestamps")
+async def incident_patch_timestamps(
     id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentTimestampsSchema
 ):
     incident_repo = IncidentRepo(session=db)

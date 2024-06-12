@@ -1,4 +1,4 @@
-import { IErrorItem, PaginatedResults } from '@/types/core'
+import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IIncident,
@@ -175,8 +175,8 @@ export class ApiService {
     })
   }
 
-  updateTimestampValues = (incident: IIncident, timestampsValues: Record<ModelID, string | null>, timezone: string) => {
-    return callApi('PUT', `/incidents/${incident.id}/timestamps`, {
+  patchTimestampValues = (incident: IIncident, timestampsValues: Record<ModelID, string | null>, timezone: string) => {
+    return callApi('PATCH', `/incidents/${incident.id}/timestamps`, {
       user: this.user,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
