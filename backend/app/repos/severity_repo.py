@@ -25,6 +25,10 @@ class SeverityRepo(BaseRepo):
         stmt = select(IncidentSeverity).where(IncidentSeverity.id == id, IncidentSeverity.deleted_at.is_(None)).limit(1)
         return self.session.scalar(stmt)
 
+    def get_severity_by_id_or_raise(self, id: str) -> IncidentSeverity:
+        stmt = select(IncidentSeverity).where(IncidentSeverity.id == id, IncidentSeverity.deleted_at.is_(None)).limit(1)
+        return self.session.scalars(stmt).one()
+
     def create_severity(self, organisation: Organisation, name: str, description: str, rating: int) -> IncidentSeverity:
         model = IncidentSeverity()
         model.name = name

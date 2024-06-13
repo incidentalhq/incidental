@@ -11,7 +11,7 @@ from .base_repo import BaseRepo
 
 
 class TimestampRepo(BaseRepo):
-    def get_timestamp_by_id(self, id: str) -> Timestamp:
+    def get_timestamp_by_id_or_raise(self, id: str) -> Timestamp:
         stmt = select(Timestamp).where(Timestamp.id == id).limit(1)
         return self.session.scalars(stmt).one()
 
@@ -127,7 +127,7 @@ class TimestampRepo(BaseRepo):
         """Bulk update timetime values for an incident"""
         tz = pytz.timezone(put_in.timezone)
         for timestamp_id, naive_datetime in put_in.values.items():
-            timestamp = self.get_timestamp_by_id(id=timestamp_id)
+            timestamp = self.get_timestamp_by_id_or_raise(id=timestamp_id)
 
             # delete if value sent is null
             if not naive_datetime:

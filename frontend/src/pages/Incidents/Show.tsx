@@ -113,6 +113,7 @@ const ShowIncident = () => {
       }
     })
     incidentQuery.refetch()
+    incidentUpdatesQuery.refetch()
     closeModal()
   }
 
@@ -123,6 +124,7 @@ const ShowIncident = () => {
       }
     })
     incidentQuery.refetch()
+    incidentUpdatesQuery.refetch()
     closeModal()
   }
 

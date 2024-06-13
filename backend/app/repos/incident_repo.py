@@ -26,6 +26,11 @@ class IncidentRepo(BaseRepo):
         stmt = select(Incident).where(Incident.id == id).limit(1)
         return self.session.scalar(stmt)
 
+    def get_incident_by_id_or_raise(self, id: str) -> Incident:
+        """Get incident, raise if not found"""
+        stmt = select(Incident).where(Incident.id == id).limit(1)
+        return self.session.scalars(stmt).one()
+
     def create_incident_type(self, organisation: Organisation, name: str, description: str) -> IncidentType:
         model = IncidentType()
         model.organisation_id = organisation.id
