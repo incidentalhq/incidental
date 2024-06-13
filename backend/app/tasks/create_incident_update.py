@@ -13,6 +13,8 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
+    """Called when an incident update is created"""
+
     def execute(self, parameters: "CreateIncidentUpdateParameters"):
         incident_repo = IncidentRepo(session=self.session)
         user_repo = UserRepo(session=self.session)
@@ -43,8 +45,9 @@ class CreateIncidentUpdateTask(BaseTask["CreateIncidentUpdateParameters"]):
             raise RuntimeError("channel id must be set on incident before posting an incident update in slack")
 
         try:
-            logger.info("posting incident update")
-            posted_message_response = client.chat_postMessage(channel=incident.slack_channel_id, blocks=blocks)
+            posted_message_response = client.chat_postMessage(
+                channel=incident.slack_channel_id, blocks=blocks, text="A new incident update has been shared"
+            )
 
             return slack_message_repo.create_slack_message(
                 organisation=incident.organisation,

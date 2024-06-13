@@ -4,7 +4,7 @@ import structlog
 from fastapi import APIRouter, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
-from app.exceptions import ApplicationException
+from app.exceptions import ApplicationException, NotPermittedError
 from app.repos import SeverityRepo
 from app.schemas.actions import CreateSeveritySchema, PatchSeveritySchema
 from app.schemas.models import IncidentSeveritySchema
@@ -18,11 +18,8 @@ router = APIRouter(tags=["Severities"])
 async def severity_create(
     user: CurrentUser, db: DatabaseSession, create_in: CreateSeveritySchema, organisation: CurrentOrganisation
 ):
-    if not user.belongs_to(organisation=organisation):
-        raise ApplicationException("User is not part of organisation", status_code=status.HTTP_403_FORBIDDEN)
-
+    """Create a new custom severity"""
     severity_repo = SeverityRepo(session=db)
-
     rating = None
     if not create_in.rating:
         rating = severity_repo.get_next_rating(organisation=organisation)
@@ -40,10 +37,12 @@ async def severity_create(
 
 @router.patch("/{id}", response_model=IncidentSeveritySchema)
 async def severity_patch(id: str, patch_in: PatchSeveritySchema, db: DatabaseSession, user: CurrentUser):
+    """Patch an existing severity"""
     severity_repo = SeverityRepo(session=db)
-    severity = severity_repo.get_severity_by_id(id=id)
-    if not severity:
-        raise ApplicationException("Severity not found", status_code=status.HTTP_404_NOT_FOUND)
+    severity = severity_repo.get_severity_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=severity.organisation):
+        raise NotPermittedError()
 
     severity_repo.patch_severity(severity=severity, patch_in=patch_in)
 
@@ -54,10 +53,12 @@ async def severity_patch(id: str, patch_in: PatchSeveritySchema, db: DatabaseSes
 
 @router.delete("/{id}", response_model=IncidentSeveritySchema)
 async def severity_delete(id: str, db: DatabaseSession, user: CurrentUser):
+    """Archive a severity"""
     severity_repo = SeverityRepo(session=db)
-    severity = severity_repo.get_severity_by_id(id=id)
-    if not severity:
-        raise ApplicationException("Severity not found", status_code=status.HTTP_404_NOT_FOUND)
+    severity = severity_repo.get_severity_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=severity.organisation):
+        raise NotPermittedError()
 
     if len(severity.incidents) > 0:
         raise ApplicationException("This severity is currently in use", status_code=status.HTTP_400_BAD_REQUEST)

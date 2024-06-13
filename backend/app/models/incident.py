@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
     from .incident_status import IncidentStatus
     from .incident_type import IncidentType
     from .organisation import Organisation
+    from .timestamp import TimestampValue
     from .user import User
 
 
@@ -48,7 +49,7 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
     slack_channel_name: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
 
     # relationships
-    owner: Mapped["User"] = relationship("User", back_populates="incidents_created")
+    creator: Mapped["User"] = relationship("User", back_populates="incidents_created")
     incident_type: Mapped["IncidentType"] = relationship("IncidentType")
     incident_status: Mapped["IncidentStatus"] = relationship("IncidentStatus")
     incident_severity: Mapped["IncidentSeverity"] = relationship("IncidentSeverity", back_populates="incidents")
@@ -56,6 +57,7 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
         "IncidentRoleAssignment", back_populates="incident"
     )
     organisation: Mapped["Organisation"] = relationship("Organisation", back_populates="incidents")
+    timestamp_values: Mapped[list["TimestampValue"]] = relationship("TimestampValue", back_populates="incident")
 
     def get_user_for_role(self, kind: "IncidentRoleKind") -> Optional["User"]:
         for assignment in self.incident_role_assignments:

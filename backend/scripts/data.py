@@ -7,7 +7,8 @@ from slack_sdk.errors import SlackApiError
 
 from app.db import session_factory
 from app.env import settings
-from app.repos import OrganisationRepo, UserRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, TimestampRepo, UserRepo
+from app.services.onboarding import OnboardingService
 from app.utils import setup_logger
 
 setup_logger()
@@ -67,6 +68,30 @@ def archive_org_channels(organisation_id: str, prefix: str = "inc-", dry_run: bo
                     client.conversations_archive(channel=channel["id"])
                 except SlackApiError as e:
                     logger.exception("Problem archiving channel", response=e.response)
+
+
+@app.command()
+def onboard(org_id: str):
+    session = session_factory()
+    form_repo = FormRepo(session=session)
+    severity_repo = SeverityRepo(session=session)
+    incident_repo = IncidentRepo(session=session)
+    announcement_repo = AnnouncementRepo(session=session)
+    timestamp_repo = TimestampRepo(session=session)
+    organisation_repo = OrganisationRepo(session=session)
+
+    organisation = organisation_repo.get_by_id_or_raise(id=org_id)
+
+    onboarding_service = OnboardingService(
+        form_repo=form_repo,
+        severity_repo=severity_repo,
+        incident_repo=incident_repo,
+        announcement_repo=announcement_repo,
+        timestamp_repo=timestamp_repo,
+    )
+    onboarding_service.setup_organisation(organisation=organisation)
+
+    session.commit()
 
 
 if __name__ == "__main__":

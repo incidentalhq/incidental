@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { MouseEvent, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
 import slack from '@/assets/icons/slack.svg'
+import wrench from '@/assets/icons/wrench.svg'
 import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
@@ -12,6 +14,9 @@ import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/comp
 import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
+import { APIError } from '@/services/transport'
+import { rankSorter } from '@/utils/sort'
+import { getLocalTimeZone } from '@/utils/time'
 
 import ChangeSeverityForm, {
   FormValues as ChangeSeverityFormValues
@@ -20,6 +25,7 @@ import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './compon
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import Timeline from './components/IncidentUpdate/Timeline'
+import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
 
 const Description = styled.div`
   margin-bottom: 2rem;
@@ -27,7 +33,7 @@ const Description = styled.div`
 
 const Field = styled.div`
   display: flex;
-  padding: 1rem;
+  padding: 1rem 0 0.5rem 1rem;
 `
 const FieldName = styled.div`
   width: 90px;
@@ -47,6 +53,24 @@ const FlatButton = styled.button`
     background-color: var(--color-gray-200);
   }
 `
+const SidebarHeader = styled.div`
+  padding: 1rem 0 0 1rem;
+  font-weight: 500;
+  color: var(--color-gray-400);
+
+  display: flex;
+
+  & > :first-child {
+    width: 90px;
+  }
+`
+const RelatedFields = styled.div`
+  ${Field} {
+    padding-bottom: 0;
+  }
+`
+
+const FlatEdit = styled.a``
 
 type UrlParams = {
   id: string
@@ -89,6 +113,7 @@ const ShowIncident = () => {
       }
     })
     incidentQuery.refetch()
+    incidentUpdatesQuery.refetch()
     closeModal()
   }
 
@@ -99,6 +124,7 @@ const ShowIncident = () => {
       }
     })
     incidentQuery.refetch()
+    incidentUpdatesQuery.refetch()
     closeModal()
   }
 
@@ -138,6 +164,54 @@ const ShowIncident = () => {
       incidentQuery.refetch()
     },
     [apiService, id, incidentQuery]
+  )
+
+  const handleUpdateTimestampValues = useCallback(
+    async (values: TimestampFormValues) => {
+      try {
+        const normalizedValues = Object.keys(values).reduce(
+          (prev, key) => {
+            const value = values[key as keyof TimestampFormValues]
+            if (value === '') {
+              prev[key] = null
+            } else {
+              prev[key] = value
+            }
+            return prev
+          },
+          {} as Record<string, string | null>
+        )
+        await apiService.patchTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
+        toast('Timestamps updated', { type: 'success' })
+        incidentQuery.refetch()
+        closeModal()
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.detail, { type: 'error' })
+        } else {
+          toast('There was a problem updating timestamps', { type: 'error' })
+        }
+      }
+    },
+    [apiService, incidentQuery, closeModal]
+  )
+
+  const handleShowEditTimestampsModal = useCallback(
+    (evt: MouseEvent<HTMLAnchorElement>) => {
+      evt.preventDefault()
+      setModal(
+        <ModalContainer>
+          <h2>Set timestamps</h2>
+          <p>Customise timestamps</p>
+          <p>
+            Timestamps are shown in your local timezone: <b>{getLocalTimeZone()}</b>
+          </p>
+          <br />
+          <EditTimestampsForm incident={incidentQuery.data!} onSubmit={handleUpdateTimestampValues} />
+        </ModalContainer>
+      )
+    },
+    [incidentQuery.data, setModal, handleUpdateTimestampValues]
   )
 
   const slackUrl = `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
@@ -204,10 +278,25 @@ const ShowIncident = () => {
                     </FieldValue>
                   </Field>
                 ))}
-                <Field>
-                  <FieldName>Reported at</FieldName>
-                  <FieldValue>{format(incidentQuery.data.createdAt, 'd MMM yyyy K:maaa')}</FieldValue>
-                </Field>
+
+                <SidebarHeader>
+                  <div>Timestamps</div>
+                  <div>
+                    <FlatEdit href="#" onClick={handleShowEditTimestampsModal}>
+                      <Icon icon={wrench} />
+                    </FlatEdit>
+                  </div>
+                </SidebarHeader>
+                <RelatedFields>
+                  {incidentQuery.data.timestampValues
+                    .sort((a, b) => rankSorter(a.timestamp, b.timestamp))
+                    .map((it) => (
+                      <Field key={it.id}>
+                        <FieldName>{it.timestamp.label}</FieldName>
+                        <FieldValue>{format(it.value, 'dd MMM yyyy h:mmaaa')}</FieldValue>
+                      </Field>
+                    ))}
+                </RelatedFields>
               </ContentSidebar>
             </Content>
           </>

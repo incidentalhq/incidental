@@ -3,7 +3,7 @@ from typing import Sequence
 from sqlalchemy import select
 
 from app.models import Form, FormField, Organisation
-from app.models.form import FormType
+from app.models.form import FormKind
 from app.models.form_field import FormFieldKind
 
 from .base_repo import BaseRepo
@@ -15,7 +15,7 @@ class FormRepo(BaseRepo):
 
         return self.session.scalars(stmt).all()
 
-    def create_form(self, organisation: Organisation, name: str, _type: FormType) -> Form:
+    def create_form(self, organisation: Organisation, name: str, _type: FormKind) -> Form:
         form = Form()
         form.organisation_id = organisation.id
         form.name = name
@@ -53,7 +53,7 @@ class FormRepo(BaseRepo):
 
         return model
 
-    def get_form(self, organisation: Organisation, form_type: FormType) -> Form | None:
+    def get_form(self, organisation: Organisation, form_type: FormKind) -> Form | None:
         stmt = select(Form).where(Form.organisation_id == organisation.id, Form.type == form_type).limit(1)
 
         return self.session.scalars(stmt).first()

@@ -1,20 +1,23 @@
 import typing
 
 from pydantic import BaseModel
+from redis import Redis
 
+from app.env import settings
 from app.worker import celery
 
 prefix = "app.tasks"
 
 
 class Events:
-    def __init__(self):
-        self.queued_events = []
+    def __init__(self) -> None:
+        self.queued_jobs: list[BaseModel] = []
+        self.redis = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
     def queue_job(self, model: BaseModel):
-        self.queued_events.append(model)
+        self.queued_jobs.append(model)
 
-    def build_lookup(self):
+    def _build_lookup(self):
         # load all celery tasks, do it here to avoid circular imports
         from app.tasks import celerytasks  # noqa: F401
 
@@ -29,9 +32,12 @@ class Events:
         return lookup
 
     def commit(self):
-        cache = self.build_lookup()
+        self._commit_jobs()
 
-        for task_param in self.queued_events:
+    def _commit_jobs(self):
+        cache = self._build_lookup()
+
+        for task_param in self.queued_jobs:
             func = cache.get(task_param.__class__)
             if func:
                 func.apply_async([task_param])

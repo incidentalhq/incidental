@@ -5,7 +5,7 @@ from slack_sdk import WebClient
 
 from app.env import settings
 from app.models import IncidentRoleKind, Organisation, User
-from app.models.form import FormType
+from app.models.form import FormKind
 from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
 from app.schemas.slack import SlackCommandDataSchema
 from app.schemas.tasks import SyncBookmarksTaskParameters
@@ -90,7 +90,7 @@ class SlackCommandService:
     def handle_create_incident(self, command: SlackCommandDataSchema):
         """Launch the create incident form"""
         create_incident_form = self.form_repo.get_form(
-            organisation=self.organisation, form_type=FormType.CREATE_INCIDENT
+            organisation=self.organisation, form_type=FormKind.CREATE_INCIDENT
         )
         if not create_incident_form:
             raise RuntimeError("Could not find create incident form")
@@ -161,7 +161,7 @@ class SlackCommandService:
         """Show the update status form"""
         logger.info("Opening update status form")
         update_incident_form_model = self.form_repo.get_form(
-            organisation=self.organisation, form_type=FormType.UPDATE_INCIDENT
+            organisation=self.organisation, form_type=FormKind.UPDATE_INCIDENT
         )
         if not update_incident_form_model:
             raise RuntimeError("Could not find update incident status form")

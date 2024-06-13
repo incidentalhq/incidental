@@ -13,7 +13,7 @@ import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
 import { IIncidentSeverity } from '@/types/models'
 
-import SeverityForm, { FormValues as SeverityFormValues } from './forms/SeverityForm'
+import SeverityForm, { FormValues as SeverityFormValues } from './components/SeverityForm'
 
 const Intro = styled.div`
   padding: 1rem;

@@ -28,6 +28,7 @@ class CreatePinnedMessageTask(BaseTask["CreatePinnedMessageTaskParameters"]):
         response = client.chat_postMessage(
             channel=incident.slack_channel_id,
             blocks=blocks,
+            text=incident.name,
         )
 
         # pin message

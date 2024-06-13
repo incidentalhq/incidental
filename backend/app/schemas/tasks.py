@@ -7,7 +7,6 @@ from app.schemas.slack import (
 
 class CreateAnnouncementTaskParameters(BaseModel):
     incident_id: str
-    announcement_id: str
 
 
 class HandleSlashCommandTaskParameters(BaseModel):
@@ -43,3 +42,13 @@ class SetChannelTopicParameters(BaseModel):
 
 class SyncBookmarksTaskParameters(BaseModel):
     incident_id: str
+
+
+class IncidentDeclaredTaskParameters(BaseModel):
+    incident_id: str
+
+
+class IncidentStatusUpdatedTaskParameters(BaseModel):
+    incident_id: str
+    new_status_id: str
+    old_status_id: str

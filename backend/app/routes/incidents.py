@@ -1,17 +1,18 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
-from app.exceptions import ApplicationException
-from app.models import FormType
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
+from app.exceptions import NotPermittedError
+from app.models import FormKind
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, TimestampRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
     PatchIncidentSchema,
+    UpdateIncidentTimestampsSchema,
 )
 from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
@@ -29,6 +30,7 @@ async def incident_search(
     db: DatabaseSession,
     organisation: CurrentOrganisation,
 ):
+    """Search through organisation's incidents"""
     incident_repo = IncidentRepo(session=db)
     incidents = incident_repo.search_incidents(
         organisation=organisation,
@@ -49,13 +51,14 @@ async def incident_create(
     organisation: CurrentOrganisation,
     events: EventsService,
 ):
+    """Create a new incident"""
     form_repo = FormRepo(session=db)
     incident_repo = IncidentRepo(session=db)
     announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
         organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo, events=events
     )
-    form = form_repo.get_form(organisation=organisation, form_type=FormType.CREATE_INCIDENT)
+    form = form_repo.get_form(organisation=organisation, form_type=FormKind.CREATE_INCIDENT)
     if not form:
         raise ValueError("Could not find create incident form")
 
@@ -67,8 +70,12 @@ async def incident_create(
 
 @router.get("/{id}", response_model=IncidentSchema)
 async def incident_get(id: str, db: DatabaseSession, user: CurrentUser):
+    """Get an incident"""
     incident_repo = IncidentRepo(session=db)
-    incident = incident_repo.get_incident_by_id(id)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(organisation=incident.organisation):
+        raise NotPermittedError()
 
     return incident
 
@@ -77,10 +84,12 @@ async def incident_get(id: str, db: DatabaseSession, user: CurrentUser):
 async def incident_patch(
     id: str, patch_in: PatchIncidentSchema, db: DatabaseSession, user: CurrentUser, events: EventsService
 ):
+    """Patch an existing incident"""
     incident_repo = IncidentRepo(session=db)
-    incident = incident_repo.get_incident_by_id(id)
-    if not incident:
-        raise ApplicationException("Incident not found", status_code=status.HTTP_404_NOT_FOUND)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(organisation=incident.organisation):
+        raise NotPermittedError()
 
     announcement_repo = AnnouncementRepo(session=db)
     incident_service = IncidentService(
@@ -103,10 +112,12 @@ async def incident_updates(
     db: DatabaseSession,
     user: CurrentUser,
 ):
+    """Get updates for an incident"""
     incident_repo = IncidentRepo(session=db)
-    incident = incident_repo.get_incident_by_id(id)
-    if not incident:
-        raise ApplicationException("Incident not found", status_code=status.HTTP_404_NOT_FOUND)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(organisation=incident.organisation):
+        raise NotPermittedError()
 
     results = incident_repo.get_incident_updates(
         incident=incident,
@@ -115,3 +126,22 @@ async def incident_updates(
     )
 
     return results
+
+
+@router.patch("/{id}/timestamps")
+async def incident_patch_timestamps(
+    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentTimestampsSchema
+):
+    """Patch timestamps for an incident"""
+    incident_repo = IncidentRepo(session=db)
+    timestamp_repo = TimestampRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(incident.organisation):
+        raise NotPermittedError()
+
+    timestamp_repo.bulk_update_incident_timestamps(incident=incident, put_in=put_in)
+
+    db.commit()
+
+    return None

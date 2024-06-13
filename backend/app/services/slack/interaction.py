@@ -4,7 +4,7 @@ from typing import Any
 import structlog
 
 from app.models import Form, Incident, Organisation, User
-from app.models.form import FormType
+from app.models.form import FormKind
 from app.repos import FormRepo, IncidentRepo, SeverityRepo
 from app.schemas.slack import SlackInteractionSchema
 from app.services.incident import IncidentService
@@ -49,9 +49,9 @@ class SlackInteractionService:
             raise Exception("Unable to find form for slack view")
 
         match form.type:
-            case FormType.CREATE_INCIDENT:
+            case FormKind.CREATE_INCIDENT:
                 return self.create_incident(user, form, organisation, interaction, metadata)
-            case FormType.UPDATE_INCIDENT:
+            case FormKind.UPDATE_INCIDENT:
                 return self.update_incident(user, form, organisation, interaction, metadata)
 
     def create_incident(

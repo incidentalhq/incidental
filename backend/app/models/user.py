@@ -42,7 +42,7 @@ class User(Base, TimestampMixin):
     organisations: Mapped[list["Organisation"]] = relationship(
         "Organisation", secondary="organisation_member", back_populates="users"
     )
-    incidents_created = relationship("Incident", back_populates="owner")
+    incidents_created = relationship("Incident", back_populates="creator")
 
     # user specific settings
     def _set_settings(self, value):

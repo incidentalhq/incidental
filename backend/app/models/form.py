@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
     from .form_field import FormField
 
 
-class FormType(enum.Enum):
+class FormKind(enum.Enum):
     CREATE_INCIDENT = "CREATE_INCIDENT"
     UPDATE_INCIDENT = "UPDATE_INCIDENT"
 
@@ -26,8 +26,8 @@ class Form(Base, TimestampMixin, SoftDeleteMixin):
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     template: Mapped[str] = mapped_column(UnicodeText, nullable=True)
-    type: Mapped[FormType] = mapped_column(
-        Enum(FormType, native_enum=False),
+    type: Mapped[FormKind] = mapped_column(
+        Enum(FormKind, native_enum=False),
         nullable=False,
     )
 

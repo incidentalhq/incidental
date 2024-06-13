@@ -1,7 +1,7 @@
 # flake8: noqa: F401
 from .announcement import Announcement, AnnouncementActions, AnnouncementFields
 from .custom_field import CustomField
-from .form import Form, FormType
+from .form import Form, FormKind
 from .form_field import FormField, FormFieldKind
 from .incident import Incident
 from .incident_role import IncidentRole, IncidentRoleKind
@@ -15,4 +15,5 @@ from .organisation_member import MemberRole, OrganisationMember
 from .settings import Settings
 from .slack_bookmark import SlackBookmark
 from .slack_message import SlackMessage
+from .timestamp import Timestamp, TimestampKind, TimestampRule, TimestampValue
 from .user import User
