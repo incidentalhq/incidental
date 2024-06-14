@@ -5,7 +5,7 @@ import structlog
 
 from app.models import MemberRole, User
 from app.repos import OrganisationRepo, UserRepo
-from app.schemas.actions import CreateUserSchema
+from app.schemas.actions import CreateUserSchema, CreateUserViaSlackSchema
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -15,7 +15,7 @@ class IdentityService:
         self.user_repo = user_repo
         self.organisation_repo = organisation_repo
 
-    def create_account(self, create_in: CreateUserSchema) -> User:
+    def create_account(self, create_in: CreateUserSchema | CreateUserViaSlackSchema) -> User:
         """Create new user account"""
         user = self.user_repo.create_user(create_in=create_in)
         organisation = self.organisation_repo.create_organisation("Default")

@@ -16,8 +16,21 @@ services:
       - .env
     command: uvicorn app.main:app --port 5000 --host 0.0.0.0 --reload
 
+  worker:
+    image: incidental/backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - ".:/srv"
+    env_file:
+      - .env
+    command: celery -A app.worker worker --loglevel=info
+
   postgres:
-    image: postgres:14
+    image: postgres:16
     volumes:
       - postgresdata:/var/lib/postgresql/data
     environment:

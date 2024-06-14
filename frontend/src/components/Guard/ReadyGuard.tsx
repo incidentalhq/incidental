@@ -1,19 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { PropsWithChildren, useEffect } from 'react'
-import { toast } from 'react-toastify'
 
 import useApiService from '@/hooks/useApi'
-import useAuth from '@/hooks/useAuth'
 import useGlobal from '@/hooks/useGlobal'
-import { APIError } from '@/services/transport'
 import { getPreference, PREF_SELECTED_ORGANISATION } from '@/utils/storage'
 
 type Props = PropsWithChildren
 
 const ReadyGuard: React.FC<Props> = ({ children }) => {
   const { apiService } = useApiService()
-  const { logout } = useAuth()
-  const { setCurrentOrganisation, setOrganisationDetails, organisation } = useGlobal()
+  const { setCurrentOrganisation, setOrganisationDetails, organisationDetails } = useGlobal()
 
   const worldQuery = useQuery({
     queryKey: ['world'],
@@ -21,26 +17,14 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
   })
 
   useEffect(() => {
-    if (!worldQuery.error) {
+    if (worldQuery.status !== 'success') {
       return
     }
-    if (worldQuery.error instanceof APIError) {
-      toast(worldQuery.error.detail, { type: 'error' })
-    }
-    logout()
-    console.error(worldQuery.error)
-  }, [worldQuery.error, logout])
-
-  useEffect(() => {
-    if (!worldQuery.isSuccess) {
-      return
-    }
-
     setOrganisationDetails(worldQuery.data.organisationDetails)
 
     const selectedOrganisationId = getPreference<string>(PREF_SELECTED_ORGANISATION)
 
-    // fallback to first organisation
+    // fallback to first organisation if user hasn't picked an organisation
     if (!selectedOrganisationId) {
       const first = worldQuery.data.organisationDetails[0]
       setCurrentOrganisation(first)
@@ -48,6 +32,7 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
       return
     }
 
+    // otherwise set current organisation based on their preference
     const organisationDetail = worldQuery.data.organisationDetails.find(
       (it) => it.organisation.id === selectedOrganisationId
     )
@@ -60,9 +45,13 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
       setCurrentOrganisation(first)
       apiService.setOrganisation(first.organisation.id)
     }
-  }, [worldQuery.data, worldQuery.isSuccess, setCurrentOrganisation, setOrganisationDetails, apiService])
+  }, [worldQuery, setCurrentOrganisation, setOrganisationDetails, apiService])
 
-  if (!worldQuery.isFetched || !organisation) {
+  if (worldQuery.status === 'error') {
+    return <p>There was an error loading the application.</p>
+  }
+
+  if (worldQuery.status === 'pending' || organisationDetails.length === 0) {
     return <p>Loading</p>
   }
 

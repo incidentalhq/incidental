@@ -113,7 +113,7 @@ const SettingsTimestamps = () => {
 
   const handleAddTimestamp = async (values: TimestampFormValues) => {
     try {
-      const response = await apiService.createTimestamp(values)
+      await apiService.createTimestamp(values)
       timestampsQuery.refetch()
       toast('New timestamp added', { type: 'success' })
       closeModal()
