@@ -1,13 +1,7 @@
-import axios, { Method, RawAxiosRequestConfig } from 'axios'
 import qs from 'qs'
 
 import { IErrorItem, IResponseError } from '@/types/core'
 import { IUser } from '@/types/models'
-
-// patch axios
-axios.defaults.paramsSerializer = (params: Record<string, unknown>): string => {
-  return qs.stringify(params, { arrayFormat: 'repeat' })
-}
 
 export const getBaseUrl = (): string => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL
@@ -35,52 +29,59 @@ export class APIError extends Error {
   }
 }
 
-interface CallConfig extends RawAxiosRequestConfig {
+interface APICallConfig {
   user?: Required<Pick<IUser, 'authToken'>>
+  headers?: Record<string, string>
+  json?: unknown
+  params?: Record<string, unknown>
 }
+type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'
 
-export const callApi = async <T>(method: Method = 'GET', url: string, config?: CallConfig): Promise<T> => {
-  let baseConfig: RawAxiosRequestConfig = {
-    url: url,
-    method: method,
-    baseURL: getBaseUrl()
+export const callApi = async <T>(method: Method = 'GET', url: string, config?: APICallConfig): Promise<T> => {
+  const fetchConfig: RequestInit = {
+    method
+  }
+  let urlQs = ''
+
+  // build headers
+  const headers = new Headers()
+  if (config?.user) {
+    headers.set('Authorization', `Bearer ${config.user.authToken}`)
   }
 
-  // convert user object to headers
-  if (config && config.user !== undefined) {
-    baseConfig.headers = {
-      ...createAuthHeader(config.user.authToken),
-      ...(config.headers ?? {})
+  // add custom headers
+  if (config?.headers) {
+    const headerKeys = Object.keys(config.headers)
+    for (const headerKey of headerKeys) {
+      headers.set(headerKey, config.headers[headerKey])
     }
-    delete config.user
+  }
+  // data field is assumed to be json
+  if (config?.json) {
+    fetchConfig.body = JSON.stringify(config.json)
+    headers.set('Content-type', 'application/json')
+  }
+  // add url parameters
+  if (config?.params) {
+    urlQs = '?' + qs.stringify(config.params, { arrayFormat: 'repeat' })
   }
 
-  baseConfig = {
-    ...config,
-    ...baseConfig
-  }
+  fetchConfig.headers = headers
 
   try {
-    const response = await axios.request<T>(baseConfig)
-    return response.data
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      // 5xx errors
-      if (error.response === undefined) {
-        throw new APIError(500, 'There was a problem contacting the server', 'generic_error')
-      }
-      // 4xx errors, data will be present in the response
-      const applicationError = error.response.data as IResponseError
+    const response = await fetch(`${getBaseUrl()}${url}${urlQs}`, fetchConfig)
+    const data = await response.json()
+
+    if (!response.ok) {
+      const applicationError = data as IResponseError
       if (applicationError.detail || applicationError.errors) {
-        throw new APIError(
-          error.response.status,
-          applicationError.detail,
-          applicationError.code,
-          applicationError.errors
-        )
+        throw new APIError(response.status, applicationError.detail, applicationError.code, applicationError.errors)
       }
+      throw new APIError(response.status, data.message || 'Unknown error', 'generic_error')
     }
 
+    return data as T
+  } catch (error) {
     // Unknown
     throw new APIError(500, 'There was an unknown problem contacting the server', 'generic_error')
   }

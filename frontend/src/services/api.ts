@@ -38,7 +38,11 @@ type SearchIncidentsParams = {
 
 export class ApiService {
   user: ILoggedInUser | undefined
-  organisation: string | undefined
+  organisation: string
+
+  constructor() {
+    this.organisation = ''
+  }
 
   setCurrentUser(user: ILoggedInUser) {
     this.user = user
@@ -49,17 +53,17 @@ export class ApiService {
   }
 
   createUser(userData: ICreateUser) {
-    return callApi<IPublicUser>('POST', '/users', { data: userData })
+    return callApi<IPublicUser>('POST', '/users', { json: userData })
   }
 
   authUser(userData: IAuthUser) {
     return callApi<ILoggedInUser>('POST', '/users/auth', {
-      data: userData
+      json: userData
     })
   }
 
   updateUser(data: Record<string, unknown>) {
-    return callApi<IUser>('PUT', '/users', { user: this.user, data })
+    return callApi<IUser>('PUT', '/users', { user: this.user, json: data })
   }
 
   getWorld() {
@@ -68,14 +72,14 @@ export class ApiService {
 
   slackCompleteLogin(code: string) {
     return callApi<ILoggedInUser>('POST', '/slack/openid/complete', {
-      data: { code }
+      json: { code }
     })
   }
 
   slackCompleteAppInstallation(code: string) {
     return callApi<IOrganisation>('POST', '/slack/oauth/complete', {
       user: this.user,
-      data: { code }
+      json: { code }
     })
   }
 
@@ -103,13 +107,13 @@ export class ApiService {
   }
 
   patchIncident(id: string, patch: DeepPartial<IIncident>) {
-    return callApi<IIncident>('PATCH', `/incidents/${id}`, { user: this.user, data: patch })
+    return callApi<IIncident>('PATCH', `/incidents/${id}`, { user: this.user, json: patch })
   }
 
   createIncident(values: Record<string, string>) {
     return callApi<IIncident>('POST', `/incidents`, {
       user: this.user,
-      data: values,
+      json: values,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
       }
@@ -127,7 +131,7 @@ export class ApiService {
   createSeverity(values: Omit<IIncidentSeverity, 'id' | 'rating' | 'createdAt'>) {
     return callApi<IIncidentSeverity>('POST', `/severities`, {
       user: this.user,
-      data: values,
+      json: values,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
       }
@@ -137,7 +141,7 @@ export class ApiService {
   patchSeverity(severity: IIncidentSeverity, values: Partial<Omit<IIncidentSeverity, 'id'>>) {
     return callApi<IIncidentSeverity>('PATCH', `/severities/${severity.id}`, {
       user: this.user,
-      data: values
+      json: values
     })
   }
 
@@ -162,7 +166,7 @@ export class ApiService {
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
       },
-      data: timestamp
+      json: timestamp
     })
   }
 
@@ -181,7 +185,7 @@ export class ApiService {
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
       },
-      data: {
+      json: {
         values: timestampsValues,
         timezone: timezone
       }
