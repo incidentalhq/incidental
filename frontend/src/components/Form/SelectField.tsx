@@ -75,11 +75,12 @@ const SelectField: React.FC<Props> = ({
     if (saveOnChange && !formContext.isSubmitting) {
       await formContext.submitForm()
     }
+    field.onChange(evt)
   }
 
   return (
     <>
-      <select key={key} onChange={handleChange} value={field.value} {...inputProps} className={className}>
+      <select key={key} {...field} {...inputProps} className={className} onChange={handleChange}>
         {!isValueSelected ? <option value={NOT_SET_VALUE}>{requiredLabel}</option> : null}
         {options.map((option) => {
           return (

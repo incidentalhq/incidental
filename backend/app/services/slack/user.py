@@ -6,7 +6,7 @@ from slack_sdk import WebClient
 
 from app.models import MemberRole, Organisation, OrganisationTypes, User
 from app.repos import OrganisationRepo, UserRepo
-from app.schemas.actions import CreateUserSchema
+from app.schemas.actions import CreateUserViaSlackSchema
 from app.schemas.resources import CreationResult, Credentials
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -46,7 +46,7 @@ class SlackUserService:
         password = genword(length=14)
 
         user = self.user_repo.create_user(
-            create_in=CreateUserSchema(
+            create_in=CreateUserViaSlackSchema(
                 name=name,
                 email_address=email_address,
                 password=password,
@@ -86,7 +86,7 @@ class SlackUserService:
         user = self.user_repo.get_by_slack_id_or_email_address(slack_id=slack_user_id, email=email)
         if not user:
             user = self.user_repo.create_user(
-                create_in=CreateUserSchema(
+                create_in=CreateUserViaSlackSchema(
                     name=name,
                     email_address=email,
                     password=genword(length=16),

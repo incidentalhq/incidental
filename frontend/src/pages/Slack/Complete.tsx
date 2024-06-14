@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -7,8 +6,8 @@ import spinner from '@/assets/icons/spinner.svg'
 import Icon from '@/components/Icon/Icon'
 import { Box, Content } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
+import { useOrganisationSwitcher } from '@/hooks/useOrganisationSwitcher'
 import { RoutePaths } from '@/routes'
-import { PREF_SELECTED_ORGANISATION, setPreference } from '@/utils/storage'
 
 const Root = styled.div`
   width: 30rem;
@@ -18,23 +17,20 @@ const Root = styled.div`
     margin-bottom: 1rem;
   }
 `
-
+// User is redirected here after installing the Slack app
 const SlackInstallComplete: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { apiService } = useApiService()
   const navigate = useNavigate()
-  const client = useQueryClient()
+  const { switchOrganisation } = useOrganisationSwitcher()
 
   const processOauth = useCallback(
     async (code: string) => {
       const response = await apiService.slackCompleteAppInstallation(code)
-      setPreference(PREF_SELECTED_ORGANISATION, response.id)
-      await client.invalidateQueries({
-        queryKey: ['world']
-      })
+      switchOrganisation(response)
       navigate(RoutePaths.DASHBOARD)
     },
-    [apiService, navigate, client]
+    [apiService, navigate, switchOrganisation]
   )
 
   useEffect(() => {

@@ -21,6 +21,9 @@ class CreateUserSchema(BaseSchema):
     email_address: EmailStr
     password: Annotated[str, StringConstraints(min_length=8)]
     slack_user_id: str | None = None
+
+
+class CreateUserViaSlackSchema(CreateUserSchema):
     is_email_verified: bool = False
 
 

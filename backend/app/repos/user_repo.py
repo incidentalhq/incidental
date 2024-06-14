@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
 from app.models import User
-from app.schemas.actions import CreateUserSchema
+from app.schemas.actions import CreateUserSchema, CreateUserViaSlackSchema
 
 from .base_repo import BaseRepo
 
@@ -36,7 +36,7 @@ class UserRepo(BaseRepo):
 
         return user
 
-    def create_user(self, create_in: CreateUserSchema) -> User:
+    def create_user(self, create_in: CreateUserSchema | CreateUserViaSlackSchema) -> User:
         user = self.get_by_email_address(create_in.email_address)
         if user:
             raise FormFieldValidationError("Sorry, that email address is already in use", "emailAddress")
@@ -46,8 +46,10 @@ class UserRepo(BaseRepo):
         user.password = create_in.password
         user.email_address = create_in.email_address.lower()
         user.auth_token = secrets.token_urlsafe(32)
-        user.is_email_verified = create_in.is_email_verified
         user.is_active = True
+
+        if isinstance(create_in, CreateUserViaSlackSchema):
+            user.is_email_verified = create_in.is_email_verified
 
         # slack specific
         user.slack_user_id = create_in.slack_user_id

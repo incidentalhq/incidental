@@ -34,12 +34,15 @@ const SwitchOrganisationForm: React.FC<Props> = ({ currentOrganisation, organisa
   )
 
   return (
-    <Formik<FormValues> validationSchema={validationSchema} initialValues={defaultValues} onSubmit={onSubmit}>
-      {() => (
-        <Form>
-          <SelectField name="organisationId" options={options} saveOnChange={true} />
-        </Form>
-      )}
+    <Formik<FormValues>
+      validationSchema={validationSchema}
+      initialValues={defaultValues}
+      onSubmit={onSubmit}
+      enableReinitialize={true} // because we change initial values whenever we switch organisation
+    >
+      <Form>
+        <SelectField name="organisationId" options={options} saveOnChange={true} />
+      </Form>
     </Formik>
   )
 }
