@@ -39,7 +39,6 @@ const ReadyGuard: React.FC<Props> = ({ children }) => {
     if (organisationDetail) {
       setCurrentOrganisation(organisationDetail)
       apiService.setOrganisation(organisationDetail.organisation.id)
-      console.log('Selecting organisation via preferences', selectedOrganisationId)
     } else {
       const first = worldQuery.data.organisationDetails[0]
       setCurrentOrganisation(first)

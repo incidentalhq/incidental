@@ -9,7 +9,6 @@ export const useOrganisationSwitcher = () => {
   const { apiService } = useApiService()
 
   const switchOrganisation = (organisation: IOrganisation) => {
-    console.log(organisationDetails)
     const detail = organisationDetails.find((it) => it.organisation.id === organisation.id)
     if (!detail) {
       throw new Error('Could not find organisation')
