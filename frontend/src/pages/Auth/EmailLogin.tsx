@@ -28,7 +28,7 @@ const Login: React.FC = () => {
     <Root>
       <Logo src={logo} />
       <h2>Login</h2>
-      <Content data-testid="login-page">
+      <Content>
         <LoginForm onSubmit={handleSubmit} />
       </Content>
       <FooterMessage>

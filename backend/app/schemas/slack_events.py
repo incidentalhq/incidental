@@ -1,7 +1,7 @@
 import enum
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import ConfigDict, Discriminator, Extra, Tag
+from pydantic import ConfigDict, Discriminator, Tag
 
 from .base import BaseSchema
 
@@ -13,7 +13,7 @@ class EventTypes(str, enum.Enum):
 class BaseEventTypeSchema(BaseSchema):
     """Base class for all event type schemas"""
 
-    model_config = ConfigDict(extra=Extra.allow)
+    model_config = ConfigDict(extra="allow")
 
 
 class CatchAllEventType(BaseEventTypeSchema):
