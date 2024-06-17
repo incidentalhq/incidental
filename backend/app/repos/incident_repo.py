@@ -242,6 +242,12 @@ class IncidentRepo(BaseRepo):
 
         return self.session.scalars(stmt).all()
 
+    def get_all_incident_roles(self, organisation: Organisation) -> Sequence[IncidentRole]:
+        stmt = select(IncidentRole).where(
+            IncidentRole.organisation_id == organisation.id, IncidentRole.deleted_at.is_(None)
+        )
+        return self.session.scalars(stmt).all()
+
     def create_incident_update(
         self,
         incident: Incident,  # must be current state of incident before updates to sev or status
@@ -250,6 +256,7 @@ class IncidentRepo(BaseRepo):
         new_severity: IncidentSeverity | None = None,
         summary: str | None = None,
     ) -> IncidentUpdate:
+        """Create new incident update"""
         if new_status is None and new_severity is None and summary is None:
             raise ValueError("status, severity or summary must be the set")
 

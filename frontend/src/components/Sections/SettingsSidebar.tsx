@@ -42,6 +42,9 @@ const SubItems = styled.div`
     margin-bottom: 0.5rem;
   }
 `
+const BackContainer = styled.div`
+  height: 34.5px;
+`
 
 interface Props {
   user: IUser
@@ -62,7 +65,9 @@ const SettingsSidebar: React.FC<Props> = () => {
       {organisation && (
         <>
           <MenuItems>
-            <Item to={RoutePaths.DASHBOARD}>&laquo; Back to Dashboard</Item>
+            <BackContainer>
+              <Item to={RoutePaths.DASHBOARD}>&laquo; Back to Dashboard</Item>
+            </BackContainer>
 
             <SubMenu>
               <SubMenuTitle>

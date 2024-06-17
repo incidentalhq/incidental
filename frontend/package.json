@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.45.0",
-    "@tanstack/react-query-devtools": "^5.45.0",
+    "@tanstack/react-query": "^5.45.1",
+    "@tanstack/react-query-devtools": "^5.45.1",
     "@types/node": "^20.14.2",
     "axios": "^1.7.2",
     "date-fns": "^3.6.0",
@@ -42,6 +42,6 @@
     "eslint-plugin-react-refresh": "^0.4.7",
     "prettier": "^3.3.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.13"
+    "vite": "^5.3.1"
   }
 }

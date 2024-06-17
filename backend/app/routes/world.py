@@ -25,6 +25,7 @@ def world_index(db: Session = Depends(get_db), user: User = Depends(get_current_
         severity_list = severity_repo.get_all(organisation)
         forms = form_repo.search_forms(organisation)
         incident_types = incident_repo.get_all_incident_types(organisation)
+        roles = incident_repo.get_all_incident_roles(organisation)
         details.append(
             {
                 "organisation": organisation,
@@ -32,6 +33,7 @@ def world_index(db: Session = Depends(get_db), user: User = Depends(get_current_
                 "severity_list": severity_list,
                 "forms": forms,
                 "incident_types": incident_types,
+                "roles": roles,
             }
         )
 
