@@ -1,0 +1,36 @@
+name: Build frontend image
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - frontend/**
+      - .github/workflows/pr-frontend.yml
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: frontend
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "frontend/.nvmrc"
+
+      - name: Build frontend
+        run: |
+          npm install -g pnpm
+          pnpm install
+      - name: Run tests
+        run: |
+          pnpm vitest run
+        env:
+          VITE_API_BASE_URL: https://api.incidental.dev
