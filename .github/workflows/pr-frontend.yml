@@ -1,4 +1,4 @@
-name: Build frontend image
+name: Run frontend tests
 
 on:
   pull_request:
