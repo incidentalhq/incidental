@@ -6,3 +6,6 @@ build:
 
 build-image: build
 	docker build . -t incidental/frontend:latest
+
+test:
+	pnpm run test
