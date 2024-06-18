@@ -18,14 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - uses: actions/setup-node@v4
         with:
           node-version-file: "frontend/.nvmrc"
 
-      - name: Build frontend
+      - name: Install deps
         run: |
           npm install -g pnpm
           pnpm install
