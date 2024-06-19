@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
 
 import App from './App'
 
@@ -10,9 +9,5 @@ describe('<App />', async () => {
 
     const loginSelector = await screen.findByTestId('login-selector')
     expect(loginSelector).toBeInTheDocument()
-  })
-
-  it('should fail', async () => {
-    expect(true).toBe(false)
   })
 })
