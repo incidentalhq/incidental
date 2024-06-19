@@ -8,4 +8,4 @@ build-image: build
 	docker build . -t incidental/frontend:latest
 
 test:
-	pnpm run test
+	source ${HOME}/.nvm/nvm.sh && nvm use && pnpm run test
