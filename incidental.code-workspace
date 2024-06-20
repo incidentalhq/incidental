@@ -37,9 +37,9 @@
       "jsonable",
       "ondelete",
       "onupdate",
-      "passlib",
       "primaryjoin",
       "pydantic",
+      "pyotp",
       "pytest",
       "sessionmaker",
       "shortuuid",
@@ -47,6 +47,7 @@
       "structlog",
       "tanstack",
       "toastify",
+      "totp",
       "typer",
       "uselist",
       "viewonly"

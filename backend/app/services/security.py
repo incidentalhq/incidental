@@ -2,8 +2,8 @@
 
 from datetime import datetime, timedelta
 
+import pyotp
 import structlog
-from passlib.totp import TOTP, TokenError
 from sqlalchemy.orm import Session
 
 from app.env import settings
@@ -27,23 +27,23 @@ class SecurityService:
     ):
         self.session = session
 
-    def _get_user_key(self, user: User) -> bytes:
-        return f"{settings.APP_SECRET}:{user.id}".encode("utf8")
+    def _get_user_key(self, user: User) -> str:
+        return f"{settings.APP_SECRET}:{user.id}"
 
     def generate_otp_code(self, user: User) -> str:
         """
         Generate an OTP code for a user
         """
         key = self._get_user_key(user)
-        generator = TOTP(key=key, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
-        token = generator.generate()
+        totp = pyotp.TOTP(s=key, interval=OTP_CODE_EXPIRE_IN_SECONDS)
+        token = totp.now()
 
-        return token.token
+        return token
 
     def validate_otp_code(self, user: User, code: str) -> None:
         """Validate the OTP code"""
         key = self._get_user_key(user)
-        totp = TOTP(key=key, period=OTP_CODE_EXPIRE_IN_SECONDS, format="raw")
+        totp = pyotp.TOTP(s=key, interval=OTP_CODE_EXPIRE_IN_SECONDS)
 
         if self._is_user_account_in_cool_off_period(user):
             raise ValidationError(
@@ -53,9 +53,7 @@ class SecurityService:
 
         self._reset_cool_off_if_possible(user)
 
-        try:
-            totp.match(code)
-        except TokenError:
+        if not totp.verify(code):
             logger.warning("otp code not correct", user=user)
             user.last_login_attempt_at = datetime.now()
             user.login_attempts += 1

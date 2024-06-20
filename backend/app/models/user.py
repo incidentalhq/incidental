@@ -2,17 +2,16 @@
 import typing
 from datetime import datetime
 
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import Boolean, DateTime, Integer, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.db import Base
+from app.env import settings
 
 from .mixins import TimestampMixin
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 if typing.TYPE_CHECKING:
     from .organisation import Organisation
@@ -23,10 +22,10 @@ class User(Base, TimestampMixin):
 
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     email_address: Mapped[str] = mapped_column(UnicodeText, nullable=False, unique=True)
-    _password = mapped_column("password", UnicodeText, nullable=False)
-    is_active = mapped_column(Boolean, nullable=False, default=True)
-    auth_token = mapped_column(UnicodeText, nullable=False, unique=True)
-    is_super_admin = mapped_column(Boolean, nullable=False, default=False)
+    _password: Mapped[str] = mapped_column("password", UnicodeText, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    auth_token: Mapped[str] = mapped_column(UnicodeText, nullable=False, unique=True)
+    is_super_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_billing_user = mapped_column(Boolean, nullable=False, default=False)
     language = mapped_column(UnicodeText, nullable=False, default="en-gb")
     _settings = mapped_column("settings", JSONB(none_as_null=True), nullable=False, default={})
@@ -57,8 +56,9 @@ class User(Base, TimestampMixin):
     def _get_password(self):
         return self._password
 
-    def _set_password(self, password):
-        self._password = pwd_context.hash(password)
+    def _set_password(self, password: str) -> None:
+        hashed_password = bcrypt.hashpw(password=password.encode("utf8"), salt=bcrypt.gensalt())
+        self._password = hashed_password.decode("utf8")
 
     # Hide password encryption by exposing password field only.
     password = synonym("_password", descriptor=property(_get_password, _set_password))
@@ -69,7 +69,7 @@ class User(Base, TimestampMixin):
     def check_password(self, password: str) -> bool:
         if self.password is None:
             return False
-        return pwd_context.verify(password, self._password)
+        return bcrypt.checkpw(password=password.encode("utf8"), hashed_password=self._password.encode("utf8"))
 
     def belongs_to(self, organisation: "Organisation") -> bool:
         for org in self.organisations:

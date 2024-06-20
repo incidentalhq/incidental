@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import secrets
+import string
 
 import structlog
 from structlog.contextvars import merge_contextvars
@@ -36,3 +38,10 @@ def to_channel_name(name: str) -> str:
     # Remove special characters
     slug = re.sub(r"[^a-zA-Z0-9-]", "", slug)
     return slug
+
+
+def generate_password(length: int = 16) -> str:
+    """Generate a random password"""
+    alphabet = string.ascii_letters + string.digits
+    password = "".join(secrets.choice(alphabet) for i in range(length))
+    return password
