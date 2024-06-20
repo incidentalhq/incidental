@@ -6,3 +6,6 @@ build:
 
 build-image: build
 	docker build . -t incidental/frontend:latest
+
+test:
+	source ${HOME}/.nvm/nvm.sh && nvm use && pnpm run test

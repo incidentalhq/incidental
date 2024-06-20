@@ -53,7 +53,7 @@ const EditDescriptionForm: React.FC<Props> = ({ incident, onSubmit }) => {
           {({ isSubmitting }) => (
             <Form className="space-y-2">
               <div>
-                <Field name="description" type="text" className="w-full" />
+                <Field name="description" type="text" className="w-full" as={'textarea'} />
               </div>
               <div>
                 <Button type="submit" disabled={isSubmitting}>

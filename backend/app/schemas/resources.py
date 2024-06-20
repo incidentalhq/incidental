@@ -7,6 +7,7 @@ from app.models import Organisation, User
 from app.schemas.base import BaseSchema
 from app.schemas.models import (
     FormSchema,
+    IncidentRoleSchema,
     IncidentSeveritySchema,
     IncidentStatusSchema,
     IncidentTypeSchema,
@@ -32,6 +33,7 @@ class OrganisationDetail(BaseSchema):
     severity_list: list[IncidentSeveritySchema]
     forms: list[FormSchema]
     incident_types: list[IncidentTypeSchema]
+    roles: list[IncidentRoleSchema]
 
 
 class WorldSchema(BaseSchema):

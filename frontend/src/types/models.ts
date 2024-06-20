@@ -26,6 +26,7 @@ export interface IOrganisationDetail {
   severityList: IIncidentSeverity[]
   forms: IForm[]
   incidentTypes: IIncidentType[]
+  roles: IIncidentRole[]
 }
 
 export interface IWorld {

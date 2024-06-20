@@ -29,7 +29,7 @@ const LoginSelector: React.FC = () => {
     queryFn: () => apiService.slackLoginUrl()
   })
   return (
-    <Root>
+    <Root data-testid="login-selector">
       <Logo src={logo} />
       <>
         <LoginButton to={RoutePaths.EMAIL_LOGIN}>

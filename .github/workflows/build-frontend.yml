@@ -37,6 +37,10 @@ jobs:
         env:
           VITE_API_BASE_URL: https://api.incidental.dev
 
+      - name: Run tests
+        run: |
+          pnpm vitest run
+
       - name: Build image
         uses: docker/build-push-action@v5
         with:

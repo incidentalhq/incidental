@@ -58,5 +58,7 @@ jobs:
         run: docker-compose -f docker-compose.yml exec -T backend sh -c "alembic upgrade head"
 
       - name: Runs tests
-        run: docker-compose -f docker-compose.yml exec -T backend sh -c "pytest"
+        run: docker-compose -f docker-compose.yml exec -T backend sh -c "coverage run"
 
+      - name: Get coverage report
+        run: docker-compose -f docker-compose.yml exec -T backend sh -c "coverage report"

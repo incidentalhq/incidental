@@ -1,0 +1,62 @@
+{
+    "total": 3,
+    "page": 1,
+    "size": 25,
+    "items": [
+        {
+            "id": "inc_7Z9VjbnwheruYvPnghBHiP",
+            "createdAt": "2024-05-01T21:10:17.504181",
+            "name": "testing bookmarks",
+            "description": "testing...",
+            "reference": "inc-3",
+            "slackChannelId": "C071H6E9M7X",
+            "slackChannelName": "inc-2024-05-01-testing-bookmarks-2",
+            "creator": {
+                "id": "user_TJamHYUZEdJtheUWjFdzHa",
+                "createdAt": "2024-04-08T16:27:19.843133",
+                "name": "Sam A",
+                "emailAddress": "test@example.com"
+            },
+            "incidentType": {
+                "id": "type_AgCraNFhgdZdhkzJUDxtgh",
+                "createdAt": "2024-04-08T16:27:19.923864",
+                "name": "Default",
+                "description": "Default incident type"
+            },
+            "incidentStatus": {
+                "id": "status_UwbEhBF39JVmLHDGdEDgnm",
+                "createdAt": "2024-04-08T16:27:19.951752",
+                "name": "Monitoring",
+                "description": null,
+                "sortOrder": 3,
+                "category": "ACTIVE"
+            },
+            "incidentSeverity": {
+                "id": "sev_N9mM62Tg7bNFQ6kxehDsQ3",
+                "createdAt": "2024-04-08T16:27:19.917487",
+                "name": "Major",
+                "description": "A major incident with significant impact",
+                "rating": 1
+            },
+            "incidentRoleAssignments": [
+                {
+                    "id": "ra_bVhbsS8jnugrMbM9kkXi2o",
+                    "createdAt": "2024-05-01T21:10:17.514531",
+                    "user": {
+                        "id": "user_TJamHYUZEdJtheUWjFdzHa",
+                        "createdAt": "2024-04-08T16:27:19.843133",
+                        "name": "Sam A",
+                        "emailAddress": "test@example.com"
+                    },
+                    "incidentRole": {
+                        "id": "role_V8XC8VHtZqXb3ZKv9QWNiJ",
+                        "createdAt": "2024-04-08T16:27:19.976570",
+                        "name": "Reporter",
+                        "kind": "REPORTER"
+                    }
+                }
+            ],
+            "timestampValues": []
+        }
+    ]
+}

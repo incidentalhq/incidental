@@ -79,7 +79,7 @@ const IncidentRow: React.FC<Props> = ({ incident }) => {
   const date = format(incident.createdAt, 'd MMM')
 
   return (
-    <Root onClick={handleClick}>
+    <Root onClick={handleClick} data-testid="incident-row">
       <Header>
         <Reference>{incident.reference}</Reference>
         <Status>{incident.incidentStatus.name}</Status>
