@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = app
+command_line = -m pytest
+
+[html]
+directory = coverage_html_report
