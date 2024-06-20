@@ -1,13 +1,13 @@
 from typing import Any
 
 import structlog
-from passlib.pwd import genword
 from slack_sdk import WebClient
 
 from app.models import MemberRole, Organisation, OrganisationTypes, User
 from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import CreateUserViaSlackSchema
 from app.schemas.resources import CreationResult, Credentials
+from app.utils import generate_password
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -43,7 +43,7 @@ class SlackUserService:
 
         name = user_data["real_name"]
         email_address = user_data["profile"]["email"]
-        password = genword(length=14)
+        password = generate_password()
 
         user = self.user_repo.create_user(
             create_in=CreateUserViaSlackSchema(
@@ -89,7 +89,7 @@ class SlackUserService:
                 create_in=CreateUserViaSlackSchema(
                     name=name,
                     email_address=email,
-                    password=genword(length=16),
+                    password=generate_password(),
                     slack_user_id=slack_user_id,
                     is_email_verified=True,
                 )

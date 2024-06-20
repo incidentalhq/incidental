@@ -16,6 +16,7 @@ jobs:
     env:
       IMAGE_NAME: incidental/frontend
       ECR_REPO: registry.digitalocean.com/incidental
+      VITE_API_BASE_URL: https://api.incidental.dev
 
     runs-on: ubuntu-latest
 
@@ -34,8 +35,6 @@ jobs:
           npm install -g pnpm
           pnpm install
           pnpm build
-        env:
-          VITE_API_BASE_URL: https://api.incidental.dev
 
       - name: Run tests
         run: |

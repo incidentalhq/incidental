@@ -1,5 +1,7 @@
 import secrets
+from dataclasses import dataclass
 
+from faker import Faker
 from sqlalchemy.orm import Session
 
 from app.db import session_factory
@@ -15,20 +17,28 @@ def make_identifier(prefix: str) -> str:
     return f"{prefix}_{id}"
 
 
+@dataclass
+class MakeUserResult:
+    user: User
+    password: str
+
+
 def make_user(
     is_email_verified: bool = True,
     is_super_admin: bool = False,
     organisation: Organisation | None = None,
-) -> User:
+) -> MakeUserResult:
     user_ident = make_identifier("user")
     user_repo = UserRepo(test_db)
     organisation_repo = OrganisationRepo(test_db)
+    faker = Faker()
+    password = faker.pystr()
 
     user = user_repo.create_user(
         CreateUserSchema(
             name=f"TestUser {user_ident}",
             email_address=f"{user_ident}@test.com",
-            password="password",
+            password=password,
         )
     )
     user.is_email_verified = is_email_verified
@@ -39,7 +49,7 @@ def make_user(
 
     test_db.commit()
 
-    return user
+    return MakeUserResult(user=user, password=password)
 
 
 def make_organisation() -> Organisation:
