@@ -9,7 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.db import Base
-from app.env import settings
 
 from .mixins import TimestampMixin
 
