@@ -4,7 +4,9 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import useApiService from '@/hooks/useApi'
 import useAuth from '@/hooks/useAuth'
 import { RoutePaths } from '@/routes'
-import { getAuthFromBrowser } from '@/utils/storage'
+import { APIError } from '@/services/transport'
+import { ErrorCodes } from '@/types/core'
+import { clearUserDataFromBrowser, getAuthFromBrowser } from '@/utils/storage'
 
 const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
   const [redirect, setRedirect] = useState(false)
@@ -19,6 +21,21 @@ const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {
     if (cookieData && !user) {
       setUser(cookieData)
       apiService.setCurrentUser(cookieData)
+
+      // logout user if locally stored credentials are invalid
+      apiService.getMe().then(
+        () => {},
+        (r) => {
+          if (r instanceof APIError) {
+            if (r.code === ErrorCodes.INVALID_AUTH_TOKEN) {
+              clearUserDataFromBrowser()
+              apiService.setCurrentUser(undefined)
+              // hard redirect
+              window.location.reload()
+            }
+          }
+        }
+      )
 
       // if we're on the login page, but have authenticated then redirect to root page
       if (location.pathname === RoutePaths.LOGIN) {

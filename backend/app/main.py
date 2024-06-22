@@ -41,8 +41,8 @@ def create_app() -> FastAPI:
             status_code=422,
             content=jsonable_encoder(
                 {
-                    "errors": [{"loc": [err.attribute], "type": "general", "msg": err.error}],
-                    "detail": err.error,
+                    "errors": [{"loc": [err.attribute], "type": "general", "msg": err.detail}],
+                    "detail": err.detail,
                     "code": err.code if err.code else "generic_error",
                 }
             ),
@@ -55,7 +55,7 @@ def create_app() -> FastAPI:
             status_code=err.status_code,
             content=jsonable_encoder(
                 {
-                    "detail": err.message,
+                    "detail": err.detail,
                     "code": err.code if err.code else "generic_error",
                 }
             ),

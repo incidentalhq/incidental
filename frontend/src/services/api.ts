@@ -44,7 +44,7 @@ export class ApiService {
     this.organisation = ''
   }
 
-  setCurrentUser(user: ILoggedInUser) {
+  setCurrentUser(user: ILoggedInUser | undefined) {
     this.user = user
   }
 
@@ -59,6 +59,12 @@ export class ApiService {
   authUser(userData: IAuthUser) {
     return callApi<ILoggedInUser>('POST', '/users/auth', {
       json: userData
+    })
+  }
+
+  getMe() {
+    return callApi<ILoggedInUser>('GET', '/users/me', {
+      user: this.user
     })
   }
 

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.db import get_db
+from app.exceptions import ApplicationException, ErrorCodes
 from app.repos import UserRepo
 
 
@@ -19,12 +20,20 @@ async def get_current_user(db: Session = Depends(get_db), authorization: str = H
     repo = UserRepo(db)
     user = repo.get_user_by_auth_token(auth_token)
     if not user:
-        raise HTTPException(HTTP_401_UNAUTHORIZED, "Invalid token")
+        raise ApplicationException(
+            "Invalid token", code=ErrorCodes.INVALID_AUTH_TOKEN, status_code=HTTP_401_UNAUTHORIZED
+        )
 
     if not user.is_active:
-        raise HTTPException(HTTP_401_UNAUTHORIZED, "This account is not active")
+        raise ApplicationException(
+            "This account is not active", code=ErrorCodes.INACTIVE_ACCOUNT, status_code=HTTP_401_UNAUTHORIZED
+        )
 
     if not user.is_email_verified:
-        raise HTTPException(HTTP_401_UNAUTHORIZED, "Email address has not been verified")
+        raise ApplicationException(
+            "Email address has not been verified",
+            code=ErrorCodes.ACCOUNT_NOT_VERIFIED,
+            status_code=HTTP_401_UNAUTHORIZED,
+        )
 
     return user

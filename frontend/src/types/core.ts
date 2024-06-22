@@ -1,3 +1,18 @@
+export enum ErrorCodes {
+  OVER_QUOTA = 'OVER_QUOTA',
+  MODEL_NOT_FOUND = 'MODEL_NOT_FOUND',
+  NOT_ALLOWED = 'NOT_ALLOWED',
+  EXCEEDED_MAX_LOGIN_ATTEMPTS = 'EXCEEDED_MAX_LOGIN_ATTEMPTS',
+  USER_NOT_VERIFIED = 'USER_NOT_VERIFIED',
+  INCORRECT_CODE = 'INCORRECT_CODE',
+  SLACK_API_ERROR = 'SLACK_API_ERROR',
+  INVALID_AUTH_TOKEN = 'INVALID_AUTH_TOKEN',
+
+  // client side codes
+  UNKNOWN = 'UNKNOWN',
+  NETWORK = 'NETWORK'
+}
+
 export interface IErrorItem {
   loc: string[]
   type: string
@@ -7,7 +22,7 @@ export interface IErrorItem {
 export interface IResponseError {
   detail: string
   errors: IErrorItem[]
-  code: string
+  code: ErrorCodes
 }
 
 export interface PaginatedResults<T> {

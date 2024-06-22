@@ -1,6 +1,6 @@
 import qs from 'qs'
 
-import { IErrorItem, IResponseError } from '@/types/core'
+import { ErrorCodes, IErrorItem, IResponseError } from '@/types/core'
 import { IUser } from '@/types/models'
 
 export const getBaseUrl = (): string => {
@@ -19,8 +19,8 @@ export class APIError extends Error {
   errors?: IErrorItem[]
   detail: string
   statusCode: number
-  code: string
-  constructor(statusCode: number, detail: string, code: string, errors?: IErrorItem[]) {
+  code: ErrorCodes
+  constructor(statusCode: number, detail: string, code: ErrorCodes, errors?: IErrorItem[]) {
     super(detail)
     this.detail = detail
     this.errors = errors
@@ -68,21 +68,27 @@ export const callApi = async <T>(method: Method = 'GET', url: string, config?: A
 
   fetchConfig.headers = headers
 
+  let response: Response
+  let data: unknown
+
   try {
-    const response = await fetch(`${getBaseUrl()}${url}${urlQs}`, fetchConfig)
-    const data = await response.json()
-
-    if (!response.ok) {
-      const applicationError = data as IResponseError
-      if (applicationError.detail || applicationError.errors) {
-        throw new APIError(response.status, applicationError.detail, applicationError.code, applicationError.errors)
-      }
-      throw new APIError(response.status, data.message || 'Unknown error', 'generic_error')
-    }
-
-    return data as T
+    response = await fetch(`${getBaseUrl()}${url}${urlQs}`, fetchConfig)
+    data = await response.json()
   } catch (error) {
+    console.error(error)
     // Unknown
-    throw new APIError(500, 'There was an unknown problem contacting the server', 'generic_error')
+    throw new APIError(500, 'There was an unknown problem contacting the server', ErrorCodes.NETWORK)
   }
+
+  if (!response.ok) {
+    const applicationError = data as IResponseError
+    throw new APIError(
+      response.status,
+      applicationError.detail || 'Unknown error',
+      applicationError.code || ErrorCodes.UNKNOWN,
+      applicationError.errors || undefined
+    )
+  }
+
+  return data as T
 }

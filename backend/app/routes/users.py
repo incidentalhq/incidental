@@ -67,7 +67,7 @@ def authenticate_user(item: AuthUserSchema, db: Session = Depends(get_db)):
         elif result.error == LoginError.NOT_VERIFIED:
             raise ValidationError(
                 "Your email address is not verified, please check your email",
-                ErrorCodes.USER_NOT_VERIFIED,
+                ErrorCodes.ACCOUNT_NOT_VERIFIED,
             )
 
         raise FormFieldValidationError("Could not login, please try again", "general")
