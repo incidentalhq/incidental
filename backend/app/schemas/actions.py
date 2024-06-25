@@ -128,7 +128,7 @@ class PatchOrganisationSettingsSchema(BaseSchema):
 
     @field_validator("slack_channel_name_format")
     def validate_slack_channel_name_format(cls, v: str | None):
-        allowed_keys = ["{YYYY}", "{MM}", "{DD}"]
+        allowed_keys = ["{YYYY}", "{MM}", "{DD}", "{name}"]
         cls._validate_template_tags(v=v, allowed_tags=allowed_keys)
 
         return v

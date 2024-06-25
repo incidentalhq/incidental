@@ -88,7 +88,7 @@ class OnboardingService:
             },
             {
                 "name": "summary",
-                "label": "Message",
+                "label": "Summary",
                 "is_required": False,
                 "kind": FormFieldKind.TEXTAREA,
                 "description": "Give a summary of the current state of the incident.",
@@ -124,6 +124,7 @@ class OnboardingService:
                 "label": "Summary",
                 "is_required": False,
                 "kind": FormFieldKind.TEXTAREA,
+                "description": "Give a summary of the current state of the incident.",
                 "is_deletable": False,
             },
         ]

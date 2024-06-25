@@ -229,7 +229,7 @@ const ShowIncident = () => {
             </Header>
             <Content>
               <ContentMain>
-                <h3>Description</h3>
+                <h3>Summary</h3>
                 <Description>
                   <EditDescriptionForm incident={incidentQuery.data} onSubmit={handleChangeDescription} />
                 </Description>

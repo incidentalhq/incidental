@@ -21,14 +21,12 @@ class SlackClientService:
             "{YYYY}": now.strftime("%Y"),
             "{MM}": now.strftime("%m"),
             "{DD}": now.strftime("%d"),
+            "{name}": to_channel_name(incident_name),
         }
-        channel_name = organisation.settings.slack_channel_name_format
+        formatted_channel_name = organisation.settings.slack_channel_name_format
 
         for t, value in mappings.items():
-            channel_name = channel_name.replace(t, value)
-
-        suffix = to_channel_name(incident_name)
-        channel_name = f"{channel_name}-{suffix}"
+            formatted_channel_name = formatted_channel_name.replace(t, value)
 
         # find all used channel names
         used_names: set[str] = set()
@@ -49,10 +47,10 @@ class SlackClientService:
 
         # generate a name that doesn't clash with an existing one
         idx = 1
-        channel_name_candidate = channel_name
+        channel_name_candidate = formatted_channel_name
         while True:
             if channel_name_candidate in used_names:
-                channel_name_candidate = f"{channel_name}-{idx}"
+                channel_name_candidate = f"{formatted_channel_name}-{idx}"
                 idx += 1
             else:
                 break

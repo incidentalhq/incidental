@@ -80,7 +80,7 @@ def create_app() -> FastAPI:
             ),
         )
 
-    # exception handler for when a model cannot be found in the db
+    # exception handler when pydantic validation fails
     @app.exception_handler(RequestValidationError)
     async def request_validation_exception_handler(request: Request, err: RequestValidationError) -> JSONResponse:
         return JSONResponse(
