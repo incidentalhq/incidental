@@ -141,3 +141,9 @@ export interface IInvite extends IModel {
 export interface ITeam extends IModel {
   name: string
 }
+
+export interface ISettings extends IModel {
+  slackChannelNameFormat: string
+  incidentReferenceFormat: string
+  slackAnnouncementChannelName: string
+}

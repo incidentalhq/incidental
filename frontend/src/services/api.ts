@@ -7,6 +7,7 @@ import {
   ILoggedInUser,
   IOrganisation,
   IPublicUser,
+  ISettings,
   ITimestamp,
   IUser,
   IWorld,
@@ -195,6 +196,19 @@ export class ApiService {
         values: timestampsValues,
         timezone: timezone
       }
+    })
+  }
+
+  getSettings = (organisation: IOrganisation) => {
+    return callApi<ISettings>('GET', `/organisations/${organisation.id}/settings`, {
+      user: this.user
+    })
+  }
+
+  updateSettings = (organisation: IOrganisation, values: Partial<ISettings>) => {
+    return callApi<ISettings>('PATCH', `/organisations/${organisation.id}/settings`, {
+      user: this.user,
+      json: values
     })
   }
 }

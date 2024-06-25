@@ -118,6 +118,7 @@ class IncidentRepo(BaseRepo):
         severity: IncidentSeverity,
         type: IncidentType,
         reference: str,
+        reference_id: int,
         slack_channel_id: str | None = None,
         slack_channel_name: str | None = None,
     ) -> Incident:
@@ -130,6 +131,7 @@ class IncidentRepo(BaseRepo):
         model.incident_status_id = status.id
         model.incident_severity_id = severity.id
         model.reference = reference
+        model.reference_id = reference_id
         model.slack_channel_id = slack_channel_id
         model.slack_channel_name = slack_channel_name
 

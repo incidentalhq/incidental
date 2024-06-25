@@ -28,6 +28,7 @@ import SlackInstall from '@/pages/Slack/Install'
 import { RoutePaths } from '@/routes'
 
 import PageNotFound from './pages/Error/PageNotFound'
+import SettingsSlack from './pages/Settings/Slack'
 import SettingsTimestamps from './pages/Settings/Timestamps'
 
 const queryClient = new QueryClient({
@@ -75,6 +76,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />
                       <Route path={RoutePaths.SETTINGS_SEVERITY} element={<SettingsSeverity />} />
                       <Route path={RoutePaths.SETTINGS_TIMESTAMPS} element={<SettingsTimestamps />} />
+                      <Route path={RoutePaths.SETTINGS_SLACK} element={<SettingsSlack />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />

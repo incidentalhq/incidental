@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import EmptyTable from '@/components/Empty/EmptyTable'
 import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/components/Incident/DeclareIncidentForm'
 import IncidentRow from '@/components/Incident/IncidentRow'
+import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -79,16 +80,24 @@ const IncidentsList = () => {
       </Header>
       <CategoryHeader>All incidents</CategoryHeader>
       <Content>
-        <ContentMain $padding={false}>
-          {activeIncidentsQuery.isSuccess ? (
-            <>
-              {activeIncidentsQuery.data.items.map((it) => (
-                <IncidentRow key={it.id} incident={it} />
-              ))}
-              {activeIncidentsQuery.data.total == 0 && <EmptyTable>No incidents found</EmptyTable>}
-            </>
-          ) : null}
-        </ContentMain>
+        {activeIncidentsQuery.isError && (
+          <ContentMain>
+            <p>There was an error loading incidents...</p>
+          </ContentMain>
+        )}
+        {activeIncidentsQuery.isFetching && (
+          <ContentMain>
+            <Loading text="Loading active incidents" />
+          </ContentMain>
+        )}
+        {activeIncidentsQuery.isSuccess && (
+          <ContentMain $padding={false}>
+            {activeIncidentsQuery.data.items.map((it) => (
+              <IncidentRow key={it.id} incident={it} />
+            ))}
+            {activeIncidentsQuery.data.total == 0 && <EmptyTable>No active incidents</EmptyTable>}
+          </ContentMain>
+        )}
       </Content>
     </Box>
   )

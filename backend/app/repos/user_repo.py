@@ -2,7 +2,7 @@ import secrets
 
 from sqlalchemy import select
 
-from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
+from app.exceptions import FormFieldValidationError
 from app.models import User
 from app.schemas.actions import CreateUserSchema, CreateUserViaSlackSchema
 
@@ -15,10 +15,8 @@ class UserRepo(BaseRepo):
         return self.session.scalar(stmt)
 
     def get_by_id_or_raise(self, id: str) -> User:
-        user = self.session.query(User).get(id)
-        if not user:
-            raise ValidationError("Could not find user", code=ErrorCodes.MODEL_NOT_FOUND)
-        return user
+        stmt = select(User).where(User.id == id).limit(1)
+        return self.session.scalars(stmt).one()
 
     def get_by_email_address(self, email: str) -> User | None:
         return self.session.query(User).filter(User.email_address == email.lower()).first()

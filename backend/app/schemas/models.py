@@ -128,3 +128,10 @@ class FormSchema(ModelSchema):
     template: str | None
     type: str
     form_fields: list[FormFieldSchema]
+
+
+class SettingsSchema(ModelSchema):
+    slack_channel_name_format: str
+    incident_reference_format: str
+
+    slack_announcement_channel_name: str

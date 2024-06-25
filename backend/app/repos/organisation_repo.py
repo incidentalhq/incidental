@@ -3,6 +3,7 @@ from shortuuid import uuid
 from sqlalchemy import select
 
 from app.models import MemberRole, Organisation, OrganisationMember, OrganisationTypes, User
+from app.schemas.actions import PatchOrganisationSettingsSchema
 
 from .base_repo import BaseRepo
 
@@ -76,3 +77,12 @@ class OrganisationRepo(BaseRepo):
     def get_by_id_or_raise(self, id: str) -> Organisation:
         stmt = select(Organisation).where(Organisation.id == id).limit(1)
         return self.session.execute(stmt).scalar_one()
+
+    def patch_organisation_settings(
+        self, organisation: Organisation, patch_in: PatchOrganisationSettingsSchema
+    ) -> None:
+        """Patch settings for an organisation"""
+        for key, value in patch_in.model_dump(exclude_unset=True).items():
+            setattr(organisation.settings, key, value)
+
+        self.session.flush()

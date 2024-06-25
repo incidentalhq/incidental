@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Annotated
 
@@ -117,4 +118,44 @@ class UpdateIncidentTimestampsSchema(BaseSchema):
     def validate_timezone(cls, v: str) -> str:
         if v not in pytz.all_timezones_set:
             raise ValueError(f"Invalid timezone: {v}")
+        return v
+
+
+class PatchOrganisationSettingsSchema(BaseSchema):
+    slack_channel_name_format: str | None = None
+    incident_reference_format: str | None = None
+    slack_announcement_channel_name: str | None = None
+
+    @field_validator("slack_channel_name_format")
+    def validate_slack_channel_name_format(cls, v: str | None):
+        allowed_keys = ["{YYYY}", "{MM}", "{DD}", "{name}"]
+        cls._validate_template_tags(v=v, allowed_tags=allowed_keys)
+
+        return v
+
+    @field_validator("incident_reference_format")
+    def validate_incident_reference_format(cls, v: str | None):
+        allowed_keys = ["{id}"]
+        cls._validate_template_tags(v=v, allowed_tags=allowed_keys)
+
+        return v
+
+    @classmethod
+    def _validate_template_tags(
+        cls,
+        v: str | None,
+        allowed_tags: list[str],
+        error_message: str = "Invalid template tag found: {}, allow tags: {}",
+    ):
+        template_pattern = re.compile(r"\{[^}]*\}")
+
+        if not v:
+            return v
+
+        # Check if there are any template-like strings not in allowed_keys
+        found_keys = template_pattern.findall(v)
+        for key in found_keys:
+            if key not in allowed_tags:
+                raise ValueError(error_message.format(key, ", ".join(allowed_tags)))
+
         return v

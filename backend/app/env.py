@@ -33,5 +33,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = ""
     REDIS_PORT: int = 6379
 
+    LOG_FORMAT: str = "console"  # console or json
+
 
 settings = Settings()
