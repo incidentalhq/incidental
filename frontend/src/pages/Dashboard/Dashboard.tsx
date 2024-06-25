@@ -93,35 +93,38 @@ const Dashboard = () => {
           Active incidents <Count>{activeIncidentsQuery.data?.total}</Count>
         </CategoryHeader>
         <Content>
-          <ContentMain $padding={false}>
-            {activeIncidentsQuery.isFetching && <Loading text="Loading active incidents" />}
-            {activeIncidentsQuery.isSuccess ? (
-              <>
-                {activeIncidentsQuery.data.items.map((it) => (
-                  <IncidentRow key={it.id} incident={it} />
-                ))}
-                {activeIncidentsQuery.data.total == 0 && <EmptyTable>No active incidents</EmptyTable>}
-              </>
-            ) : null}
-          </ContentMain>
+          {activeIncidentsQuery.isFetching && (
+            <ContentMain>
+              <Loading text="Loading active incidents" />
+            </ContentMain>
+          )}
+          {activeIncidentsQuery.isSuccess && (
+            <ContentMain $padding={false}>
+              {activeIncidentsQuery.data.items.map((it) => (
+                <IncidentRow key={it.id} incident={it} />
+              ))}
+              {activeIncidentsQuery.data.total == 0 && <EmptyTable>No active incidents</EmptyTable>}
+            </ContentMain>
+          )}
         </Content>
 
         <CategoryHeader>
           In Triage <Count>{inTriageQuery.data?.total}</Count>
         </CategoryHeader>
         <Content>
-          <ContentMain $padding={false}>
-            {inTriageQuery.isFetching && <Loading text="Loading incidents in triage" />}
-            {inTriageQuery.isSuccess ? (
-              <>
-                {inTriageQuery.data.items.map((it) => (
-                  <IncidentRow key={it.id} incident={it} />
-                ))}
-
-                {inTriageQuery.data.total == 0 && <EmptyTable>No incidents in triage</EmptyTable>}
-              </>
-            ) : null}
-          </ContentMain>
+          {inTriageQuery.isFetching && (
+            <ContentMain>
+              <Loading text="Loading incidents in triage" />
+            </ContentMain>
+          )}
+          {inTriageQuery.isSuccess && (
+            <ContentMain $padding={false}>
+              {inTriageQuery.data.items.map((it) => (
+                <IncidentRow key={it.id} incident={it} />
+              ))}
+              {inTriageQuery.data.total == 0 && <EmptyTable>No incidents in triage</EmptyTable>}
+            </ContentMain>
+          )}
         </Content>
       </Box>
     </Root>

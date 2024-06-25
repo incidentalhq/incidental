@@ -5,7 +5,10 @@ import secrets
 import string
 
 import structlog
-from structlog.contextvars import merge_contextvars
+
+from app.env import settings
+
+LOGGER_SETUP = False
 
 
 def setup_logger() -> None:
@@ -13,15 +16,21 @@ def setup_logger() -> None:
     level_name = os.environ.get("LOGLEVEL", "DEBUG")
     level = logging.getLevelName(level_name)
 
+    processors = [
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.ExceptionRenderer(),
+    ]
+
+    if settings.LOG_FORMAT == "console":
+        processors.append(structlog.dev.ConsoleRenderer())
+    else:
+        processors.append(structlog.processors.JSONRenderer())
+
     structlog.configure(
-        processors=[
-            merge_contextvars,
-            structlog.processors.add_log_level,
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.format_exc_info,
-            structlog.dev.ConsoleRenderer(),
-        ],
+        processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(level),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),

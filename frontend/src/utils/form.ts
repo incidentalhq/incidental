@@ -12,7 +12,13 @@ export const apiErrorsToFormikErrors = (e: APIError) => {
 
   // A more detailed validation error from pydantic
   for (const field of e.errors) {
-    set(formErrors, field.loc, field.msg)
+    let location = []
+    if (field.loc[0] == 'body') {
+      location = field.loc.slice(1)
+    } else {
+      location = field.loc
+    }
+    set(formErrors, location, field.msg)
   }
   return formErrors
 }

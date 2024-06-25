@@ -1,7 +1,7 @@
 import typing
 from typing import Optional
 
-from sqlalchemy import ForeignKey, String, UnicodeText
+from sqlalchemy import ForeignKey, Integer, String, UnicodeText, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -42,6 +42,7 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
     )
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     reference: Mapped[str] = mapped_column(UnicodeText, nullable=False)
+    reference_id: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(UnicodeText, nullable=True)
 
     # slack specific
@@ -58,6 +59,10 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
     )
     organisation: Mapped["Organisation"] = relationship("Organisation", back_populates="incidents")
     timestamp_values: Mapped[list["TimestampValue"]] = relationship("TimestampValue", back_populates="incident")
+
+    __table_args__ = (
+        UniqueConstraint("reference_id", "organisation_id", name="ux_incident_reference_id_organisation_id"),
+    )
 
     def get_user_for_role(self, kind: "IncidentRoleKind") -> Optional["User"]:
         for assignment in self.incident_role_assignments:

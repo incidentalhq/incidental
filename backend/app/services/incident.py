@@ -38,11 +38,15 @@ class IncidentService:
         self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token)
         self.events = events
 
-    def generate_incident_reference(self) -> str:
-        """Generate a reference for an incident"""
+    def generate_reference_id(self) -> int:
+        """Unique organisation level ID for the incident"""
         total_incidents = self.incident_repo.get_total_incidents(organisation=self.organisation)
+        return total_incidents + 1
+
+    def generate_incident_reference(self, reference_id: int) -> str:
+        """Generate a reference for an incident"""
         mappings = {
-            "{id}": str(total_incidents + 1),
+            "{id}": str(reference_id),
         }
         reference = self.organisation.settings.incident_reference_format
 
@@ -87,7 +91,8 @@ class IncidentService:
             raise Exception(f"Could not find status: {initial_status_name}")
 
         # create incident model
-        reference = self.generate_incident_reference()
+        reference_id = self.generate_reference_id()
+        reference = self.generate_incident_reference(reference_id=reference_id)
         incident = self.incident_repo.create_incident(
             organisation=self.organisation,
             user=creator,
@@ -97,6 +102,7 @@ class IncidentService:
             severity=incident_severity,
             type=incident_type,
             reference=reference,
+            reference_id=reference_id,
         )
 
         # assign role

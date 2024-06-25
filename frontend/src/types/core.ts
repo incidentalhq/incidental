@@ -7,9 +7,9 @@ export enum ErrorCodes {
   INCORRECT_CODE = 'INCORRECT_CODE',
   SLACK_API_ERROR = 'SLACK_API_ERROR',
   INVALID_AUTH_TOKEN = 'INVALID_AUTH_TOKEN',
+  UNKNOWN = 'UNKNOWN',
 
   // client side codes
-  UNKNOWN = 'UNKNOWN',
   NETWORK = 'NETWORK'
 }
 

@@ -13,6 +13,7 @@ class Settings(Base, TimestampMixin):
         String(50), ForeignKey("organisation.id", ondelete="cascade"), nullable=False, index=True
     )
 
+    # add settings here
     slack_channel_name_format: Mapped[str] = mapped_column(UnicodeText, nullable=False, default="inc-{YYYY}-{MM}-{DD}")
     incident_reference_format: Mapped[str] = mapped_column(UnicodeText, nullable=False, default="inc-{id}")
 
