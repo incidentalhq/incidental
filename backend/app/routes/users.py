@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 
-from app.auth import get_current_user
-from app.db import get_db
+from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
-from app.models import User
 from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, TimestampRepo, UserRepo
 from app.schemas.actions import AuthUserSchema, CreateUserSchema
-from app.schemas.models import UserSchema
+from app.schemas.models import UserPublicSchema, UserSchema
+from app.schemas.resources import PaginatedResults
 from app.services.identity import IdentityService
 from app.services.login import LoginError, LoginService
 from app.services.onboarding import OnboardingService
@@ -17,7 +15,7 @@ router = APIRouter(tags=["Users"])
 
 
 @router.post("", response_model=UserSchema)
-def user_register(create_in: CreateUserSchema, session: Session = Depends(get_db)):
+def user_register(create_in: CreateUserSchema, session: DatabaseSession):
     """Create a new user account"""
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
@@ -48,7 +46,7 @@ def user_register(create_in: CreateUserSchema, session: Session = Depends(get_db
 
 
 @router.post("/auth", response_model=UserSchema)
-def authenticate_user(item: AuthUserSchema, db: Session = Depends(get_db)):
+def authenticate_user(item: AuthUserSchema, db: DatabaseSession):
     """Auth user"""
     repo = UserRepo(db)
     security_service = SecurityService(db)
@@ -77,7 +75,18 @@ def authenticate_user(item: AuthUserSchema, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserSchema)
 def me(
-    user: User = Depends(get_current_user),
+    user: CurrentUser,
 ):
     """Get current user"""
     return user
+
+
+@router.get("/search", response_model=PaginatedResults[UserPublicSchema])
+def users_search(user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation):
+    """Get all users in the organisation"""
+    user_repo = UserRepo(session=db)
+
+    users = user_repo.get_all_users_in_organisation(organisation=organisation)
+    total = len(users)
+
+    return PaginatedResults(total=total, page=1, size=total, items=users)

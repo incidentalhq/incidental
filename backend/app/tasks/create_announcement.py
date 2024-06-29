@@ -35,6 +35,7 @@ class CreateAnnouncementTask(BaseTask["CreateAnnouncementTaskParameters"]):
         # update channel id
         if channel_id != incident.organisation.settings.slack_announcement_channel_id:
             incident.organisation.settings.slack_announcement_channel_id = channel_id
+            logger.info("Updated announcement channel id", channel_id=channel_id)
 
         # app should join the announcements channel
         client.conversations_join(channel=channel_id)
@@ -79,6 +80,7 @@ class CreateAnnouncementTask(BaseTask["CreateAnnouncementTaskParameters"]):
             return channels[channel_name]
 
         # create new channel, or use existing one
+        logger.info("Creating new announcements channel", channel_name=channel_name)
         channel_create_response = client.conversations_create(name=channel_name)
         channel_id = channel_create_response.get("channel", dict()).get("id")  # type: ignore
         return channel_id

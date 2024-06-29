@@ -6,16 +6,18 @@ from fastapi import APIRouter, Depends
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import NotPermittedError
 from app.models import FormKind
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, TimestampRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, TimestampRepo, UserRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
     PatchIncidentSchema,
-    UpdateIncidentTimestampsSchema,
+    PatchIncidentTimestampsSchema,
+    UpdateIncidentRoleSchema,
 )
 from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
+from app.services.factories import create_incident_service
 from app.services.incident import IncidentService
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -130,7 +132,7 @@ async def incident_updates(
 
 @router.patch("/{id}/timestamps")
 async def incident_patch_timestamps(
-    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentTimestampsSchema
+    id: str, db: DatabaseSession, user: CurrentUser, patch_in: PatchIncidentTimestampsSchema
 ):
     """Patch timestamps for an incident"""
     incident_repo = IncidentRepo(session=db)
@@ -140,7 +142,33 @@ async def incident_patch_timestamps(
     if not user.belongs_to(incident.organisation):
         raise NotPermittedError()
 
-    timestamp_repo.bulk_update_incident_timestamps(incident=incident, put_in=put_in)
+    timestamp_repo.bulk_update_incident_timestamps(incident=incident, put_in=patch_in)
+
+    db.commit()
+
+    return None
+
+
+@router.put("/{id}/roles/")
+async def incident_update_role(
+    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentRoleSchema, events: EventsService
+):
+    """Set role for an incident"""
+    incident_repo = IncidentRepo(session=db)
+    user_repo = UserRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(incident.organisation):
+        raise NotPermittedError()
+
+    role_assignee = user_repo.get_by_id_or_raise(put_in.user.id)
+    role = incident_repo.get_incident_role_by_id_or_raise(put_in.role.id)
+
+    if not user.belongs_to_any(role_assignee.organisations) or not user.belongs_to(role.organisation):
+        raise NotPermittedError()
+
+    incident_service = create_incident_service(session=db, organisation=incident.organisation, events=events)
+    incident_service.assign_role(incident=incident, user=role_assignee, role=role)
 
     db.commit()
 

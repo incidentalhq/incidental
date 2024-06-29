@@ -5,7 +5,7 @@ import pytz
 from sqlalchemy import func, select
 
 from app.models import Incident, Organisation, Timestamp, TimestampKind, TimestampRule, TimestampValue
-from app.schemas.actions import CreateTimestampSchema, PatchTimestampSchema, UpdateIncidentTimestampsSchema
+from app.schemas.actions import CreateTimestampSchema, PatchIncidentTimestampsSchema, PatchTimestampSchema
 
 from .base_repo import BaseRepo
 
@@ -123,7 +123,7 @@ class TimestampRepo(BaseRepo):
 
         return self.session.scalar(stmt)
 
-    def bulk_update_incident_timestamps(self, incident: Incident, put_in: UpdateIncidentTimestampsSchema):
+    def bulk_update_incident_timestamps(self, incident: Incident, put_in: PatchIncidentTimestampsSchema):
         """Bulk update timetime values for an incident"""
         tz = pytz.timezone(put_in.timezone)
         for timestamp_id, naive_datetime in put_in.values.items():

@@ -22,7 +22,7 @@ class IncidentRole(Base, TimestampMixin, SoftDeleteMixin):
     )
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     description: Mapped[str] = mapped_column(UnicodeText, nullable=False)
-    guide: Mapped[str] = mapped_column(UnicodeText, nullable=True)
+    guide: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
     slack_reference: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     kind: Mapped[IncidentRoleKind] = mapped_column(Enum(IncidentRoleKind, native_enum=False), nullable=False)
 

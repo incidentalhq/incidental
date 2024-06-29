@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { MouseEvent, useCallback } from 'react'
+import { MouseEvent, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
@@ -15,6 +15,8 @@ import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
+import { IncidentRoleKind } from '@/types/enums'
+import { IIncidentRole } from '@/types/models'
 import { rankSorter } from '@/utils/sort'
 import { getLocalTimeZone } from '@/utils/time'
 
@@ -25,6 +27,7 @@ import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './compon
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import Timeline from './components/IncidentUpdate/Timeline'
+import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
 import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
 
 const Description = styled.div`
@@ -34,9 +37,11 @@ const Description = styled.div`
 const Field = styled.div`
   display: flex;
   padding: 1rem 0 0.5rem 1rem;
+  align-items: center;
 `
 const FieldName = styled.div`
   width: 90px;
+  margin-right: 1rem;
 `
 const FieldValue = styled.div`
   display: flex;
@@ -44,24 +49,30 @@ const FieldValue = styled.div`
 `
 const ModalContainer = styled.div`
   padding: 1rem;
+  min-width: 400px;
+  max-width: 400px;
 `
 const FlatButton = styled.button`
   border: none;
   padding: 0.25rem 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-color: var(--color-gray-100);
 
   &:hover {
     background-color: var(--color-gray-200);
   }
 `
 const SidebarHeader = styled.div`
-  padding: 1rem 0 0 1rem;
-  font-weight: 500;
-  color: var(--color-gray-400);
+  padding: 2rem 0 0 1rem;
+  font-weight: 600;
+  color: var(--color-gray-600);
 
   display: flex;
 
   & > :first-child {
     width: 90px;
+    margin-right: 1rem;
   }
 `
 const RelatedFields = styled.div`
@@ -70,7 +81,15 @@ const RelatedFields = styled.div`
   }
 `
 
-const FlatEdit = styled.a``
+const InnerButtonContent = styled.div`
+  display: flex;
+  gap: 8px;
+`
+const PaddedValue = styled.div`
+  display: flex;
+  gap: 8px;
+  padding: 0.25rem 1rem;
+`
 
 type UrlParams = {
   id: string
@@ -92,6 +111,18 @@ const ShowIncident = () => {
   const incidentUpdatesQuery = useQuery({
     queryKey: ['incident-updates', id],
     queryFn: () => apiService.getIncidentUpdates(id)
+  })
+
+  // Fetch roles available for the organisation
+  const rolesQuery = useQuery({
+    queryKey: ['roles', organisation!.id],
+    queryFn: () => apiService.getRoles()
+  })
+
+  // Fetch roles available for the organisation
+  const usersQuery = useQuery({
+    queryKey: ['users', organisation!.id],
+    queryFn: () => apiService.getUsers()
   })
 
   // Change description of this incident
@@ -126,6 +157,19 @@ const ShowIncident = () => {
     incidentQuery.refetch()
     incidentUpdatesQuery.refetch()
     closeModal()
+  }
+
+  const handleSetRole = async (values: RoleFormValues, role: IIncidentRole) => {
+    try {
+      await apiService.setUserRole(incidentQuery.data!, values.user, role)
+      await incidentQuery.refetch()
+      closeModal()
+    } catch (e) {
+      if (e instanceof APIError) {
+        toast(e.detail, { type: 'error' })
+      }
+      console.error(e)
+    }
   }
 
   // Show modal when edit status is clicked
@@ -197,7 +241,7 @@ const ShowIncident = () => {
   )
 
   const handleShowEditTimestampsModal = useCallback(
-    (evt: MouseEvent<HTMLAnchorElement>) => {
+    (evt: MouseEvent<HTMLButtonElement>) => {
       evt.preventDefault()
       setModal(
         <ModalContainer>
@@ -214,7 +258,33 @@ const ShowIncident = () => {
     [incidentQuery.data, setModal, handleUpdateTimestampValues]
   )
 
-  const slackUrl = `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`
+  const createShowAssignRoleFormHandler = (role: IIncidentRole) => {
+    return async (evt: MouseEvent<HTMLButtonElement>) => {
+      evt.preventDefault()
+      if (!incidentQuery.data) {
+        console.error('Incident has not been loaded yet')
+        return
+      }
+      setModal(
+        <ModalContainer>
+          <h2>Assign role</h2>
+          {usersQuery.isSuccess && incidentQuery.data ? (
+            <RoleForm
+              users={usersQuery.data.items}
+              incident={incidentQuery.data}
+              role={role}
+              onSubmit={(values) => handleSetRole(values, role)}
+            />
+          ) : null}
+        </ModalContainer>
+      )
+    }
+  }
+
+  const slackUrl = useMemo(
+    () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
+    [organisation, incidentQuery.data?.slackChannelId]
+  )
 
   return (
     <>
@@ -242,49 +312,80 @@ const ShowIncident = () => {
                 )}
               </ContentMain>
               <ContentSidebar>
-                <Field>
-                  <FieldName>Slack</FieldName>
-                  <FieldValue>
-                    <a href={slackUrl} target="_blank">
-                      <Icon icon={slack} fixedWidth /> Open channel
-                    </a>
-                  </FieldValue>
-                </Field>
-                <Field>
-                  <FieldName>Status</FieldName>
-                  <FieldValue>
-                    <FlatButton type="button" onClick={handleEditStatus}>
-                      {incidentQuery.data.incidentStatus.name}
-                    </FlatButton>
-                  </FieldValue>
-                </Field>
-                <Field>
-                  <FieldName>Severity</FieldName>
-                  <FieldValue>
-                    <FlatButton type="button" onClick={handleEditSeverity}>
-                      {incidentQuery.data.incidentSeverity.name}
-                    </FlatButton>
-                  </FieldValue>
-                </Field>
-                <Field>
-                  <FieldName>Type</FieldName>
-                  <FieldValue>{incidentQuery.data.incidentType.name}</FieldValue>
-                </Field>
-                {incidentQuery.data.incidentRoleAssignments.map((it) => (
-                  <Field key={it.id}>
-                    <FieldName>{it.incidentRole.name}</FieldName>
+                <RelatedFields>
+                  <Field>
+                    <FieldName>Slack</FieldName>
                     <FieldValue>
-                      <MiniAvatar user={it.user} /> {it.user.name}
+                      <a href={slackUrl} target="_blank">
+                        <Icon icon={slack} fixedWidth /> Open channel
+                      </a>
                     </FieldValue>
                   </Field>
-                ))}
+                  <Field>
+                    <FieldName>Status</FieldName>
+                    <FieldValue>
+                      <FlatButton type="button" onClick={handleEditStatus}>
+                        {incidentQuery.data.incidentStatus.name}
+                      </FlatButton>
+                    </FieldValue>
+                  </Field>
+                  <Field>
+                    <FieldName>Severity</FieldName>
+                    <FieldValue>
+                      <FlatButton type="button" onClick={handleEditSeverity}>
+                        {incidentQuery.data.incidentSeverity.name}
+                      </FlatButton>
+                    </FieldValue>
+                  </Field>
+                  <Field>
+                    <FieldName>Type</FieldName>
+                    <FieldValue>
+                      <PaddedValue>{incidentQuery.data.incidentType.name}</PaddedValue>
+                    </FieldValue>
+                  </Field>
+                </RelatedFields>
+
+                <SidebarHeader>Roles</SidebarHeader>
+                <RelatedFields>
+                  {rolesQuery.data?.items.map((role) => {
+                    const assignment = incidentQuery.data.incidentRoleAssignments.find(
+                      (it) => it.incidentRole.id === role.id
+                    )
+                    return (
+                      <Field key={role.id}>
+                        <FieldName>{role.name}</FieldName>
+                        <FieldValue>
+                          {assignment ? (
+                            <>
+                              {assignment.incidentRole.kind === IncidentRoleKind.REPORTER ? (
+                                <PaddedValue>
+                                  <MiniAvatar user={assignment.user} /> {assignment.user.name}
+                                </PaddedValue>
+                              ) : (
+                                <FlatButton type="button" onClick={createShowAssignRoleFormHandler(role)}>
+                                  <InnerButtonContent>
+                                    <MiniAvatar user={assignment.user} /> {assignment.user.name}
+                                  </InnerButtonContent>
+                                </FlatButton>
+                              )}
+                            </>
+                          ) : (
+                            <FlatButton type="button" onClick={createShowAssignRoleFormHandler(role)}>
+                              Assign role
+                            </FlatButton>
+                          )}
+                        </FieldValue>
+                      </Field>
+                    )
+                  })}
+                </RelatedFields>
 
                 <SidebarHeader>
                   <div>Timestamps</div>
                   <div>
-                    <FlatEdit href="#" onClick={handleShowEditTimestampsModal}>
+                    <FlatButton type="button" onClick={handleShowEditTimestampsModal}>
                       <Icon icon={wrench} />
-                    </FlatEdit>
+                    </FlatButton>
                   </div>
                 </SidebarHeader>
                 <RelatedFields>

@@ -2,13 +2,23 @@ import typing
 
 import structlog
 
-from app.models import Incident, IncidentRoleKind, IncidentSeverity, IncidentStatus, IncidentType, Organisation, User
+from app.models import (
+    Incident,
+    IncidentRole,
+    IncidentRoleKind,
+    IncidentSeverity,
+    IncidentStatus,
+    IncidentType,
+    Organisation,
+    User,
+)
 from app.repos import AnnouncementRepo, IncidentRepo
 from app.schemas.actions import CreateIncidentSchema, ExtendedPatchIncidentSchema, PatchIncidentSchema
 from app.schemas.tasks import (
     CreateAnnouncementTaskParameters,
     CreateIncidentUpdateParameters,
     CreatePinnedMessageTaskParameters,
+    CreateSlackMessageTaskParameters,
     IncidentDeclaredTaskParameters,
     IncidentStatusUpdatedTaskParameters,
     InviteUserToChannelParams,
@@ -214,3 +224,32 @@ class IncidentService:
             )
 
         self.incident_repo.patch_incident(incident=incident, patch_in=patch_in)
+
+    def assign_role(self, incident: Incident, user: User, role: IncidentRole):
+        """Assign a role to a user"""
+
+        assign_result = self.incident_repo.assign_role(incident=incident, role=role, user=user)
+
+        # if user has not been changed, we don't need to do anything
+        if assign_result.type == "no_change":
+            return
+
+        public_message = f"<@{user.slack_user_id}> has been assigned as {role.name} for this incident"
+
+        if incident.slack_channel_id:
+            self.events.queue_job(
+                CreateSlackMessageTaskParameters(
+                    organisation_id=incident.organisation.id,
+                    message=public_message,
+                    channel_id=incident.slack_channel_id,
+                )
+            )
+        else:
+            logger.error("slack channel id not set for incident", incident=incident.id)
+
+        # will add lead info to bookmarks
+        self.events.queue_job(
+            SyncBookmarksTaskParameters(
+                incident_id=incident.id,
+            )
+        )

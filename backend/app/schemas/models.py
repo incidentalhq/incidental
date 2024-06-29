@@ -62,6 +62,9 @@ class IncidentSeveritySchema(ModelSchema):
 class IncidentRoleSchema(ModelSchema):
     name: str
     kind: str
+    description: str
+    guide: str | None
+    slack_reference: str
 
 
 class IncidentRoleAssignmentSchema(ModelSchema):

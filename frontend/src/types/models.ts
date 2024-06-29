@@ -98,6 +98,9 @@ export interface IIncidentSeverity extends IModel {
 export interface IIncidentRole extends IModel {
   name: string
   kind: IncidentRoleKind
+  description: string
+  guide: string
+  slackReference: string
 }
 
 export interface IIncidentRoleAssignment extends IModel {
