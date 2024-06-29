@@ -52,3 +52,10 @@ class IncidentStatusUpdatedTaskParameters(BaseModel):
     incident_id: str
     new_status_id: str
     old_status_id: str
+
+
+class CreateSlackMessageTaskParameters(BaseModel):
+    organisation_id: str
+    channel_id: str
+    message: str
+    text: str | None = None

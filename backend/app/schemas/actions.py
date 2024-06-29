@@ -109,7 +109,7 @@ class CreateTimestampSchema(BaseSchema):
     description: str
 
 
-class UpdateIncidentTimestampsSchema(BaseSchema):
+class PatchIncidentTimestampsSchema(BaseSchema):
     timezone: str
     values: dict[str, datetime | None]
 
@@ -159,3 +159,8 @@ class PatchOrganisationSettingsSchema(BaseSchema):
                 raise ValueError(error_message.format(key, ", ".join(allowed_tags)))
 
         return v
+
+
+class UpdateIncidentRoleSchema(BaseSchema):
+    role: ModelIdSchema
+    user: ModelIdSchema

@@ -2,6 +2,7 @@
 from .create_announcement import CreateAnnouncementTask
 from .create_incident_update import CreateIncidentUpdateTask
 from .create_pinned_message import CreatePinnedMessageTask
+from .create_slack_message import CreateSlackMessageTask
 from .incident_declared import IncidentDeclaredTask
 from .incident_status_updated import IncidentStatusUpdatedTask
 from .invite_user_to_channel import InviteUserToChannelTask

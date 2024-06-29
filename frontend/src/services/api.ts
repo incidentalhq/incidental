@@ -2,6 +2,7 @@ import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IIncident,
+  IIncidentRole,
   IIncidentSeverity,
   IIncidentUpdate,
   ILoggedInUser,
@@ -209,6 +210,34 @@ export class ApiService {
     return callApi<ISettings>('PATCH', `/organisations/${organisation.id}/settings`, {
       user: this.user,
       json: values
+    })
+  }
+
+  getRoles = () => {
+    return callApi<PaginatedResults<IIncidentRole>>('GET', `/roles/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getUsers = () => {
+    return callApi<PaginatedResults<IPublicUser>>('GET', `/users/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  setUserRole = (incident: IIncident, user: IPublicUser, role: IIncidentRole) => {
+    return callApi('PUT', `/incidents/${incident.id}/roles`, {
+      user: this.user,
+      json: {
+        user: { id: user.id },
+        role: { id: role.id }
+      }
     })
   }
 }

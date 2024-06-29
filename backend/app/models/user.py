@@ -71,8 +71,18 @@ class User(Base, TimestampMixin):
         return bcrypt.checkpw(password=password.encode("utf8"), hashed_password=self._password.encode("utf8"))
 
     def belongs_to(self, organisation: "Organisation") -> bool:
+        """Does user belong to the given organisation"""
         for org in self.organisations:
             if org.id == organisation.id:
+                return True
+
+        return False
+
+    def belongs_to_any(self, organisations: list["Organisation"]) -> bool:
+        """Does this user belong to at least one of the given organisations"""
+        subject_org_ids = set([org.id for org in self.organisations])
+        for org in organisations:
+            if org.id in subject_org_ids:
                 return True
 
         return False

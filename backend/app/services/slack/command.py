@@ -142,11 +142,7 @@ class SlackCommandService:
         if not user:
             raise InvalidUsageError(f"Could not find user {params[0]}", command)
 
-        self.incident_repo.assign_role(incident=incident, role=role, user=user)
-        logger.info("Assigned role", role=IncidentRoleKind.LEAD, user=user.id)
-
-        public_message = f"<@{user.slack_user_id}> has been assigned as {role.name} for this incident"
-        self.slack_client.chat_postMessage(channel=command.channel_id, user=user.slack_user_id, text=public_message)
+        self.incident_service.assign_role(incident=incident, user=user, role=role)
 
         # TODO: send a ephemeral message to the user who has the new role about what the expectations are for the role
 

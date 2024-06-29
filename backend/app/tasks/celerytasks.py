@@ -3,6 +3,7 @@ from app.schemas.tasks import (
     CreateAnnouncementTaskParameters,
     CreateIncidentUpdateParameters,
     CreatePinnedMessageTaskParameters,
+    CreateSlackMessageTaskParameters,
     HandleSlashCommandTaskParameters,
     IncidentDeclaredTaskParameters,
     IncidentStatusUpdatedTaskParameters,
@@ -15,6 +16,7 @@ from app.tasks import (
     CreateAnnouncementTask,
     CreateIncidentUpdateTask,
     CreatePinnedMessageTask,
+    CreateSlackMessageTask,
     HandleSlashCommandTask,
     IncidentDeclaredTask,
     IncidentStatusUpdatedTask,
@@ -85,3 +87,9 @@ def incident_declared(params: IncidentDeclaredTaskParameters):
 def incident_status_updated(params: IncidentStatusUpdatedTaskParameters):
     with session_factory() as session:
         IncidentStatusUpdatedTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def create_slack_message(params: CreateSlackMessageTaskParameters):
+    with session_factory() as session:
+        CreateSlackMessageTask(session=session).execute(parameters=params)

@@ -1,4 +1,5 @@
-from typing import Sequence
+from dataclasses import dataclass
+from typing import Literal, Sequence
 
 from sqlalchemy import func, select
 
@@ -19,6 +20,12 @@ from app.schemas.actions import ExtendedPatchIncidentSchema
 from app.schemas.resources import PaginatedResults
 
 from .base_repo import BaseRepo
+
+
+@dataclass
+class AssignRoleResult:
+    assignment: IncidentRoleAssignment
+    type: Literal["no_change"] | Literal["user_changed"] | Literal["new_assignment"]
 
 
 class IncidentRepo(BaseRepo):
@@ -181,12 +188,15 @@ class IncidentRepo(BaseRepo):
 
         return self.session.scalar(stmt) or 0
 
-    def assign_role(self, incident: Incident, role: IncidentRole, user: User) -> IncidentRoleAssignment:
+    def assign_role(self, incident: Incident, role: IncidentRole, user: User) -> AssignRoleResult:
         # if that role has already been assigned, update the user
         for role_assignment in incident.incident_role_assignments:
             if role_assignment.incident_role.id == role.id:
-                role_assignment.user_id = user.id
-                return role_assignment
+                if role_assignment.user_id == user.id:
+                    return AssignRoleResult(assignment=role_assignment, type="no_change")
+                else:
+                    role_assignment.user_id = user.id
+                    return AssignRoleResult(assignment=role_assignment, type="user_changed")
 
         # otherwise create a new role assignment
         model = IncidentRoleAssignment()
@@ -197,7 +207,7 @@ class IncidentRepo(BaseRepo):
         self.session.add(model)
         self.session.flush()
 
-        return model
+        return AssignRoleResult(assignment=model, type="new_assignment")
 
     def get_incident_role(self, organisation: Organisation, kind: IncidentRoleKind) -> IncidentRole | None:
         stmt = (
@@ -320,3 +330,8 @@ class IncidentRepo(BaseRepo):
         stmt = select(IncidentUpdate).where(IncidentUpdate.id == id, IncidentUpdate.deleted_at.is_(None))
 
         return self.session.scalar(stmt)
+
+    def get_incident_role_by_id_or_raise(self, id: str) -> IncidentRole:
+        stmt = select(IncidentRole).where(IncidentRole.id == id).limit(1)
+
+        return self.session.scalars(stmt).one()

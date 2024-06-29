@@ -76,17 +76,21 @@ const EditTimestampsForm: React.FC<Props> = ({ incident, onSubmit }) => {
                 )
               })}
 
-              <h3>Custom timestamps</h3>
-              {grouped['custom'].map((it) => {
-                return (
-                  <div key={it.id}>
-                    <label>{it.label}</label>
-                    <div>
-                      <Field name={it.id} type="datetime-local" />
-                    </div>
-                  </div>
-                )
-              })}
+              {grouped['custom'].length > 0 ? (
+                <>
+                  <h3>Custom timestamps</h3>
+                  {grouped['custom'].map((it) => {
+                    return (
+                      <div key={it.id}>
+                        <label>{it.label}</label>
+                        <div>
+                          <Field name={it.id} type="datetime-local" />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </>
+              ) : null}
             </>
           ) : (
             <div></div>

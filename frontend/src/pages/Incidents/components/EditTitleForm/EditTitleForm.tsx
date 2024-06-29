@@ -1,4 +1,4 @@
-import { createRef, KeyboardEvent, useCallback } from 'react'
+import { createRef, KeyboardEvent, useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { IIncident } from '@/types/models'
@@ -19,18 +19,29 @@ export interface FormValues {
 
 const EditTitleForm: React.FC<Props> = ({ incident, onSubmit }) => {
   const ref = createRef<HTMLDivElement>()
+  const [lastGoodContentState, setLastGoodContentState] = useState(incident.name)
 
   const saveContents = useCallback(() => {
     const contents = ref.current?.innerHTML
+
+    // don't allow title to be empty
+    if (!contents || contents.trim() === '') {
+      // restore last good state
+      ref.current?.append(lastGoodContentState)
+      return
+    }
+
     onSubmit({
-      name: contents ?? ''
+      name: contents
     })
-  }, [ref, onSubmit])
+    setLastGoodContentState(contents)
+  }, [ref, onSubmit, setLastGoodContentState, lastGoodContentState])
 
   const handleChange = (evt: KeyboardEvent<HTMLDivElement>) => {
     if (evt.code == 'Enter') {
       evt.preventDefault() // we don't want newlines in the title
       saveContents()
+      ref.current?.blur()
     }
   }
 
@@ -44,7 +55,7 @@ const EditTitleForm: React.FC<Props> = ({ incident, onSubmit }) => {
       contentEditable
       onBlur={handleBlur}
       onKeyDown={handleChange}
-      dangerouslySetInnerHTML={{ __html: incident.name }}
+      dangerouslySetInnerHTML={{ __html: lastGoodContentState }}
     ></Root>
   )
 }

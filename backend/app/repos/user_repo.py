@@ -1,9 +1,10 @@
 import secrets
+from typing import Sequence
 
 from sqlalchemy import select
 
 from app.exceptions import FormFieldValidationError
-from app.models import User
+from app.models import Organisation, OrganisationMember, User
 from app.schemas.actions import CreateUserSchema, CreateUserViaSlackSchema
 
 from .base_repo import BaseRepo
@@ -60,3 +61,13 @@ class UserRepo(BaseRepo):
     def get_by_slack_user_id(self, slack_user_id: str) -> User | None:
         query = select(User).where(User.slack_user_id == slack_user_id).limit(1)
         return self.session.scalars(query).first()
+
+    def get_all_users_in_organisation(self, organisation: Organisation) -> Sequence[User]:
+        """Get all users within organisation"""
+        stmt = (
+            select(User)
+            .join(OrganisationMember)
+            .where(OrganisationMember.organisation_id == organisation.id, User.is_active.is_(True))
+        )
+
+        return self.session.scalars(stmt).all()

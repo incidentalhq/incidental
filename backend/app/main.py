@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import NoResultFound
 
 from app.exceptions import ApplicationException, ErrorCodes, FormFieldValidationError
-from app.routes import forms, health, incidents, organisations, severities, slack, timestamps, users, world
+from app.routes import forms, health, incidents, organisations, roles, severities, slack, timestamps, users, world
 from app.utils import setup_logger
 
 from .env import settings
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(severities.router, prefix="/severities")
     app.include_router(timestamps.router, prefix="/timestamps")
     app.include_router(organisations.router, prefix="/organisations")
+    app.include_router(roles.router, prefix="/roles")
 
     # exception handler for form field validation errors
     @app.exception_handler(FormFieldValidationError)
