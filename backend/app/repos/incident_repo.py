@@ -224,6 +224,22 @@ class IncidentRepo(BaseRepo):
 
         return self.session.scalar(stmt)
 
+    def get_incident_role_by_slack_reference(
+        self, organisation: Organisation, slack_reference: str
+    ) -> IncidentRole | None:
+        """Find a role by it's slack reference"""
+        stmt = (
+            select(IncidentRole)
+            .where(
+                IncidentRole.organisation_id == organisation.id,
+                IncidentRole.deleted_at.is_(None),
+                IncidentRole.slack_reference == slack_reference,
+            )
+            .limit(1)
+        )
+
+        return self.session.scalar(stmt)
+
     def create_incident_role(
         self,
         organisation: Organisation,
