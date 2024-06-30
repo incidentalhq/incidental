@@ -65,6 +65,8 @@ class IncidentRoleSchema(ModelSchema):
     description: str
     guide: str | None
     slack_reference: str
+    is_deletable: bool
+    is_editable: bool
 
 
 class IncidentRoleAssignmentSchema(ModelSchema):

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Literal, Sequence
 
 from sqlalchemy import func, select
 
+from app.exceptions import ValidationError
 from app.models import (
     Incident,
     IncidentRole,
@@ -16,7 +18,7 @@ from app.models import (
     Organisation,
     User,
 )
-from app.schemas.actions import ExtendedPatchIncidentSchema
+from app.schemas.actions import ExtendedPatchIncidentSchema, UpdateIncidentRoleSchema
 from app.schemas.resources import PaginatedResults
 
 from .base_repo import BaseRepo
@@ -229,6 +231,8 @@ class IncidentRepo(BaseRepo):
         description: str,
         kind: IncidentRoleKind,
         slack_reference: str,
+        is_editable: bool = True,
+        is_deletable: bool = True,
     ) -> IncidentRole:
         model = IncidentRole()
         model.organisation_id = organisation.id
@@ -236,6 +240,8 @@ class IncidentRepo(BaseRepo):
         model.description = description
         model.kind = kind
         model.slack_reference = slack_reference
+        model.is_editable = is_editable
+        model.is_deletable = is_deletable
 
         self.session.add(model)
         self.session.flush()
@@ -335,3 +341,30 @@ class IncidentRepo(BaseRepo):
         stmt = select(IncidentRole).where(IncidentRole.id == id).limit(1)
 
         return self.session.scalars(stmt).one()
+
+    def remove_role_assignment(self, incident: Incident, role: IncidentRole) -> None:
+        """Remove role assignment for incident"""
+        # if that role has already been assigned, update the user
+        for role_assignment in incident.incident_role_assignments:
+            if role_assignment.incident_role.id == role.id:
+                self.session.delete(role_assignment)
+                self.session.flush()
+                return
+
+        raise ValidationError("Role assignment was not found")
+
+    def update_role(self, role: IncidentRole, update_in: UpdateIncidentRoleSchema) -> None:
+        """Update role"""
+        role.name = update_in.name
+        role.description = update_in.description
+        role.slack_reference = update_in.slack_reference
+
+        if update_in.guide:
+            role.guide = update_in.guide
+
+        self.session.flush()
+
+    def delete_role(self, role: IncidentRole) -> None:
+        """Delete role"""
+        role.deleted_at = datetime.now(tz=timezone.utc)
+        self.session.flush()

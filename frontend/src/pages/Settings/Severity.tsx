@@ -7,7 +7,7 @@ import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
 import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
-import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
@@ -61,7 +61,7 @@ const SettingsSeverity = () => {
           render: (v) => (
             <Controls>
               <div>
-                <Button onClick={() => handleOpenEditModal(v)}>Edit</Button>
+                <StyledButton onClick={() => handleOpenEditModal(v)}>Edit</StyledButton>
                 <ConfirmDelete
                   onConfirm={() => handleDelete(v)}
                   message="Are you sure you want to delete this severity?"
@@ -140,9 +140,9 @@ const SettingsSeverity = () => {
             </Intro>
             <Table data={severityList} rowKey={'id'} columns={columns} />
             <Actions>
-              <Button $primary={true} onClick={handleOpenCreateModal}>
+              <StyledButton $primary={true} onClick={handleOpenCreateModal}>
                 Add severity
-              </Button>
+              </StyledButton>
             </Actions>
           </ContentMain>
         </Content>

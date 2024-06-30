@@ -3,7 +3,7 @@ import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 
 interface Props {
   onSubmit: (values: TeamMemberFormValues, helpers: FormikHelpers<TeamMemberFormValues>) => void
@@ -38,9 +38,9 @@ const TeamMemberForm: React.FC<Props> = ({ onSubmit }) => {
             />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Add
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

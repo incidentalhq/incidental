@@ -2,7 +2,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import styled from 'styled-components'
 import * as Yup from 'yup'
 
-import { Button } from '../Theme/Styles'
+import { StyledButton } from '../Theme/Styles'
 import Field from './Field'
 import GeneralError from './GeneralError'
 
@@ -54,9 +54,9 @@ const DateRangeFilterForm: React.FC<Props> = ({ onSubmit }) => {
             </div>
             <div>
               <br />
-              <Button type="submit" disabled={isSubmitting}>
+              <StyledButton type="submit" disabled={isSubmitting}>
                 Filter
-              </Button>
+              </StyledButton>
             </div>
           </FormBody>
         </Form>

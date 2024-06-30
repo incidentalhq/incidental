@@ -27,6 +27,8 @@ class IncidentRoleItemType(TypedDict):
     description: str
     kind: IncidentRoleKind
     slack_reference: str
+    is_deletable: bool
+    is_editable: bool
 
 
 # data files
@@ -215,12 +217,16 @@ class OnboardingService:
                 "kind": IncidentRoleKind.REPORTER,
                 "description": "The user responsible for first reporting the incident",
                 "slack_reference": "reporter",
+                "is_deletable": False,
+                "is_editable": False,
             },
             {
                 "name": "Incident Lead",
                 "kind": IncidentRoleKind.LEAD,
                 "description": "An incident lead takes charge of coordinating and overseeing the response to an incident, ensuring effective communication, resource allocation, and resolution efforts to mitigate and manage the impact on an organization.",
                 "slack_reference": "lead",
+                "is_deletable": False,
+                "is_editable": True,
             },
         ]
 

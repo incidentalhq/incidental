@@ -13,7 +13,7 @@ from app.schemas.actions import (
     PaginationParamsSchema,
     PatchIncidentSchema,
     PatchIncidentTimestampsSchema,
-    UpdateIncidentRoleSchema,
+    UpdateIncidentRoleAssignmentSchema,
 )
 from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
@@ -151,9 +151,9 @@ async def incident_patch_timestamps(
 
 @router.put("/{id}/roles/")
 async def incident_update_role(
-    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentRoleSchema, events: EventsService
+    id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentRoleAssignmentSchema, events: EventsService
 ):
-    """Set role for an incident"""
+    """Set role for an incident or remove assignment if put_in.user is null"""
     incident_repo = IncidentRepo(session=db)
     user_repo = UserRepo(session=db)
     incident = incident_repo.get_incident_by_id_or_raise(id)
@@ -161,8 +161,14 @@ async def incident_update_role(
     if not user.belongs_to(incident.organisation):
         raise NotPermittedError()
 
-    role_assignee = user_repo.get_by_id_or_raise(put_in.user.id)
     role = incident_repo.get_incident_role_by_id_or_raise(put_in.role.id)
+
+    if not put_in.user:
+        incident_repo.remove_role_assignment(incident=incident, role=role)
+        db.commit()
+        return None
+
+    role_assignee = user_repo.get_by_id_or_raise(put_in.user.id)
 
     if not user.belongs_to_any(role_assignee.organisations) or not user.belongs_to(role.organisation):
         raise NotPermittedError()

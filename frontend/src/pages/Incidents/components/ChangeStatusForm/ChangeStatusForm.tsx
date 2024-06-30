@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import * as Yup from 'yup'
 
 import SelectField from '@/components/Form/SelectField'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IIncident, IIncidentStatus, ModelID } from '@/types/models'
 
 interface Props {
@@ -41,9 +41,9 @@ const ChangeStatusForm: React.FC<Props> = ({ statusList, incident, onSubmit }) =
             <SelectField name="status" options={options} saveOnChange={false} />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Save
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

@@ -3,7 +3,7 @@ import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { ITeam } from '@/types/models'
 
 interface Props {
@@ -34,9 +34,9 @@ const TeamForm: React.FC<Props> = ({ onSubmit, team }) => {
             <Field name="name" type="text" className="w-full" help="A name for this team" />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               {team ? 'Update team' : 'Create team'}
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import spinner from '@/assets/icons/spinner.svg'
 import Icon from '@/components/Icon/Icon'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 
 interface Props {
   debounceMs?: number
@@ -54,9 +54,9 @@ const AutoSave: React.FC<Props> = ({ debounceMs = 3000, button = false }) => {
     <div>
       {button ? (
         <div>
-          <Button type="button" disabled={formik.isSubmitting || !formik.dirty} onClick={handleSubmit}>
+          <StyledButton type="button" disabled={formik.isSubmitting || !formik.dirty} onClick={handleSubmit}>
             {label}
-          </Button>
+          </StyledButton>
         </div>
       ) : (
         <div>{formik.isSubmitting ? 'Saving...' : isSaved ? 'Changes saved.' : null}</div>

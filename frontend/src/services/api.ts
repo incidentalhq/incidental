@@ -231,13 +231,36 @@ export class ApiService {
     })
   }
 
-  setUserRole = (incident: IIncident, user: IPublicUser, role: IIncidentRole) => {
+  setUserRole = (incident: IIncident, user: IPublicUser | null, role: IIncidentRole) => {
     return callApi('PUT', `/incidents/${incident.id}/roles`, {
       user: this.user,
       json: {
-        user: { id: user.id },
+        user: user ? { id: user.id } : null,
         role: { id: role.id }
       }
+    })
+  }
+
+  updateRole = (role: IIncidentRole, values: Partial<IIncidentRole>) => {
+    return callApi('PUT', `/roles/${role.id}`, {
+      user: this.user,
+      json: values
+    })
+  }
+
+  createRole = (values: Partial<IIncidentRole>) => {
+    return callApi('POST', `/roles`, {
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      user: this.user,
+      json: values
+    })
+  }
+
+  deleteRole = (role: IIncidentRole) => {
+    return callApi('DELETE', `/roles/${role.id}`, {
+      user: this.user
     })
   }
 }

@@ -2,7 +2,7 @@ import { ErrorMessage, useField } from 'formik'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Button } from '../Theme/Styles'
+import { StyledButton } from '../Theme/Styles'
 
 const ItemsContainer = styled.div`
   border-radius: 0.25rem;
@@ -43,16 +43,16 @@ const SelectedItemList: React.FC<SelectItemsListProps> = ({ items, selected, onS
           {selected.includes(item) ? (
             <>
               {item}{' '}
-              <Button type="button" onClick={() => onRemove(item)}>
+              <StyledButton type="button" onClick={() => onRemove(item)}>
                 Remove
-              </Button>
+              </StyledButton>
             </>
           ) : (
             <>
               {item}{' '}
-              <Button type="button" onClick={() => onSelect(item)}>
+              <StyledButton type="button" onClick={() => onSelect(item)}>
                 Add
-              </Button>
+              </StyledButton>
             </>
           )}
         </ListItem>

@@ -3,7 +3,7 @@ import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 
 interface LoginFormProps {
   onSubmit: (values: LoginFormValues, helpers: FormikHelpers<LoginFormValues>) => void | Promise<void>
@@ -56,9 +56,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Login
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}
