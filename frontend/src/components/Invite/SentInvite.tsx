@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import styled from 'styled-components'
 
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IInvite } from '@/types/models'
 
 const Root = styled.div`
@@ -35,9 +35,9 @@ const SentInvite: React.FC<Props> = ({ invite, onDelete }) => {
       <Cell>{'Pending'}</Cell>
       <Cell>{sentAtF}</Cell>
       <Cell right={true}>
-        <Button $danger={true} onClick={() => onDelete(invite)}>
+        <StyledButton $danger={true} onClick={() => onDelete(invite)}>
           Delete
-        </Button>
+        </StyledButton>
       </Cell>
     </Root>
   )

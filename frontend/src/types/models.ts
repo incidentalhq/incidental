@@ -101,6 +101,8 @@ export interface IIncidentRole extends IModel {
   description: string
   guide: string
   slackReference: string
+  isEditable: boolean
+  isDeletable: boolean
 }
 
 export interface IIncidentRoleAssignment extends IModel {

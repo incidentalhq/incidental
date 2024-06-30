@@ -8,7 +8,7 @@ import spinner from '@/assets/icons/spinner.svg'
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
 import Icon from '@/components/Icon/Icon'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import useGlobal from '@/hooks/useGlobal'
 import { FormFieldKind } from '@/types/enums'
 import { IForm, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
@@ -136,9 +136,9 @@ const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
           <GeneralError />
           {fields}
           <div>
-            <Button $primary={true} type="submit" disabled={isSubmitting}>
+            <StyledButton $primary={true} type="submit" disabled={isSubmitting}>
               {isSubmitting && <Icon icon={spinner} spin={true} />} Declare incident
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

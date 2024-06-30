@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import { IIncident, ITimestamp, ModelID } from '@/types/models'
 import { formatForDateTimeInput } from '@/utils/time'
@@ -96,9 +96,9 @@ const EditTimestampsForm: React.FC<Props> = ({ incident, onSubmit }) => {
             <div></div>
           )}
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Update timestamps
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

@@ -9,7 +9,7 @@ import Icon from '@/components/Icon/Icon'
 import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import { APIError } from '@/services/transport'
 import { ITimestamp } from '@/types/models'
@@ -152,9 +152,9 @@ const SettingsTimestamps = () => {
               <p>No timestamps have been configured.</p>
             )}
             <Actions>
-              <Button $primary={true} onClick={handleOpenCreateModal}>
+              <StyledButton $primary={true} onClick={handleOpenCreateModal}>
                 Add custom timestamp
-              </Button>
+              </StyledButton>
             </Actions>
           </ContentMain>
         </Content>

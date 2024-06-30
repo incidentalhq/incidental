@@ -161,6 +161,17 @@ class PatchOrganisationSettingsSchema(BaseSchema):
         return v
 
 
-class UpdateIncidentRoleSchema(BaseSchema):
+class UpdateIncidentRoleAssignmentSchema(BaseSchema):
     role: ModelIdSchema
-    user: ModelIdSchema
+    user: ModelIdSchema | None = None
+
+
+class UpdateIncidentRoleSchema(BaseSchema):
+    name: str
+    description: str
+    slack_reference: str
+    guide: str | None = None
+
+
+class CreateIncidentRoleSchema(UpdateIncidentRoleSchema):
+    pass

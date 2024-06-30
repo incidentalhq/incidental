@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import * as Yup from 'yup'
 
 import SelectField from '@/components/Form/SelectField'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IIncident, IIncidentSeverity, ModelID } from '@/types/models'
 
 interface Props {
@@ -35,9 +35,9 @@ const ChangeSeverityForm: React.FC<Props> = ({ severityList, incident, onSubmit 
             <SelectField name="severity" options={options} saveOnChange={false} />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Save
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

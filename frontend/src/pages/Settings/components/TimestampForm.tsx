@@ -5,7 +5,7 @@ import spinner from '@/assets/icons/spinner.svg'
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
 import Icon from '@/components/Icon/Icon'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { ITimestamp } from '@/types/models'
 
 export type FormValues = {
@@ -43,9 +43,9 @@ const TimestampForm: React.FC<Props> = ({ onSubmit, timestamp }) => {
             <Field name="description" as={'textarea'} />
           </div>
           <div>
-            <Button $primary={true} type="submit" disabled={isSubmitting}>
+            <StyledButton $primary={true} type="submit" disabled={isSubmitting}>
               {isSubmitting && <Icon spin={true} icon={spinner} />} {timestamp ? 'Update' : 'Create'}
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

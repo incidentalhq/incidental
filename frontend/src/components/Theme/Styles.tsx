@@ -44,6 +44,10 @@ const buttonCss = css`
     box-shadow: none;
   }
 
+  &[disabled] img {
+    filter: opacity(0.2);
+  }
+
   transition:
     color 0.2s,
     background-color 0.2s;
@@ -54,7 +58,8 @@ const buttonCss = css`
 
 const deleteButtonCss = css`
   color: var(--color-red-400);
-  &:hover {
+
+  &:not(:disabled):hover {
     color: var(--color-red-600);
     background-color: var(--color-red-100);
   }
@@ -75,12 +80,12 @@ const primaryButtonCss = css`
   }
 `
 
-interface ButtonCustomProps {
+export interface StyledButtonCustomProps {
   $danger?: boolean
   $primary?: boolean
 }
 
-export const Button = styled.button<ButtonCustomProps>`
+export const StyledButton = styled.button<StyledButtonCustomProps>`
   ${buttonCss}
   ${(props) => (props.$danger ? deleteButtonCss : null)}
   ${(props) => (props.$primary ? primaryButtonCss : '')}

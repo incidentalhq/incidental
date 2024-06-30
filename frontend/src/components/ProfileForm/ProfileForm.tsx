@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IUser } from '@/types/models'
 
 const NameRowEl = styled.div`
@@ -59,9 +59,9 @@ const ProfileForm: React.FC<Props> = ({ user, onSubmit }) => {
             <Field name="password" type="password" placeholder="At least 8 characters" />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Update profile
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

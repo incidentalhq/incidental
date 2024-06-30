@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IIncident } from '@/types/models'
 
 const Actions = styled.div`
@@ -43,9 +43,9 @@ const EditDescriptionForm: React.FC<Props> = ({ incident, onSubmit }) => {
         <>
           <p>{incident.description}</p>
           <Actions>
-            <Button type="button" onClick={() => setEditing(true)}>
+            <StyledButton type="button" onClick={() => setEditing(true)}>
               Edit description
-            </Button>
+            </StyledButton>
           </Actions>
         </>
       ) : (
@@ -56,9 +56,9 @@ const EditDescriptionForm: React.FC<Props> = ({ incident, onSubmit }) => {
                 <Field name="description" type="text" className="w-full" as={'textarea'} />
               </div>
               <div>
-                <Button type="submit" disabled={isSubmitting}>
+                <StyledButton type="submit" disabled={isSubmitting}>
                   Save
-                </Button>
+                </StyledButton>
               </div>
             </Form>
           )}

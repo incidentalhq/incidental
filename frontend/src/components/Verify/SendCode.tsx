@@ -3,7 +3,7 @@ import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 
 interface SendCodeFormProps {
   onSubmit: (values: SendCodeFormValues, helpers: FormikHelpers<SendCodeFormValues>) => void | Promise<void>
@@ -34,9 +34,9 @@ const SendCodeForm: React.FC<SendCodeFormProps> = ({ onSubmit }) => {
             />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Send code
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

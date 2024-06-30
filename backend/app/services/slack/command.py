@@ -46,6 +46,10 @@ class SlackCommandService:
             "sub_command": "status",
             "handler": "update_status",
         },
+        {
+            "sub_command": "role",
+            "handler": "assign_generic_role",
+        },
     ]
 
     def __init__(
@@ -190,3 +194,37 @@ class SlackCommandService:
 
     def show_invalid_usage_error(self, message: str, command: SlackCommandDataSchema):
         self.slack_client.chat_postEphemeral(channel=command.channel_id, user=command.user_id, text=message)
+
+    def assign_generic_role(self, command: SlackCommandDataSchema, params: list[str]):
+        """Assign a role
+
+        Invocation: /inc role role_name @user
+
+        """
+        if len(params) != 2:
+            raise InvalidUsageError("use /inc role role_name @user", command=command)
+
+        # get incident
+        incident = self.incident_repo.get_incident_by_slack_channel_id(command.channel_id)
+        if not incident:
+            raise RuntimeError("Could not find associated incident")
+
+        # find and validate role name
+        role_name = params[0]
+        role = self.incident_repo.get_incident_role_by_slack_reference(
+            organisation=self.organisation, slack_reference=role_name
+        )
+        if not role:
+            raise RuntimeError("Could not find role for organisation")
+
+        # find user, or create user
+        user_tag = params[1]  # formatted: <@U03E56CEXB2|username>
+        slack_user_id = user_tag.split("|")[0].lstrip("<").replace("@", "")
+
+        user = self.slack_user_service.get_or_create_user_from_slack_id(
+            slack_id=slack_user_id, organisation=self.organisation
+        )
+        if not user:
+            raise InvalidUsageError(f"Could not find user {params[1]}", command)
+
+        self.incident_service.assign_role(incident=incident, user=user, role=role)

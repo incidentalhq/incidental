@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import * as Yup from 'yup'
 
 import SelectField from '@/components/Form/SelectField'
-import { Button } from '@/components/Theme/Styles'
+import { StyledButton } from '@/components/Theme/Styles'
 import { IIncident, IIncidentRole, IPublicUser, ModelID } from '@/types/models'
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export interface FormValues {
-  user: IPublicUser
+  user: IPublicUser | null
 }
 
 export interface InternalFormValues {
@@ -22,7 +22,7 @@ export interface InternalFormValues {
 }
 
 const validationSchema = Yup.object().shape({
-  userId: Yup.string().required('Please select a user')
+  userId: Yup.string()
 })
 
 const RoleForm: React.FC<Props> = ({ users, onSubmit, role, incident }) => {
@@ -33,12 +33,16 @@ const RoleForm: React.FC<Props> = ({ users, onSubmit, role, incident }) => {
   }
   const handleSubmit = useCallback(
     (values: InternalFormValues, helpers: FormikHelpers<InternalFormValues>) => {
-      const user = users.find((it) => it.id === values.userId)
-      if (!user) {
-        throw Error('Could not find user')
-      }
+      if (values.userId) {
+        const user = users.find((it) => it.id === values.userId)
+        if (!user) {
+          throw Error('Could not find user')
+        }
 
-      onSubmit({ user }, helpers)
+        onSubmit({ user }, helpers)
+      } else {
+        onSubmit({ user: null }, helpers)
+      }
     },
     [onSubmit, users]
   )
@@ -53,12 +57,12 @@ const RoleForm: React.FC<Props> = ({ users, onSubmit, role, incident }) => {
         <Form className="space-y-2">
           <label>{role.name}</label>
           <div>
-            <SelectField name="userId" options={options} saveOnChange={false} />
+            <SelectField name="userId" options={options} saveOnChange={false} clearable={true} />
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <StyledButton type="submit" disabled={isSubmitting}>
               Save
-            </Button>
+            </StyledButton>
           </div>
         </Form>
       )}

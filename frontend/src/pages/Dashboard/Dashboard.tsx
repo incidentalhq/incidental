@@ -8,7 +8,7 @@ import DeclareIncidentForm, { FormValues as DeclareIncidentFormValues } from '@/
 import IncidentRow from '@/components/Incident/IncidentRow'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
-import { Box, Button, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { FormType, IncidentStatusCategory } from '@/types/enums'
@@ -84,9 +84,9 @@ const Dashboard = () => {
         <Header>
           <Title>Dashboard</Title>
           <div>
-            <Button $primary={true} onClick={handleOpenDeclareModal}>
+            <StyledButton $primary={true} onClick={handleOpenDeclareModal}>
               Declare incident
-            </Button>
+            </StyledButton>
           </div>
         </Header>
         <CategoryHeader>

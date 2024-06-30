@@ -1,8 +1,8 @@
-import { ReactNode } from 'react'
 import styled from 'styled-components'
 
 import { useModal } from '../Modal/useModal'
-import { Button } from '../Theme/Styles'
+import { StyledButton } from '../Theme/Styles'
+import Button, { ButtonProps } from './Button'
 
 const Modal = styled.div`
   padding: 1rem;
@@ -16,9 +16,8 @@ const ControlsEl = styled.div`
   }
 `
 
-interface Props {
+interface Props extends ButtonProps {
   onConfirm: () => void
-  children: ReactNode
   message?: string
 }
 
@@ -42,7 +41,7 @@ const ConfirmDelete: React.FC<Props> = ({ onConfirm, children, message, ...props
       <Modal>
         <MessageEl>{message ? message : 'Are you sure you want to delete this?'}</MessageEl>
         <ControlsEl>
-          <Button onClick={handleConfirm}>Yes</Button>
+          <StyledButton onClick={handleConfirm}>Yes</StyledButton>
           <a href="#cancel" onClick={handleClickCancel}>
             Cancel
           </a>

@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Enum, ForeignKey, String, UnicodeText
+from sqlalchemy import Boolean, Enum, ForeignKey, String, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -25,6 +25,8 @@ class IncidentRole(Base, TimestampMixin, SoftDeleteMixin):
     guide: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
     slack_reference: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     kind: Mapped[IncidentRoleKind] = mapped_column(Enum(IncidentRoleKind, native_enum=False), nullable=False)
+    is_deletable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_editable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # relationships
     organisation = relationship("Organisation", back_populates="incident_roles")
