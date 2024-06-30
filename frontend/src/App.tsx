@@ -3,33 +3,37 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 
+// components
 import AuthGuard from '@/components/Guard/AuthGuard'
 import ReadyGuard from '@/components/Guard/ReadyGuard'
 import SlackInstallGuard from '@/components/Guard/SlackInstallGuard'
 import DefaultLayout from '@/components/Layout/DefaultLayout'
 import SettingsLayout from '@/components/Layout/SettingsLayout'
 import ModalProvider from '@/components/Modal/ModalProvider'
+// hooks
 import { ApiServiceProvider } from '@/hooks/useApi'
 import { AuthProvider } from '@/hooks/useAuth'
 import { GlobalProvider } from '@/hooks/useGlobal'
+// pages
 import Login from '@/pages/Auth/EmailLogin'
 import LoginSelector from '@/pages/Auth/LoginSelector'
 import Register from '@/pages/Auth/Register'
 import SlackLogin from '@/pages/Auth/SlackLogin'
 import RegisterSuccess from '@/pages/Auth/Success'
 import Dashboard from '@/pages/Dashboard/Dashboard'
+import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
 import ShowIncident from '@/pages/Incidents/Show'
 import OAuthComplete from '@/pages/OAuth/Complete'
 import SettingsIndex from '@/pages/Settings/Index'
+import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
+import SettingsSlack from '@/pages/Settings/Slack'
+import SettingsTimestamps from '@/pages/Settings/Timestamps'
 import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
+// route definitions
 import { RoutePaths } from '@/routes'
-
-import PageNotFound from './pages/Error/PageNotFound'
-import SettingsSlack from './pages/Settings/Slack'
-import SettingsTimestamps from './pages/Settings/Timestamps'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +81,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_SEVERITY} element={<SettingsSeverity />} />
                       <Route path={RoutePaths.SETTINGS_TIMESTAMPS} element={<SettingsTimestamps />} />
                       <Route path={RoutePaths.SETTINGS_SLACK} element={<SettingsSlack />} />
+                      <Route path={RoutePaths.SETTINGS_ROLES} element={<SettingsRoles />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />
