@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 
 from app.models import Organisation
-from app.repos import AnnouncementRepo, IncidentRepo
+from app.repos import AnnouncementRepo, IncidentRepo, OrganisationRepo, UserRepo
 from app.services.events import Events
 from app.services.incident import IncidentService
+from app.services.slack.user import SlackUserService
 
 
 def create_incident_service(
@@ -24,3 +25,7 @@ def create_incident_service(
     )
 
     return incident_service
+
+
+def create_slack_user_service(session: Session) -> SlackUserService:
+    return SlackUserService(user_repo=UserRepo(session=session), organisation_repo=OrganisationRepo(session=session))
