@@ -16,7 +16,7 @@ from app.schemas.slack import (
     SlackUrlVerificationHandshakeSchema,
 )
 from app.schemas.tasks import HandleSlashCommandTaskParameters
-from app.services.incident import IncidentService
+from app.services.factories import create_incident_service
 from app.services.oauth_connector import OAuthConnectorService
 from app.services.onboarding import OnboardingService
 from app.services.slack.events import SlackEventsService
@@ -218,7 +218,6 @@ def slack_interaction(
     form_repo = FormRepo(session=session)
     incident_repo = IncidentRepo(session=session)
     user_repo = UserRepo(session=session)
-    announcement_repo = AnnouncementRepo(session=session)
     severity_repo = SeverityRepo(session=session)
 
     organisation = organisation_repo.get_by_slack_team_id(interaction.payload["team"]["id"])
@@ -226,12 +225,7 @@ def slack_interaction(
         logger.error("Unhandled interaction event for team", team_id=interaction.payload["team"]["id"])
         return Response(status_code=status.HTTP_200_OK)
 
-    incident_service = IncidentService(
-        organisation=organisation,
-        incident_repo=incident_repo,
-        announcement_repo=announcement_repo,
-        events=events,
-    )
+    incident_service = create_incident_service(session=session, organisation=organisation, events=events)
     slack_user_service = SlackUserService(
         user_repo=user_repo,
         organisation_repo=organisation_repo,

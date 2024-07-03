@@ -21,14 +21,14 @@ def get_organisation(organisation_id: OrganisationId, db: DatabaseSession, user:
     """Get the organisation set in the request's header"""
     organisation_repo = OrganisationRepo(session=db)
     if not organisation_id:
-        raise ApplicationException(f"{ORGANISATION_ID_HEADER} not in headers")
+        raise ApplicationException(f"Request is missing {ORGANISATION_ID_HEADER} from headers")
 
     organisation = organisation_repo.get_by_id(organisation_id)
     if not organisation:
         raise ApplicationException("Organisation not found")
 
     if not user.belongs_to(organisation=organisation):
-        raise NotPermittedError("You cannot access this organisation")
+        raise NotPermittedError("You are not a member of this organisation")
 
     return organisation
 
