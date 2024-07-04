@@ -2,7 +2,7 @@ import structlog
 from fastapi import APIRouter
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
-from app.exceptions import NotPermittedError
+from app.exceptions import FormFieldValidationError, NotPermittedError
 from app.models import IncidentRoleKind
 from app.repos import IncidentRepo
 from app.schemas.actions import CreateIncidentRoleSchema, UpdateIncidentRoleSchema
@@ -34,6 +34,13 @@ async def role_create(
 ):
     """Create a new role"""
     incident_repo = IncidentRepo(session=db)
+
+    existing_role = incident_repo.get_incident_role_by_slack_reference(
+        organisation=organisation, slack_reference=create_in.slack_reference
+    )
+
+    if existing_role:
+        raise FormFieldValidationError("That slack reference is already in use", attribute="slackReference")
 
     role = incident_repo.create_incident_role(
         organisation=organisation,

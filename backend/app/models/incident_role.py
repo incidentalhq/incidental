@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Boolean, Enum, ForeignKey, String, UnicodeText
+from sqlalchemy import Boolean, Enum, ForeignKey, String, UnicodeText, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -30,3 +30,8 @@ class IncidentRole(Base, TimestampMixin, SoftDeleteMixin):
 
     # relationships
     organisation = relationship("Organisation", back_populates="incident_roles")
+
+    __table_args__ = (
+        UniqueConstraint("organisation_id", "slack_reference", name="uix_incident_role_org_slack_reference"),
+        UniqueConstraint("organisation_id", "name", name="uix_incident_role_org_name"),
+    )

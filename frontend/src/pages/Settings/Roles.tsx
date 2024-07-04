@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { FormikHelpers } from 'formik'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
@@ -15,6 +16,7 @@ import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
 import { IIncidentRole } from '@/types/models'
+import { apiErrorsToFormikErrors } from '@/utils/form'
 
 import RoleForm, { FormValues as RoleFormValues } from './components/Role/RoleForm'
 
@@ -65,21 +67,25 @@ const SettingsRoles = () => {
     [apiService, rolesQuery]
   )
 
-  const handleAddRole = async (values: RoleFormValues) => {
-    try {
-      await apiService.createRole(values)
-      rolesQuery.refetch()
-      closeModal()
-      toast('New severity added', { type: 'success' })
-    } catch (e) {
-      if (e instanceof APIError) {
-        toast(e.detail, { type: 'error' })
+  const handleAddRole = useCallback(
+    async (values: RoleFormValues, helpers: FormikHelpers<RoleFormValues>) => {
+      try {
+        await apiService.createRole(values)
+        rolesQuery.refetch()
+        closeModal()
+        toast('New severity added', { type: 'success' })
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.detail, { type: 'error' })
+          helpers.setErrors(apiErrorsToFormikErrors(e))
+        }
       }
-    }
-  }
+    },
+    [apiService, closeModal, rolesQuery]
+  )
 
   const handleUpdateRole = useCallback(
-    async (role: IIncidentRole, values: RoleFormValues) => {
+    async (role: IIncidentRole, values: RoleFormValues, helpers: FormikHelpers<RoleFormValues>) => {
       try {
         await apiService.updateRole(role, values)
         rolesQuery.refetch()
@@ -88,6 +94,7 @@ const SettingsRoles = () => {
       } catch (e) {
         if (e instanceof APIError) {
           toast(e.detail, { type: 'error' })
+          helpers.setErrors(apiErrorsToFormikErrors(e))
         }
         console.error(e)
       }
@@ -109,7 +116,7 @@ const SettingsRoles = () => {
       setModal(
         <SeverityModal>
           <h2>Edit role</h2>
-          <RoleForm role={role} onSubmit={(values) => handleUpdateRole(role, values)} />
+          <RoleForm role={role} onSubmit={(values, helpers) => handleUpdateRole(role, values, helpers)} />
         </SeverityModal>
       )
     },
@@ -122,6 +129,10 @@ const SettingsRoles = () => {
         {
           name: 'Name',
           render: (v) => v.name
+        },
+        {
+          name: 'Slack reference',
+          render: (v) => v.slackReference
         },
         {
           name: 'Description',

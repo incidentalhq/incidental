@@ -30,7 +30,7 @@ class ApplicationException(Exception):
 
 
 class FormFieldValidationError(ApplicationException):
-    def __init__(self, detail: str, attribute: str = "general", code: ErrorCodes | None = None):
+    def __init__(self, detail: str, attribute: str = "general", code: ErrorCodes = ErrorCodes.VALIDATION):
         self.detail = detail
         self.attribute = attribute
         self.code = code
