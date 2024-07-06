@@ -150,14 +150,6 @@ export const ContentMain = styled.div<ContentMainProps>`
   padding: ${(props) => (props.$padding === false ? '0' : '1rem 20px')};
   flex: 1;
 `
-export const ContentSidebar = styled.div`
-  flex-grow: 1;
-  max-width: 480px;
-  min-width: 320px;
-  background-color: var(--color-gray-50);
-  padding: 1rem;
-  height: 100vh;
-`
 
 export const Title = styled.span`
   font-size: 1.2rem;
@@ -170,18 +162,4 @@ export const Subtitle = styled.div`
 
 export const LinkButton = styled(Link)`
   ${buttonCss}
-`
-
-export const SectionTitle = styled.h2`
-  font-weight: 500;
-  margin-bottom: 1rem;
-`
-
-export const PrimaryLinkButton = styled(LinkButton)`
-  ${primaryButtonCss}
-`
-
-export const LargePrimaryLinkButton = styled(LinkButton)`
-  ${primaryButtonCss}
-  padding: 1rem;
 `

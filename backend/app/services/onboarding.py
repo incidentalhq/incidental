@@ -223,7 +223,7 @@ class OnboardingService:
             {
                 "name": "Incident Lead",
                 "kind": IncidentRoleKind.LEAD,
-                "description": "An incident lead takes charge of coordinating and overseeing the response to an incident, ensuring effective communication, resource allocation, and resolution efforts to mitigate and manage the impact on an organization.",
+                "description": "An incident lead coordinates and directs the response to an emergency or crisis, guiding teams to efficiently resolve and mitigate the situation",
                 "slack_reference": "lead",
                 "is_deletable": False,
                 "is_editable": True,
