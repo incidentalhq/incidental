@@ -10,7 +10,7 @@ import wrench from '@/assets/icons/wrench.svg'
 import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
-import { Box, Content, ContentMain, ContentSidebar, Header, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
@@ -89,6 +89,14 @@ const PaddedValue = styled.div`
   display: flex;
   gap: 8px;
   padding: 0.25rem 1rem;
+`
+const ContentSidebar = styled.div`
+  flex-grow: 1;
+  max-width: 480px;
+  min-width: 320px;
+  background-color: var(--color-gray-50);
+  padding: 1rem;
+  height: 100vh;
 `
 
 type UrlParams = {

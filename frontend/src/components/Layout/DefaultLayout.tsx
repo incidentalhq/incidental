@@ -12,11 +12,13 @@ const Container = styled.div`
 const RightColumn = styled.div`
   background: #fff;
   flex: 1;
+  margin-top: 8px;
+  border-top: 1px solid var(--color-gray-200);
+  border-left: 1px solid var(--color-gray-200);
 `
 const LeftColumn = styled.div`
   padding: 1rem;
   width: 220px;
-  border-right: 1px solid var(--color-gray-200);
   height: 100vh;
 `
 

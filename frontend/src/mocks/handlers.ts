@@ -8,7 +8,7 @@ import mockIncidentsSearch from './api/incidents_search.json'
 
 const baseUrl = getBaseUrl()
 
-const createEmptyResults = <T>(): PaginatedResults<T> => {
+const createPaginatedResults = <T>(): PaginatedResults<T> => {
   return {
     total: 0,
     size: 0,
@@ -22,7 +22,7 @@ export const handlers = [
     const url = new URL(request.url)
     const statusCategory = url.searchParams.get('statusCategory')
     // return empty for triage
-    const results = statusCategory === 'ACTIVE' ? mockIncidentsSearch : createEmptyResults()
+    const results = statusCategory === 'ACTIVE' ? mockIncidentsSearch : createPaginatedResults()
 
     return HttpResponse.json(results)
   }),
