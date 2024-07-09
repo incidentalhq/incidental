@@ -9,7 +9,7 @@
 
 </div>
 
-> Incidental is still in it's early stage of development, so there may be some teething problems along the way. Please let us know of any suggestions, bugs, ideas, etc using Github issues. We'll use your feedback to improve
+> Incidental is still in its early stage of development, so there may be some teething problems along the way. Please let us know of any suggestions, bugs, ideas, etc using Github issues. We'll use your feedback to improve
 
 # Incidental is an open-source incident management platform
 
