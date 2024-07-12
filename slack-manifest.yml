@@ -19,17 +19,17 @@ features:
     always_online: true
   slash_commands:
     - command: /inc
-      url: BASE_URL/slack/slash-command
+      url: BACKEND_BASE_URL/slack/slash-command
       description: Launch or manage an incident
       should_escape: true
     - command: /incident
-      url: BASE_URL/slack/slash-command
+      url: BACKEND_BASE_URL/slack/slash-command
       description: Launch or manage an incident
       should_escape: true
 oauth_config:
   redirect_urls:
-    - BASE_URL/oauth/complete
-    - BASE_URL/slack/install/complete
+    - FRONTEND_BASE_URL/oauth/complete
+    - FRONTEND_BASE_URL/slack/install/complete
   scopes:
     bot:
       - bookmarks:read
@@ -50,7 +50,7 @@ oauth_config:
       - users:read.email
 settings:
   event_subscriptions:
-    request_url: BASE_URL/slack/events
+    request_url: BACKEND_BASE_URL/slack/events
     bot_events:
       - channel_archive
       - channel_created
@@ -62,7 +62,7 @@ settings:
       - member_left_channel
   interactivity:
     is_enabled: true
-    request_url: BASE_URL/slack/interaction
+    request_url: BACKEND_BASE_URL/slack/interaction
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false
