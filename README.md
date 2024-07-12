@@ -10,6 +10,8 @@
 </div>
 
 > Incidental is still in its early stage of development, so there may be some teething problems along the way. Please let us know of any suggestions, bugs, ideas, etc using Github issues. We'll use your feedback to improve
+>
+> ⚡ **If you'd like to get access to a hosted version of Incidental, there's a [waitlist here](https://tally.so/r/nrErBp)** ⚡
 
 # Incidental is an open-source incident management platform
 
@@ -33,12 +35,17 @@ Requirements:
 
 To run locally for development:
 
-1. Create a new slack application here: https://api.slack.com/apps, use the slack-manifest.yml as a template and replace BASE_URL with the url where you are hosting your app.
+1. Create a new slack application
+   - Go here: https://api.slack.com/apps, and use the slack-manifest.yml as a template to create the app.
+   - Replace BACKEND_BASE_URL with the url where you're hosting the backend
+   - Replace FRONTEND_BASE_URL with the url where you're hosting the frontend
 2. Copy `backend/.env.example` to `backend/.env` and update the slack specific environment variables
 3. Copy `frontend/.env.example` to `frontend/.env`
 4. In `backend` run `make run-dev`
+   - This will run the backend at http://localhost:5000
 5. In `frontend` run `make run-dev`
-6. Goto `http://localhost:3000` and create an account
+   - This will run the frontend at http://localhost:3000
+6. Go to http://localhost:3000, and create a new account
 
 # Resources
 
