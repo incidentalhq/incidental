@@ -2,7 +2,9 @@ import typing
 
 import structlog
 
+from app.exceptions import ValidationError
 from app.models import (
+    FieldKind,
     Incident,
     IncidentRole,
     IncidentRoleKind,
@@ -12,7 +14,7 @@ from app.models import (
     Organisation,
     User,
 )
-from app.repos import AnnouncementRepo, IncidentRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
 from app.schemas.actions import CreateIncidentSchema, ExtendedPatchIncidentSchema, PatchIncidentSchema
 from app.schemas.tasks import (
     CreateAnnouncementTaskParameters,
@@ -40,6 +42,7 @@ class IncidentService:
         organisation: Organisation,
         incident_repo: IncidentRepo,
         announcement_repo: AnnouncementRepo,
+        form_repo: FormRepo,
         events: "Events",
     ):
         self.organisation = organisation
@@ -47,6 +50,7 @@ class IncidentService:
         self.announcement_repo = announcement_repo
         self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token)
         self.events = events
+        self.form_repo = form_repo
 
     def generate_reference_id(self) -> int:
         """Unique organisation level ID for the incident"""
@@ -66,17 +70,33 @@ class IncidentService:
         return reference
 
     def create_incident_from_schema(self, create_in: CreateIncidentSchema, user: User):
-        incident_severity = self.incident_repo.get_incident_severity_by_id_or_throw(create_in.incident_severity)
-        if not incident_severity:
-            raise ValueError("Could not find severity")
+        name = None
+        incident_type = None
+        incident_severity = None
+        summary = None
 
-        incident_type = self.incident_repo.get_incident_type_by_id(create_in.incident_type)
-        if not incident_type:
-            raise ValueError("Could not find incident type")
+        for field_id, value in create_in.model_dump().items():
+            form_field = self.form_repo.get_form_field_by_id(id=field_id)
+            if not form_field:
+                raise ValidationError("Could not find form field")
+
+            match form_field.fields.kind:
+                case FieldKind.INCIDENT_NAME:
+                    name = value
+                case FieldKind.INCIDENT_SEVERITY:
+                    incident_severity = self.incident_repo.get_incident_severity_by_id_or_throw(id=value)
+                    if not incident_severity:
+                        raise ValueError("Could not find severity")
+                case FieldKind.INCIDENT_TYPE:
+                    incident_type = self.incident_repo.get_incident_type_by_id(id=value)
+                    if not incident_type:
+                        raise ValueError("Could not find incident type")
+                case FieldKind.INCIDENT_SUMMARY:
+                    summary = value
 
         return self.create_incident(
-            name=create_in.incident_name,
-            summary=create_in.summary or "",
+            name=name,
+            summary=summary or "",
             creator=user,
             incident_severity=incident_severity,
             incident_type=incident_type,

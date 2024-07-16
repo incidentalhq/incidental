@@ -75,8 +75,9 @@ const SettingsSidebar: React.FC<Props> = () => {
               </SubMenuTitle>
               <SubItems>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_INDEX)}>Overview</Item>
-                <Item to={generateSettingsPath(RoutePaths.SETTINGS_SEVERITY)}>Severities</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_FIELDS)}>Custom fields</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_ROLES)}>Roles</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_SEVERITY)}>Severities</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_TIMESTAMPS)}>Timestamps</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_SLACK)}>Slack</Item>
               </SubItems>

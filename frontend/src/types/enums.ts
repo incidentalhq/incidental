@@ -10,17 +10,6 @@ export enum IncidentStatusCategory {
   CLOSED = 'CLOSED'
 }
 
-export enum FormFieldKind {
-  SINGLE_SELECT = 'SINGLE_SELECT',
-  MULTI_SELECT = 'MULTI_SELECT',
-  TEXT = 'TEXT',
-  TEXTAREA = 'TEXTAREA',
-
-  INCIDENT_TYPE = 'INCIDENT_TYPE',
-  SEVERITY_TYPE = 'SEVERITY_TYPE',
-  INCIDENT_STATUS = 'INCIDENT_STATUS'
-}
-
 export enum FormType {
   CREATE_INCIDENT = 'CREATE_INCIDENT',
   UPDATE_INCIDENT = 'UPDATE_INCIDENT'
@@ -29,4 +18,18 @@ export enum FormType {
 export enum OrganisationKind {
   DEFAULT = 'default',
   SLACK = 'slack'
+}
+
+export enum FieldKind {
+  INCIDENT_TYPE = 'INCIDENT_TYPE',
+  INCIDENT_SEVERITY = 'INCIDENT_SEVERITY',
+  INCIDENT_STATUS = 'INCIDENT_STATUS',
+  INCIDENT_NAME = 'INCIDENT_NAME'
+}
+
+export enum FieldInterfaceKind {
+  SINGLE_SELECT = 'SINGLE_SELECT',
+  MULTI_SELECT = 'MULTI_SELECT',
+  TEXT = 'TEXT',
+  TEXTAREA = 'TEXTAREA'
 }

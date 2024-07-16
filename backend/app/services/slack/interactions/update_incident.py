@@ -1,6 +1,6 @@
 import structlog
 
-from app.models import Form, Incident, User
+from app.models import FieldKind, Form, Incident, User
 from app.repos import IncidentRepo
 from app.schemas.slack import SlackInteractionSchema
 from app.services.incident import IncidentService
@@ -24,9 +24,9 @@ class UpdateIncidentInteraction(BaseForm):
         self.incident_service = incident_service
 
     def handle_submit(self, interaction: SlackInteractionSchema, user: User):
-        incident_severity = self.get_field_value(self.form, interaction, field_name="incident_severity")
-        incident_status = self.get_field_value(self.form, interaction, field_name="incident_status")
-        summary = self.get_field_value(self.form, interaction, field_name="summary")
+        incident_severity = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_SEVERITY)
+        incident_status = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_STATUS)
+        summary = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_SUMMARY)
 
         severity = self.incident_repo.get_incident_severity_by_id_or_throw(incident_severity)
         if not severity:

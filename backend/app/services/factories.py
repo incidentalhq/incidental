@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models import Organisation
-from app.repos import AnnouncementRepo, IncidentRepo, OrganisationRepo, UserRepo
+from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, UserRepo
 from app.services.events import Events
 from app.services.incident import IncidentService
 from app.services.slack.user import SlackUserService
@@ -12,6 +12,7 @@ def create_incident_service(
 ) -> IncidentService:
     """Create a new incident service"""
     incident_repo = IncidentRepo(session=session)
+    form_repo = FormRepo(session=session)
 
     if not events:
         events = Events()
@@ -22,6 +23,7 @@ def create_incident_service(
         incident_repo=incident_repo,
         announcement_repo=announcement_repo,
         events=events,
+        form_repo=form_repo,
     )
 
     return incident_service

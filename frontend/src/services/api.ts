@@ -1,6 +1,7 @@
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
+  IField,
   IIncident,
   IIncidentRole,
   IIncidentSeverity,
@@ -261,6 +262,44 @@ export class ApiService {
   deleteRole = (role: IIncidentRole) => {
     return callApi('DELETE', `/roles/${role.id}`, {
       user: this.user
+    })
+  }
+
+  getFields = () => {
+    return callApi<PaginatedResults<IField>>('GET', `/fields/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  createField = (values: unknown) => {
+    return callApi<IField>('POST', `/fields`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  patchField = (field: IField, values: unknown) => {
+    return callApi<IField>('PATCH', `/fields/${field.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  deleteField = (field: IField) => {
+    return callApi('DELETE', `/fields/${field.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
     })
   }
 }

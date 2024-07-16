@@ -7,7 +7,19 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import NoResultFound
 
 from app.exceptions import ApplicationException, ErrorCodes, FormFieldValidationError
-from app.routes import forms, health, incidents, organisations, roles, severities, slack, timestamps, users, world
+from app.routes import (
+    fields,
+    forms,
+    health,
+    incidents,
+    organisations,
+    roles,
+    severities,
+    slack,
+    timestamps,
+    users,
+    world,
+)
 from app.utils import setup_logger
 
 from .env import settings
@@ -37,6 +49,7 @@ def create_app() -> FastAPI:
     app.include_router(timestamps.router, prefix="/timestamps")
     app.include_router(organisations.router, prefix="/organisations")
     app.include_router(roles.router, prefix="/roles")
+    app.include_router(fields.router, prefix="/fields")
 
     # exception handler for form field validation errors
     @app.exception_handler(FormFieldValidationError)
@@ -75,7 +88,7 @@ def create_app() -> FastAPI:
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(
                 {
-                    "detail": "Could not find resource",
+                    "detail": "Could not find resource, please check the ID of any resource in this request.",
                     "code": ErrorCodes.MODEL_NOT_FOUND,
                 }
             ),

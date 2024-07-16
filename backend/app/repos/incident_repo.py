@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from app.exceptions import ValidationError
 from app.models import (
     Incident,
+    IncidentFieldValue,
     IncidentRole,
     IncidentRoleAssignment,
     IncidentRoleKind,
@@ -384,3 +385,11 @@ class IncidentRepo(BaseRepo):
         """Delete role"""
         role.deleted_at = datetime.now(tz=timezone.utc)
         self.session.flush()
+
+    def get_incident_field_values(self, incident: Incident) -> Sequence[IncidentFieldValue]:
+        """Get all field values for an incident"""
+        stmt = select(IncidentFieldValue).where(
+            IncidentFieldValue.incident_id == incident.id, IncidentFieldValue.deleted_at.is_(None)
+        )
+
+        return self.session.scalars(stmt).all()

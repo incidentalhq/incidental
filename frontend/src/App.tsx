@@ -25,6 +25,7 @@ import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
 import ShowIncident from '@/pages/Incidents/Show'
 import OAuthComplete from '@/pages/OAuth/Complete'
+import SettingsFields from '@/pages/Settings/Fields'
 import SettingsIndex from '@/pages/Settings/Index'
 import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
@@ -82,6 +83,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_TIMESTAMPS} element={<SettingsTimestamps />} />
                       <Route path={RoutePaths.SETTINGS_SLACK} element={<SettingsSlack />} />
                       <Route path={RoutePaths.SETTINGS_ROLES} element={<SettingsRoles />} />
+                      <Route path={RoutePaths.SETTINGS_FIELDS} element={<SettingsFields />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />

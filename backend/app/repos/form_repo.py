@@ -1,10 +1,16 @@
-from typing import Sequence
+from typing import Any, Sequence
 
 from sqlalchemy import select
 
-from app.models import Form, FormField, Organisation
-from app.models.form import FormKind
-from app.models.form_field import FormFieldKind
+from app.models import (
+    Field,
+    FieldKind,
+    Form,
+    FormField,
+    FormKind,
+    InterfaceKind,
+    Organisation,
+)
 
 from .base_repo import BaseRepo
 
@@ -30,8 +36,7 @@ class FormRepo(BaseRepo):
     def create_form_field(
         self,
         form: Form,
-        name: str,
-        kind: FormFieldKind,
+        field: Field,
         label: str,
         is_required: bool,
         position: int = 0,
@@ -40,9 +45,8 @@ class FormRepo(BaseRepo):
     ) -> FormField:
         model = FormField()
         model.form_id = form.id
+        model.field_id = field.id
         model.label = label
-        model.name = name
-        model.kind = kind
         model.position = position
         model.description = description
         model.is_required = is_required
@@ -63,12 +67,48 @@ class FormRepo(BaseRepo):
 
         return self.session.scalars(stmt).first()
 
-    def get_form_field_by_name(self, form: Form, name: str) -> FormField | None:
+    def get_form_field_by_label(self, form: Form, label: str) -> FormField | None:
         stmt = (
             select(FormField)
             .join(Form)
-            .where(FormField.form_id == form.id, Form.deleted_at.is_(None), FormField.name == name)
+            .where(FormField.form_id == form.id, Form.deleted_at.is_(None), FormField.label == label)
             .limit(1)
         )
+
+        return self.session.scalar(stmt)
+
+    def get_form_field_by_id(self, id: str) -> FormField | None:
+        stmt = select(FormField).where(FormField.id == id, Form.deleted_at.is_(None)).limit(1)
+
+        return self.session.scalar(stmt)
+
+    def create_field(
+        self,
+        organisation: Organisation,
+        label: str,
+        interface_kind: InterfaceKind,
+        kind: FieldKind,
+        description: str | None = None,
+        available_options: list[dict[str, Any]] | None = None,
+    ) -> Field:
+        """Create new field"""
+        field = Field()
+        field.organisation = organisation
+        field.label = label
+        field.kind = kind
+        field.interface_kind = interface_kind
+        field.available_options = available_options
+        field.description = description
+        field.is_editable = False
+        field.is_deletable = False
+
+        self.session.add(field)
+        self.session.flush()
+
+        return field
+
+    def get_field_by_kind(self, organisation: Organisation, kind: FieldKind) -> Field | None:
+        """Get a field by kind"""
+        stmt = select(Field).where(Field.organisation_id == organisation.id, Field.kind == kind).limit(1)
 
         return self.session.scalar(stmt)

@@ -6,7 +6,7 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum
+from app.models import IncidentStatusCategoryEnum, InterfaceKind
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -80,11 +80,6 @@ class AllowAllSchema(BaseSchema):
 
 
 class CreateIncidentSchema(BaseSchema):
-    incident_name: str
-    incident_type: str
-    incident_severity: str
-    summary: str | None = None
-
     model_config = ConfigDict(extra="allow")
 
 
@@ -175,3 +170,17 @@ class UpdateIncidentRoleSchema(BaseSchema):
 
 class CreateIncidentRoleSchema(UpdateIncidentRoleSchema):
     pass
+
+
+class CreateFieldSchema(BaseSchema):
+    label: str
+    description: str
+    interface_kind: InterfaceKind
+    available_options: list[str] = []
+
+
+class PatchFieldSchema(BaseSchema):
+    label: str | None = None
+    description: str | None = None
+    interface_kind: InterfaceKind | None = None
+    available_options: list[str] | None = None
