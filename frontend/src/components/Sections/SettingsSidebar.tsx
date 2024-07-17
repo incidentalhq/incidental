@@ -3,6 +3,7 @@ import { generatePath, Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import home from '@/assets/icons/home.svg'
+import puzzle from '@/assets/icons/puzzle.svg'
 import Icon from '@/components/Icon/Icon'
 import useGlobal from '@/hooks/useGlobal'
 import { RoutePaths } from '@/routes'
@@ -79,6 +80,15 @@ const SettingsSidebar: React.FC<Props> = () => {
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_ROLES)}>Roles</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_SEVERITY)}>Severities</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_TIMESTAMPS)}>Timestamps</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_TYPES)}>Types</Item>
+              </SubItems>
+            </SubMenu>
+
+            <SubMenu>
+              <SubMenuTitle>
+                <Icon icon={puzzle} fixedWidth={true} /> Integrations
+              </SubMenuTitle>
+              <SubItems>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_SLACK)}>Slack</Item>
               </SubItems>
             </SubMenu>

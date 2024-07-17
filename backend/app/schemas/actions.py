@@ -73,12 +73,6 @@ class ExtendedPatchIncidentSchema(PatchIncidentSchema):
     slack_channel_id: str | None = None
 
 
-class AllowAllSchema(BaseSchema):
-    """Allows any/all values"""
-
-    model_config = ConfigDict(extra="allow")
-
-
 class CreateIncidentSchema(BaseSchema):
     model_config = ConfigDict(extra="allow")
 
@@ -184,3 +178,15 @@ class PatchFieldSchema(BaseSchema):
     description: str | None = None
     interface_kind: InterfaceKind | None = None
     available_options: list[str] | None = None
+
+
+class CreateIncidentTypeSchema(BaseSchema):
+    name: str
+    description: str
+    fields: list[ModelIdSchema]
+
+
+class PatchIncidentTypeSchema(BaseSchema):
+    name: str | None = None
+    description: str | None = None
+    fields: list[ModelIdSchema] | None = None

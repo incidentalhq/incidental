@@ -80,7 +80,7 @@ class IncidentService:
             if not form_field:
                 raise ValidationError("Could not find form field")
 
-            match form_field.fields.kind:
+            match form_field.field.kind:
                 case FieldKind.INCIDENT_NAME:
                     name = value
                 case FieldKind.INCIDENT_SEVERITY:

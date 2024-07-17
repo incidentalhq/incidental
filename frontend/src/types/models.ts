@@ -87,6 +87,9 @@ export interface ITimestampRule {
 export interface IIncidentType extends IModel {
   name: string
   description: string
+  isEditable: boolean
+  isDeletable: boolean
+  fields: Array<IField>
 }
 
 export interface IIncidentStatus extends IModel {
@@ -144,6 +147,7 @@ export interface IField extends IModel {
   availableOptions: Array<string> | null
   isEditable: boolean
   isDeletable: boolean
+  isSystem: boolean
 }
 
 export interface IForm extends IModel {

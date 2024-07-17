@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import CurrentUser, EventsService
 from app.env import settings
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, TimestampRepo, UserRepo
+from app.repos import FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, UserRepo
 from app.schemas.actions import OAuth2AuthorizationResultSchema
 from app.schemas.models import OrganisationSchema, UserSchema
 from app.schemas.slack import (
@@ -16,9 +16,8 @@ from app.schemas.slack import (
     SlackUrlVerificationHandshakeSchema,
 )
 from app.schemas.tasks import HandleSlashCommandTaskParameters
-from app.services.factories import create_incident_service
+from app.services.factories import create_incident_service, create_onboarding_service
 from app.services.oauth_connector import OAuthConnectorService
-from app.services.onboarding import OnboardingService
 from app.services.slack.events import SlackEventsService
 from app.services.slack.interaction import SlackInteractionService
 from app.services.slack.user import SlackUserService
@@ -95,24 +94,13 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
 
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
-    form_repo = FormRepo(session=session)
-    severity_repo = SeverityRepo(session=session)
-    incident_repo = IncidentRepo(session=session)
-    announcement_repo = AnnouncementRepo(session=session)
-    timestamp_repo = TimestampRepo(session=session)
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
     create_result = slack_user_service.get_or_create_user_from_slack_user_credentials_token(
         token=credentials.access_token
     )
 
-    onboarding_service = OnboardingService(
-        form_repo=form_repo,
-        severity_repo=severity_repo,
-        incident_repo=incident_repo,
-        announcement_repo=announcement_repo,
-        timestamp_repo=timestamp_repo,
-    )
+    onboarding_service = create_onboarding_service(session=session)
     if create_result.is_new_organisation:
         onboarding_service.setup_organisation(organisation=create_result.organisation)
 
@@ -131,19 +119,7 @@ async def slack_oauth_complete(
 
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
-    form_repo = FormRepo(session=session)
-    severity_repo = SeverityRepo(session=session)
-    incident_repo = IncidentRepo(session=session)
-    announcement_repo = AnnouncementRepo(session=session)
-    timestamp_repo = TimestampRepo(session=session)
-
-    onboarding_service = OnboardingService(
-        form_repo=form_repo,
-        severity_repo=severity_repo,
-        incident_repo=incident_repo,
-        announcement_repo=announcement_repo,
-        timestamp_repo=timestamp_repo,
-    )
+    onboarding_service = create_onboarding_service(session=session)
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
     creation_result = slack_user_service.update_slack_profile_from_app_install_credentials(user=user, credentials=token)

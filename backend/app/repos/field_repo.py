@@ -1,13 +1,11 @@
 from datetime import datetime, timezone
-from typing import Any, Sequence
+from typing import Sequence
 
 from sqlalchemy import select
 
 from app.models import (
     Field,
     FieldKind,
-    Form,
-    FormField,
     InterfaceKind,
     Organisation,
 )
@@ -17,21 +15,6 @@ from .base_repo import BaseRepo
 
 
 class FieldRepo(BaseRepo):
-    def get_form_field_by_label(self, form: Form, label: str) -> FormField | None:
-        stmt = (
-            select(FormField)
-            .join(Form)
-            .where(FormField.form_id == form.id, Form.deleted_at.is_(None), FormField.label == label)
-            .limit(1)
-        )
-
-        return self.session.scalar(stmt)
-
-    def get_form_field_by_id(self, id: str) -> FormField | None:
-        stmt = select(FormField).where(FormField.id == id, Form.deleted_at.is_(None)).limit(1)
-
-        return self.session.scalar(stmt)
-
     def create_field(
         self,
         organisation: Organisation,
@@ -53,9 +36,11 @@ class FieldRepo(BaseRepo):
         if kind == FieldKind.USER_DEFINED:
             field.is_deletable = True
             field.is_editable = True
+            field.is_system = False
         else:
             field.is_editable = False
             field.is_deletable = False
+            field.is_system = True
 
         self.session.add(field)
         self.session.flush()

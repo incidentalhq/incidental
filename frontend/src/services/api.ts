@@ -5,6 +5,7 @@ import {
   IIncident,
   IIncidentRole,
   IIncidentSeverity,
+  IIncidentType,
   IIncidentUpdate,
   ILoggedInUser,
   IOrganisation,
@@ -296,6 +297,44 @@ export class ApiService {
 
   deleteField = (field: IField) => {
     return callApi('DELETE', `/fields/${field.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentTypes = () => {
+    return callApi<PaginatedResults<IIncidentType>>('GET', '/incident-types/search', {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchIncidentType = (type: IIncidentType, values: unknown) => {
+    return callApi<IIncidentType>('PATCH', `/incident-types/${type.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  createIncidentType = (values: unknown) => {
+    return callApi<IIncidentType>('POST', `/incident-types`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  deleteIncidentType = (type: IIncidentType) => {
+    return callApi<IIncidentType>('DELETE', `/incident-types/${type.id}`, {
       user: this.user,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation

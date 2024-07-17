@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
     from .incident import Incident
     from .incident_role import IncidentRole
     from .incident_severity import IncidentSeverity
+    from .incident_type import IncidentType
     from .settings import Settings
     from .slack_message import SlackMessage
     from .timestamp import Timestamp
@@ -49,6 +50,7 @@ class Organisation(Base, TimestampMixin):
     announcements: Mapped[list["Announcement"]] = relationship("Announcement", back_populates="organisation")
     incidents: Mapped[list["Incident"]] = relationship("Incident", back_populates="organisation")
     timestamps: Mapped[list["Timestamp"]] = relationship("Timestamp", back_populates="organisation")
+    incident_types: Mapped[list["IncidentType"]] = relationship("IncidentType", back_populates="organisation")
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"

@@ -36,6 +36,8 @@ import SlackInstall from '@/pages/Slack/Install'
 // route definitions
 import { RoutePaths } from '@/routes'
 
+import SettingsIncidentTypes from './pages/Settings/Types'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -84,6 +86,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_SLACK} element={<SettingsSlack />} />
                       <Route path={RoutePaths.SETTINGS_ROLES} element={<SettingsRoles />} />
                       <Route path={RoutePaths.SETTINGS_FIELDS} element={<SettingsFields />} />
+                      <Route path={RoutePaths.SETTINGS_TYPES} element={<SettingsIncidentTypes />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />

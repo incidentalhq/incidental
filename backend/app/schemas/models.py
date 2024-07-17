@@ -44,6 +44,9 @@ class PublicUserSchema(ModelSchema):
 class IncidentTypeSchema(ModelSchema):
     name: str
     description: str
+    is_editable: bool
+    is_deletable: bool
+    fields: list["FieldSchema"]
 
 
 class IncidentStatusSchema(ModelSchema):
@@ -124,6 +127,7 @@ class FieldSchema(ModelSchema):
     available_options: list[str] | None = None
     is_editable: bool
     is_deletable: bool
+    is_system: bool
 
 
 class FormFieldSchema(ModelSchema):
@@ -157,3 +161,6 @@ class IncidentFieldValueSchema(ModelSchema):
     value_textarea: str | None = None
     value_single_select: str | None = None
     value_multi_select: list[str] | None = None
+
+
+IncidentTypeSchema.model_rebuild()

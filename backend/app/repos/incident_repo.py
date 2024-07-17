@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Literal, Sequence
+from typing import Any, Literal, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from app.exceptions import ValidationError
 from app.models import (
+    Field,
     Incident,
     IncidentFieldValue,
     IncidentRole,
@@ -15,11 +16,13 @@ from app.models import (
     IncidentStatus,
     IncidentStatusCategoryEnum,
     IncidentType,
+    IncidentTypeField,
     IncidentUpdate,
     Organisation,
     User,
 )
-from app.schemas.actions import ExtendedPatchIncidentSchema, UpdateIncidentRoleSchema
+from app.schemas.actions import ExtendedPatchIncidentSchema, PatchIncidentTypeSchema, UpdateIncidentRoleSchema
+from app.schemas.models import ModelIdSchema
 from app.schemas.resources import PaginatedResults
 
 from .base_repo import BaseRepo
@@ -41,14 +44,34 @@ class IncidentRepo(BaseRepo):
         stmt = select(Incident).where(Incident.id == id).limit(1)
         return self.session.scalars(stmt).one()
 
-    def create_incident_type(self, organisation: Organisation, name: str, description: str) -> IncidentType:
+    def create_incident_type(
+        self,
+        organisation: Organisation,
+        name: str,
+        description: str,
+        is_editable: bool = True,
+        is_deletable: bool = True,
+        fields: list[ModelIdSchema] | None = None,
+    ) -> IncidentType:
         model = IncidentType()
         model.organisation_id = organisation.id
         model.name = name
         model.description = description
-
+        model.is_deletable = is_deletable
+        model.is_editable = is_editable
         self.session.add(model)
         self.session.flush()
+
+        if fields:
+            for field_item in fields:
+                field = self.session.query(Field).get(field_item.id)
+                if field:
+                    rel = IncidentTypeField()
+                    rel.incident_type_id = model.id
+                    rel.field_id = field.id
+                    self.session.add(rel)
+                    self.session.flush()
+
         return model
 
     def search_incidents(
@@ -105,6 +128,10 @@ class IncidentRepo(BaseRepo):
     def get_incident_type_by_id(self, id: str) -> IncidentType | None:
         stmt = select(IncidentType).where(IncidentType.id == id, IncidentType.deleted_at.is_(None)).limit(1)
         return self.session.scalar(stmt)
+
+    def get_incident_type_by_id_or_throw(self, id: str) -> IncidentType:
+        stmt = select(IncidentType).where(IncidentType.id == id, IncidentType.deleted_at.is_(None)).limit(1)
+        return self.session.scalars(stmt).one()
 
     def get_incident_type_by_name(self, organisation: Organisation, name: str) -> IncidentType | None:
         stmt = (
@@ -393,3 +420,27 @@ class IncidentRepo(BaseRepo):
         )
 
         return self.session.scalars(stmt).all()
+
+    def patch_incident_type(self, incident_type: IncidentType, patch_in: PatchIncidentTypeSchema):
+        for key, value in patch_in.model_dump(exclude_unset=True).items():
+            if key == "fields":
+                self._update_incident_type_fields(incident_type=incident_type, fields=value)
+            else:
+                setattr(incident_type, key, value)
+
+        self.session.flush()
+
+    def _update_incident_type_fields(self, incident_type: IncidentType, fields: list[dict[str, str]]) -> None:
+        # remove existing associations
+        stmt = delete(IncidentTypeField).where(IncidentTypeField.incident_type_id == incident_type.id)
+        self.session.execute(stmt)
+
+        # add new fields
+        for field_item in fields:
+            field = self.session.query(Field).get(field_item["id"])
+            if field:
+                model = IncidentTypeField()
+                model.incident_type_id = incident_type.id
+                model.field_id = field.id
+                self.session.add(model)
+                self.session.flush()

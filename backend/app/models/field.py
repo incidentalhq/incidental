@@ -51,6 +51,7 @@ class Field(Base, TimestampMixin, SoftDeleteMixin):
 
     is_deletable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_editable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    is_system: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     # relationships
     organisation: Mapped["Organisation"] = relationship("Organisation", back_populates="fields")
