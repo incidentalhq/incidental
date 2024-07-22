@@ -16,7 +16,7 @@ import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
 import { IncidentRoleKind } from '@/types/enums'
-import { IIncidentRole } from '@/types/models'
+import { IField, IIncidentFieldValue, IIncidentRole } from '@/types/models'
 import { rankSorter } from '@/utils/sort'
 import { getLocalTimeZone } from '@/utils/time'
 
@@ -26,6 +26,8 @@ import ChangeSeverityForm, {
 import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './components/ChangeStatusForm/ChangeStatusForm'
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
+import DisplayFieldValue from './components/Field/DisplayFieldValue'
+import FieldForm, { FormValues as FieldFormValues } from './components/Field/FieldForm'
 import Timeline from './components/IncidentUpdate/Timeline'
 import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
 import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
@@ -36,7 +38,7 @@ const Description = styled.div`
 
 const Field = styled.div`
   display: flex;
-  padding: 1rem 0 0.5rem 1rem;
+  padding: 0 0 0.5rem 1rem;
   align-items: center;
 `
 const FieldName = styled.div`
@@ -63,10 +65,10 @@ const FlatButton = styled.button`
     background-color: var(--color-gray-200);
   }
 `
-const SidebarHeader = styled.div`
-  padding: 2rem 0 0 1rem;
+const FieldsHeader = styled.div`
+  padding: 2rem 0 0.5rem 1rem;
   font-weight: 600;
-  color: var(--color-gray-600);
+  font-size: 0.9rem;
 
   display: flex;
 
@@ -75,11 +77,7 @@ const SidebarHeader = styled.div`
     margin-right: 1rem;
   }
 `
-const RelatedFields = styled.div`
-  ${Field} {
-    padding-bottom: 0;
-  }
-`
+const RelatedFields = styled.div``
 
 const InnerButtonContent = styled.div`
   display: flex;
@@ -131,6 +129,13 @@ const ShowIncident = () => {
   const usersQuery = useQuery({
     queryKey: ['users', organisation!.id],
     queryFn: () => apiService.getUsers()
+  })
+
+  // Fetch incident field values
+  const fieldValuesQuery = useQuery({
+    queryKey: ['incident-fieldvalues', id],
+    queryFn: () => apiService.getIncidentFieldValues(incidentQuery.data!),
+    enabled: () => incidentQuery.isSuccess
   })
 
   // Change description of this incident
@@ -289,6 +294,63 @@ const ShowIncident = () => {
     }
   }
 
+  const handleSetFieldValue = useCallback(
+    async (field: IField, values: FieldFormValues) => {
+      if (!incidentQuery.data) {
+        console.error('Incident has not been fetched yet')
+        return
+      }
+      console.log(values)
+      try {
+        const normalized = [
+          {
+            field: {
+              id: field.id
+            },
+            value: {
+              ...values[field.id],
+              valueMultiSelect: values[field.id].valueMultiSelect
+                ? values[field.id].valueMultiSelect?.map((it) => it.value)
+                : undefined
+            }
+          }
+        ]
+        await apiService.patchIncidentFieldValues(incidentQuery.data, normalized)
+        fieldValuesQuery.refetch()
+        closeModal()
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.message, { type: 'error' })
+        }
+        console.error(e)
+      }
+    },
+    [incidentQuery, apiService, closeModal, fieldValuesQuery]
+  )
+
+  const createShowEditCustomFieldHandler = useCallback(
+    (field: IField, value: IIncidentFieldValue | null) => {
+      return (evt?: MouseEvent<HTMLButtonElement>) => {
+        evt?.preventDefault()
+        if (!incidentQuery.data) {
+          return
+        }
+        setModal(
+          <ModalContainer>
+            <h2>{field.label}</h2>
+            <FieldForm
+              onSubmit={(values) => handleSetFieldValue(field, values)}
+              incident={incidentQuery.data}
+              field={field}
+              value={value}
+            />
+          </ModalContainer>
+        )
+      }
+    },
+    [setModal, incidentQuery.data, handleSetFieldValue]
+  )
+
   const slackUrl = useMemo(
     () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
     [organisation, incidentQuery.data?.slackChannelId]
@@ -320,6 +382,7 @@ const ShowIncident = () => {
                 )}
               </ContentMain>
               <ContentSidebar>
+                <FieldsHeader>Properties</FieldsHeader>
                 <RelatedFields>
                   <Field>
                     <FieldName>Slack</FieldName>
@@ -353,7 +416,7 @@ const ShowIncident = () => {
                   </Field>
                 </RelatedFields>
 
-                <SidebarHeader>Roles</SidebarHeader>
+                <FieldsHeader>Roles</FieldsHeader>
                 <RelatedFields>
                   {rolesQuery.data?.items.map((role) => {
                     const assignment = incidentQuery.data.incidentRoleAssignments.find(
@@ -388,14 +451,14 @@ const ShowIncident = () => {
                   })}
                 </RelatedFields>
 
-                <SidebarHeader>
+                <FieldsHeader>
                   <div>Timestamps</div>
                   <div>
                     <FlatButton type="button" onClick={handleShowEditTimestampsModal}>
                       <Icon icon={wrench} />
                     </FlatButton>
                   </div>
-                </SidebarHeader>
+                </FieldsHeader>
                 <RelatedFields>
                   {incidentQuery.data.timestampValues
                     .sort((a, b) => rankSorter(a.timestamp, b.timestamp))
@@ -406,6 +469,43 @@ const ShowIncident = () => {
                       </Field>
                     ))}
                 </RelatedFields>
+
+                {fieldValuesQuery.isSuccess && fieldValuesQuery.data.total > 0 ? (
+                  <>
+                    <FieldsHeader>
+                      <div>Custom fields</div>
+                    </FieldsHeader>
+                    <RelatedFields>
+                      {fieldValuesQuery.data.items.map((row) => (
+                        <Field key={row.field.id}>
+                          <FieldName>{row.field.label}</FieldName>
+                          <FieldValue>
+                            {row.value ? (
+                              <InnerButtonContent>
+                                {row.value ? (
+                                  <DisplayFieldValue
+                                    field={row.field}
+                                    incidentFieldValue={row.value}
+                                    onClick={() => createShowEditCustomFieldHandler(row.field, row.value)()}
+                                  />
+                                ) : (
+                                  'Not set'
+                                )}
+                              </InnerButtonContent>
+                            ) : (
+                              <FlatButton
+                                type="button"
+                                onClick={createShowEditCustomFieldHandler(row.field, row.value)}
+                              >
+                                <InnerButtonContent>Not set</InnerButtonContent>
+                              </FlatButton>
+                            )}
+                          </FieldValue>
+                        </Field>
+                      ))}
+                    </RelatedFields>
+                  </>
+                ) : null}
               </ContentSidebar>
             </Content>
           </>

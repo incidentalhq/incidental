@@ -10,10 +10,11 @@ from .mixins import TimestampMixin
 
 if typing.TYPE_CHECKING:
     from .announcement import Announcement
-    from .custom_field import CustomField
+    from .field import Field
     from .incident import Incident
     from .incident_role import IncidentRole
     from .incident_severity import IncidentSeverity
+    from .incident_type import IncidentType
     from .settings import Settings
     from .slack_message import SlackMessage
     from .timestamp import Timestamp
@@ -38,7 +39,7 @@ class Organisation(Base, TimestampMixin):
     slack_bot_token = mapped_column(UnicodeText, nullable=True)
 
     # relationships
-    custom_fields: Mapped[list["CustomField"]] = relationship("CustomField", back_populates="organisation")
+    fields: Mapped[list["Field"]] = relationship("Field", back_populates="organisation")
     incident_severities: Mapped[list["IncidentSeverity"]] = relationship(
         "IncidentSeverity", back_populates="organisation"
     )
@@ -49,6 +50,7 @@ class Organisation(Base, TimestampMixin):
     announcements: Mapped[list["Announcement"]] = relationship("Announcement", back_populates="organisation")
     incidents: Mapped[list["Incident"]] = relationship("Incident", back_populates="organisation")
     timestamps: Mapped[list["Timestamp"]] = relationship("Timestamp", back_populates="organisation")
+    incident_types: Mapped[list["IncidentType"]] = relationship("IncidentType", back_populates="organisation")
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"

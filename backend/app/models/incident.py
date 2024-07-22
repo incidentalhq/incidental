@@ -9,6 +9,7 @@ from app.db import Base
 from .mixins import SoftDeleteMixin, TimestampMixin
 
 if typing.TYPE_CHECKING:
+    from .incident_field_value import IncidentFieldValue
     from .incident_role import IncidentRoleKind
     from .incident_role_assignment import IncidentRoleAssignment
     from .incident_severity import IncidentSeverity
@@ -59,6 +60,9 @@ class Incident(Base, TimestampMixin, SoftDeleteMixin):
     )
     organisation: Mapped["Organisation"] = relationship("Organisation", back_populates="incidents")
     timestamp_values: Mapped[list["TimestampValue"]] = relationship("TimestampValue", back_populates="incident")
+    incident_field_values: Mapped[list["IncidentFieldValue"]] = relationship(
+        "IncidentFieldValue", back_populates="incident"
+    )
 
     __table_args__ = (
         UniqueConstraint("reference_id", "organisation_id", name="ux_incident_reference_id_organisation_id"),

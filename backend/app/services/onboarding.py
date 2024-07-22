@@ -5,16 +5,17 @@ import yaml
 from app.models import (
     AnnouncementActions,
     AnnouncementFields,
+    FieldKind,
     Form,
-    FormFieldKind,
     FormKind,
+    InterfaceKind,
     Organisation,
     Settings,
     TimestampKind,
 )
 from app.models.incident_role import IncidentRoleKind
 from app.models.incident_status import IncidentStatusCategoryEnum
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, SeverityRepo, TimestampRepo
+from app.repos import AnnouncementRepo, FieldRepo, FormRepo, IncidentRepo, SeverityRepo, TimestampRepo
 
 
 class CategoryItemType(TypedDict):
@@ -43,14 +44,17 @@ class OnboardingService:
         incident_repo: IncidentRepo,
         announcement_repo: AnnouncementRepo,
         timestamp_repo: TimestampRepo,
+        field_repo: FieldRepo,
     ):
         self.form_repo = form_repo
         self.severity_repo = severity_repo
         self.incident_repo = incident_repo
         self.announcement_repo = announcement_repo
         self.timestamp_repo = timestamp_repo
+        self.field_repo = field_repo
 
     def setup_organisation(self, organisation: Organisation) -> None:
+        self._setup_fields(organisation=organisation)
         self._setup_forms(organisation)
         self._setup_severities(organisation)
         self._setup_incident_types(organisation)
@@ -67,32 +71,28 @@ class OnboardingService:
         )
         create_form_fields_descriptor: list[dict[str, Any]] = [
             {
-                "name": "incident_name",
                 "label": "Name",
+                "field_kind": FieldKind.INCIDENT_NAME,
                 "is_required": True,
-                "kind": FormFieldKind.TEXT,
                 "description": "A descriptive name for the incident",
                 "is_deletable": False,
             },
             {
-                "name": "incident_type",
                 "label": "Incident type",
+                "field_kind": FieldKind.INCIDENT_TYPE,
                 "is_required": True,
-                "kind": FormFieldKind.INCIDENT_TYPE,
                 "is_deletable": False,
             },
             {
-                "name": "incident_severity",
                 "label": "Severity",
+                "field_kind": FieldKind.INCIDENT_SEVERITY,
                 "is_required": True,
-                "kind": FormFieldKind.SEVERITY_TYPE,
                 "is_deletable": False,
             },
             {
-                "name": "summary",
                 "label": "Summary",
+                "field_kind": FieldKind.INCIDENT_SUMMARY,
                 "is_required": False,
-                "kind": FormFieldKind.TEXTAREA,
                 "description": "Give a summary of the current state of the incident.",
                 "is_deletable": False,
             },
@@ -108,24 +108,21 @@ class OnboardingService:
 
         update_status_form_fields = [
             {
-                "name": "incident_status",
                 "label": "Status",
+                "field_kind": FieldKind.INCIDENT_STATUS,
                 "is_required": True,
-                "kind": FormFieldKind.INCIDENT_STATUS,
                 "is_deletable": False,
             },
             {
-                "name": "incident_severity",
                 "label": "Severity",
+                "field_kind": FieldKind.INCIDENT_SEVERITY,
                 "is_required": True,
-                "kind": FormFieldKind.SEVERITY_TYPE,
                 "is_deletable": False,
             },
             {
-                "name": "summary",
                 "label": "Summary",
+                "field_kind": FieldKind.INCIDENT_SUMMARY,
                 "is_required": False,
-                "kind": FormFieldKind.TEXTAREA,
                 "description": "Give a summary of the current state of the incident.",
                 "is_deletable": False,
             },
@@ -135,13 +132,17 @@ class OnboardingService:
         return [create_form, update_status_form]
 
     def _create_form_fields(self, form: Form, field_descriptions: list[dict[str, Any]]):
+        """Setup the form fields for a form"""
+
         for idx, item in enumerate(field_descriptions):
-            form_field = self.form_repo.get_form_field_by_name(form=form, name=item["name"])
+            form_field = self.form_repo.get_form_field_by_label(form=form, label=item["label"])
+            field = self.field_repo.get_field_by_kind(organisation=form.organisation, kind=item["field_kind"])
             if not form_field:
+                if not field:
+                    raise RuntimeError(f"Could not find custom field: {item['field_kind']}")
                 form_field = self.form_repo.create_form_field(
                     form=form,
-                    name=item["name"],
-                    kind=item["kind"],
+                    field=field,
                     label=item["label"],
                     is_required=item["is_required"],
                     position=idx,
@@ -167,10 +168,12 @@ class OnboardingService:
                 )
 
     def _setup_incident_types(self, organisation: Organisation):
-        descriptors = [
+        descriptors: list[dict[str, Any]] = [
             {
                 "name": "Default",
                 "description": "Default incident type",
+                "is_deletable": False,
+                "is_editable": True,
             },
         ]
 
@@ -178,7 +181,11 @@ class OnboardingService:
             incident_type = self.incident_repo.get_incident_type_by_name(organisation=organisation, name=item["name"])
             if not incident_type:
                 self.incident_repo.create_incident_type(
-                    organisation=organisation, name=item["name"], description=item["description"]
+                    organisation=organisation,
+                    name=item["name"],
+                    description=item["description"],
+                    is_editable=item["is_editable"],
+                    is_deletable=item["is_deletable"],
                 )
 
     def _setup_incident_statuses(self, organisation: Organisation):
@@ -274,3 +281,44 @@ class OnboardingService:
                         rules=[item["rule"]],
                         can_delete=False,
                     )
+
+    def _setup_fields(self, organisation: Organisation):
+        # create core custom fields
+        field_descriptors: list[dict[str, Any]] = [
+            {
+                "label": "Incident name",
+                "interface_kind": InterfaceKind.TEXT,
+                "kind": FieldKind.INCIDENT_NAME,
+            },
+            {
+                "label": "Incident type",
+                "interface_kind": InterfaceKind.SINGLE_SELECT,
+                "kind": FieldKind.INCIDENT_TYPE,
+            },
+            {
+                "label": "Incident severity",
+                "interface_kind": InterfaceKind.SINGLE_SELECT,
+                "kind": FieldKind.INCIDENT_SEVERITY,
+            },
+            {
+                "label": "Incident summary",
+                "interface_kind": InterfaceKind.TEXTAREA,
+                "kind": FieldKind.INCIDENT_SUMMARY,
+            },
+            {
+                "label": "Incident status",
+                "interface_kind": InterfaceKind.SINGLE_SELECT,
+                "kind": FieldKind.INCIDENT_STATUS,
+            },
+        ]
+        for field_descriptor in field_descriptors:
+            custom_form_field = self.field_repo.get_field_by_kind(
+                organisation=organisation, kind=field_descriptor["kind"]
+            )
+            if not custom_form_field:
+                self.field_repo.create_field(
+                    organisation=organisation,
+                    label=field_descriptor["label"],
+                    interface_kind=field_descriptor["interface_kind"],
+                    kind=field_descriptor["kind"],
+                )

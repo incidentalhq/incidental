@@ -12,6 +12,8 @@ export enum RoutePaths {
   SETTINGS_TIMESTAMPS = '/:organisation/settings/timestamps',
   SETTINGS_SLACK = '/:organisation/settings/slack',
   SETTINGS_ROLES = '/:organisation/settings/roles',
+  SETTINGS_FIELDS = '/:organisation/settings/fields',
+  SETTINGS_TYPES = '/:organisation/settings/types',
 
   INCIDENTS = '/incidents',
   SHOW_INCIDENT = '/incidents/:id',

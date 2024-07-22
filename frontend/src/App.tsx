@@ -25,6 +25,7 @@ import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
 import ShowIncident from '@/pages/Incidents/Show'
 import OAuthComplete from '@/pages/OAuth/Complete'
+import SettingsFields from '@/pages/Settings/Fields'
 import SettingsIndex from '@/pages/Settings/Index'
 import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
@@ -34,6 +35,8 @@ import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
 // route definitions
 import { RoutePaths } from '@/routes'
+
+import SettingsIncidentTypes from './pages/Settings/Types'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +85,8 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_TIMESTAMPS} element={<SettingsTimestamps />} />
                       <Route path={RoutePaths.SETTINGS_SLACK} element={<SettingsSlack />} />
                       <Route path={RoutePaths.SETTINGS_ROLES} element={<SettingsRoles />} />
+                      <Route path={RoutePaths.SETTINGS_FIELDS} element={<SettingsFields />} />
+                      <Route path={RoutePaths.SETTINGS_TYPES} element={<SettingsIncidentTypes />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />

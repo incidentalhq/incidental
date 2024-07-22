@@ -1,24 +1,25 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import NotPermittedError
 from app.models import FormKind
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, TimestampRepo, UserRepo
+from app.repos import FormRepo, IncidentRepo, TimestampRepo, UserRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
+    PatchIncidentFieldValuesSchema,
     PatchIncidentSchema,
     PatchIncidentTimestampsSchema,
     UpdateIncidentRoleAssignmentSchema,
 )
-from app.schemas.models import IncidentSchema, IncidentUpdateSchema
+from app.schemas.models import IncidentFieldValueSchema, IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
+from app.schemas.special import CombinedFieldAndValueSchema
 from app.services.factories import create_incident_service
-from app.services.incident import IncidentService
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -55,11 +56,7 @@ async def incident_create(
 ):
     """Create a new incident"""
     form_repo = FormRepo(session=db)
-    incident_repo = IncidentRepo(session=db)
-    announcement_repo = AnnouncementRepo(session=db)
-    incident_service = IncidentService(
-        organisation=organisation, incident_repo=incident_repo, announcement_repo=announcement_repo, events=events
-    )
+    incident_service = create_incident_service(session=db, organisation=organisation, events=events)
     form = form_repo.get_form(organisation=organisation, form_type=FormKind.CREATE_INCIDENT)
     if not form:
         raise ValueError("Could not find create incident form")
@@ -93,13 +90,7 @@ async def incident_patch(
     if not user.belongs_to(organisation=incident.organisation):
         raise NotPermittedError()
 
-    announcement_repo = AnnouncementRepo(session=db)
-    incident_service = IncidentService(
-        organisation=incident.organisation,
-        incident_repo=incident_repo,
-        announcement_repo=announcement_repo,
-        events=events,
-    )
+    incident_service = create_incident_service(session=db, organisation=incident.organisation, events=events)
     incident_service.patch_incident(user=user, incident=incident, patch_in=patch_in)
 
     db.commit()
@@ -149,7 +140,7 @@ async def incident_patch_timestamps(
     return None
 
 
-@router.put("/{id}/roles/")
+@router.put("/{id}/roles")
 async def incident_update_role(
     id: str, db: DatabaseSession, user: CurrentUser, put_in: UpdateIncidentRoleAssignmentSchema, events: EventsService
 ):
@@ -179,3 +170,43 @@ async def incident_update_role(
     db.commit()
 
     return None
+
+
+@router.get("/{id}/field-values", response_model=PaginatedResults[CombinedFieldAndValueSchema])
+async def incident_get_field_values(id: str, db: DatabaseSession, user: CurrentUser):
+    """Get field values"""
+    incident_repo = IncidentRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(incident.organisation):
+        raise NotPermittedError()
+
+    field_values = incident_repo.get_incident_fields_with_values(incident=incident)
+    normalized = [
+        {
+            "value": item[1],
+            "field": item[0],
+        }
+        for item in field_values
+    ]
+    results = PaginatedResults(total=len(field_values), page=1, size=len(field_values), items=normalized)
+
+    return results
+
+
+@router.patch("/{id}/field-values")
+async def incident_patch_field_values(
+    id: str, patch_in: PatchIncidentFieldValuesSchema, db: DatabaseSession, user: CurrentUser
+):
+    """Update incident field values"""
+    incident_repo = IncidentRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(incident.organisation):
+        raise NotPermittedError()
+
+    incident_repo.patch_incident_custom_fields(incident=incident, patch_in=patch_in)
+
+    db.commit()
+
+    return Response(None, status_code=status.HTTP_202_ACCEPTED)

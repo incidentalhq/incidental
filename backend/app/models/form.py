@@ -10,6 +10,7 @@ from .mixins import SoftDeleteMixin, TimestampMixin
 
 if typing.TYPE_CHECKING:
     from .form_field import FormField
+    from .organisation import Organisation
 
 
 class FormKind(enum.Enum):
@@ -38,3 +39,4 @@ class Form(Base, TimestampMixin, SoftDeleteMixin):
         order_by="asc(FormField.position)",
         viewonly=True,
     )
+    organisation: Mapped["Organisation"] = relationship("Organisation", viewonly=True)

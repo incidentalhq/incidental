@@ -42,19 +42,19 @@ const RoleForm: React.FC<Props> = ({ onSubmit, role }) => {
           <GeneralError />
           <div>
             <label>Name</label>
-            <Field type="text" name="name" />
+            <Field type="text" name="name" help="The name of the role" />
           </div>
           <div>
             <label>Description</label>
-            <Field name="description" as={'textarea'} />
+            <Field name="description" as={'textarea'} help="Provide a better description for the role" />
           </div>
           <div>
             <label>Slack reference</label>
-            <Field name="slackReference" type="text" />
+            <Field name="slackReference" type="text" help="This will be used in Slack" />
           </div>
           <div>
             <label>Guide</label>
-            <Field name="guide" as={'textarea'} />
+            <Field name="guide" as={'textarea'} help="Provide some context to users who get assigned this role" />
           </div>
           <div>
             <StyledButton $primary={true} type="submit" disabled={isSubmitting}>

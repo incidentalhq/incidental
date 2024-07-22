@@ -38,15 +38,15 @@ const SeverityForm: React.FC<Props> = ({ onSubmit, severity }) => {
           <GeneralError />
           <div>
             <label>Name</label>
-            <Field type="text" name="name" />
+            <Field type="text" name="name" help="The name of the severity" />
           </div>
           <div>
             <label>Description</label>
-            <Field name="description" as={'textarea'} />
+            <Field name="description" as={'textarea'} help="Provide a more detailed explanation of the severity" />
           </div>
           <div>
-            <label>Rating</label>
-            <Field name="rating" type="number" />
+            <label>Rank</label>
+            <Field name="rating" type="number" help="The lower the rank, the higher the severity" />
           </div>
           <div>
             <StyledButton $primary={true} type="submit" disabled={isSubmitting}>

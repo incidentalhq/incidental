@@ -17,9 +17,11 @@ class AssignLeadCommand(SlackCommandHandlerBase):
     trigger_in_incident_channel = True
 
     def execute(self, command: SlackCommandDataSchema):
-        _, params = self.get_params(command=command)
+        params = self.get_params(command=command)
+        if not params:
+            return
 
-        if len(params) != 1:
+        if len(params.parameters) != 1:
             raise InvalidUsageError("This command expects the name of user, e.g /inc lead @TheUser", command)
 
         incident = self.incident_repo.get_incident_by_slack_channel_id(command.channel_id)
@@ -30,14 +32,14 @@ class AssignLeadCommand(SlackCommandHandlerBase):
         if not role:
             raise RuntimeError("Could not find lead role for organisation")
 
-        user_tag = params[0]  # formatted: <@U03E56CEXB2|username>
+        user_tag = params.parameters[0]  # formatted: <@U03E56CEXB2|username>
         slack_user_id = user_tag.split("|")[0].lstrip("<").replace("@", "")
 
         user = self.slack_user_service.get_or_create_user_from_slack_id(
             slack_id=slack_user_id, organisation=self.organisation
         )
         if not user:
-            raise InvalidUsageError(f"Could not find user {params[0]}", command)
+            raise InvalidUsageError(f"Could not find user {slack_user_id}", command)
 
         self.incident_service.assign_role(incident=incident, user=user, role=role)
 

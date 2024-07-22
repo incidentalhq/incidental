@@ -41,6 +41,7 @@
       "pydantic",
       "pyotp",
       "pytest",
+      "pytz",
       "sessionmaker",
       "shortuuid",
       "starlette",

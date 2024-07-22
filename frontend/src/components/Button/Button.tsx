@@ -11,15 +11,15 @@ export interface ButtonProps extends HTMLButtonProps, StyledButtonCustomProps {
   tooltip?: string // generic tooltip
 }
 
-const Button: React.FC<ButtonProps> = ({ children, ...props }) => {
+const Button: React.FC<ButtonProps> = ({ children, whyDisabledText, tooltip, ...props }) => {
   const id = useId()
   return (
     <>
       <StyledButton id={id} {...props} data-tooltip-id={id}>
         {children}
       </StyledButton>
-      {props.whyDisabledText && props.disabled && <Tooltip id={id} content={props.whyDisabledText} />}
-      {props.tooltip && !props.whyDisabledText && !props.disabled && <Tooltip id={id} content={props.tooltip} />}
+      {whyDisabledText && props.disabled && <Tooltip id={id} content={whyDisabledText} />}
+      {tooltip && !whyDisabledText && !props.disabled && <Tooltip id={id} content={tooltip} />}
     </>
   )
 }

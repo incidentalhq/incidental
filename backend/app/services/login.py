@@ -1,7 +1,7 @@
 import enum
 import typing
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 import structlog
 
@@ -54,12 +54,12 @@ class LoginService:
 
         # successful login
         if user.check_password(password):
-            user.last_login_at = datetime.now()
+            user.last_login_at = datetime.now(tz=timezone.utc)
             user.login_attempts = 0
             return LoginResult(True, user, None)
 
         # password incorrect
-        user.last_login_attempt_at = datetime.now()
+        user.last_login_attempt_at = datetime.now(tz=timezone.utc)
         user.login_attempts += 1
 
         logger.warning("Incorrect password", user_id=user.id, attempts=user.login_attempts)

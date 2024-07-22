@@ -1,4 +1,11 @@
-import { FormFieldKind, FormType, IncidentRoleKind, IncidentStatusCategory, OrganisationKind } from './enums'
+import {
+  FieldInterfaceKind,
+  FieldKind,
+  FormType,
+  IncidentRoleKind,
+  IncidentStatusCategory,
+  OrganisationKind
+} from './enums'
 
 export type ILoggedInUser = Required<IUser>
 
@@ -80,6 +87,9 @@ export interface ITimestampRule {
 export interface IIncidentType extends IModel {
   name: string
   description: string
+  isEditable: boolean
+  isDeletable: boolean
+  fields: Array<IField>
 }
 
 export interface IIncidentStatus extends IModel {
@@ -120,14 +130,24 @@ export interface IIncidentUpdate extends IModel {
 }
 
 export interface IFormField extends IModel {
-  kind: FormFieldKind
   label: string
-  name: string
   description: string | null
   position: number
   isRequired: boolean
   isDeletable: boolean
   defaultValue: string | null
+  field: IField
+}
+
+export interface IField extends IModel {
+  label: string
+  description: string | null
+  kind: FieldKind
+  interfaceKind: FieldInterfaceKind
+  availableOptions: Array<string> | null
+  isEditable: boolean
+  isDeletable: boolean
+  isSystem: boolean
 }
 
 export interface IForm extends IModel {
@@ -151,4 +171,10 @@ export interface ISettings extends IModel {
   slackChannelNameFormat: string
   incidentReferenceFormat: string
   slackAnnouncementChannelName: string
+}
+
+export interface IIncidentFieldValue extends IModel {
+  valueText: string
+  valueSingleSelect: string
+  valueMultiSelect: string[]
 }

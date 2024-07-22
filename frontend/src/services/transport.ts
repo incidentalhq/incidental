@@ -69,11 +69,13 @@ export const callApi = async <T>(method: Method = 'GET', url: string, config?: A
   fetchConfig.headers = headers
 
   let response: Response
-  let data: unknown
+  let data: unknown = null
 
   try {
     response = await fetch(`${getBaseUrl()}${url}${urlQs}`, fetchConfig)
-    data = await response.json()
+    if (response.headers.get('Content-type')) {
+      data = await response.json()
+    }
   } catch (error) {
     console.error(error)
     // Unknown

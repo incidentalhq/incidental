@@ -15,8 +15,11 @@ class AssignGenericRoleCommand(SlackCommandHandlerBase):
     trigger_in_incident_channel = True
 
     def execute(self, command: SlackCommandDataSchema):
-        _, params = self.get_params(command=command)
-        if len(params) != 2:
+        params = self.get_params(command=command)
+        if not params:
+            return
+
+        if len(params.parameters) != 2:
             raise InvalidUsageError("use /inc role role_name @user", command=command)
 
         # get incident
@@ -25,7 +28,7 @@ class AssignGenericRoleCommand(SlackCommandHandlerBase):
             raise RuntimeError("Could not find associated incident")
 
         # find and validate role name
-        role_name = params[0]
+        role_name = params.parameters[0]
         role = self.incident_repo.get_incident_role_by_slack_reference(
             organisation=self.organisation, slack_reference=role_name
         )
@@ -35,13 +38,13 @@ class AssignGenericRoleCommand(SlackCommandHandlerBase):
             raise InvalidUsageError(f"Could not find that role, valid roles are: {roles_str}", command=command)
 
         # find user, or create user
-        user_tag = params[1]  # formatted: <@U03E56CEXB2|username>
+        user_tag = params.parameters[1]  # formatted: <@U03E56CEXB2|username>
         slack_user_id = user_tag.split("|")[0].lstrip("<").replace("@", "")
 
         user = self.slack_user_service.get_or_create_user_from_slack_id(
             slack_id=slack_user_id, organisation=self.organisation
         )
         if not user:
-            raise InvalidUsageError(f"Could not find user {params[1]}", command)
+            raise InvalidUsageError(f"Could not find user {user_tag}", command)
 
         self.incident_service.assign_role(incident=incident, user=user, role=role)

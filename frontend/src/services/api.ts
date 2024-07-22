@@ -1,9 +1,11 @@
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
+  IField,
   IIncident,
   IIncidentRole,
   IIncidentSeverity,
+  IIncidentType,
   IIncidentUpdate,
   ILoggedInUser,
   IOrganisation,
@@ -14,6 +16,7 @@ import {
   IWorld,
   ModelID
 } from '@/types/models'
+import { ICombinedFieldAndValue } from '@/types/special'
 import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
@@ -261,6 +264,101 @@ export class ApiService {
   deleteRole = (role: IIncidentRole) => {
     return callApi('DELETE', `/roles/${role.id}`, {
       user: this.user
+    })
+  }
+
+  getFields = () => {
+    return callApi<PaginatedResults<IField>>('GET', `/fields/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  createField = (values: unknown) => {
+    return callApi<IField>('POST', `/fields`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  patchField = (field: IField, values: unknown) => {
+    return callApi<IField>('PATCH', `/fields/${field.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  deleteField = (field: IField) => {
+    return callApi('DELETE', `/fields/${field.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentTypes = () => {
+    return callApi<PaginatedResults<IIncidentType>>('GET', '/incident-types/search', {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchIncidentType = (type: IIncidentType, values: unknown) => {
+    return callApi<IIncidentType>('PATCH', `/incident-types/${type.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  createIncidentType = (values: unknown) => {
+    return callApi<IIncidentType>('POST', `/incident-types`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  deleteIncidentType = (type: IIncidentType) => {
+    return callApi<IIncidentType>('DELETE', `/incident-types/${type.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentFieldValues = (incident: IIncident) => {
+    return callApi<PaginatedResults<ICombinedFieldAndValue>>('GET', `/incidents/${incident.id}/field-values`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchIncidentFieldValues = (incident: IIncident, values: unknown) => {
+    return callApi('PATCH', `/incidents/${incident.id}/field-values`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
     })
   }
 }

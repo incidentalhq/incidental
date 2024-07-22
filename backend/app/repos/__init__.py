@@ -1,5 +1,6 @@
 # flake8: noqa: F401
 from .announcement_repo import AnnouncementRepo
+from .field_repo import FieldRepo
 from .form_repo import FormRepo
 from .incident_repo import IncidentRepo
 from .organisation_repo import OrganisationRepo

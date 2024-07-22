@@ -44,6 +44,9 @@ class PublicUserSchema(ModelSchema):
 class IncidentTypeSchema(ModelSchema):
     name: str
     description: str
+    is_editable: bool
+    is_deletable: bool
+    fields: list["FieldSchema"]
 
 
 class IncidentStatusSchema(ModelSchema):
@@ -116,15 +119,25 @@ class IncidentUpdateSchema(ModelSchema):
     previous_incident_severity: IncidentSeveritySchema | None
 
 
-class FormFieldSchema(ModelSchema):
-    kind: str
+class FieldSchema(ModelSchema):
     label: str
-    name: str
+    description: str | None = None
+    kind: str
+    interface_kind: str
+    available_options: list[str] | None = None
+    is_editable: bool
+    is_deletable: bool
+    is_system: bool
+
+
+class FormFieldSchema(ModelSchema):
+    label: str
     description: str | None
     position: int
     is_required: bool
     is_deletable: bool
     default_value: str | None
+    field: FieldSchema
 
 
 class FormSchema(ModelSchema):
@@ -140,3 +153,13 @@ class SettingsSchema(ModelSchema):
     incident_reference_format: str
 
     slack_announcement_channel_name: str
+
+
+class IncidentFieldValueSchema(ModelSchema):
+    # field: FieldSchema
+    value_text: str | None = None
+    value_single_select: str | None = None
+    value_multi_select: list[str] | None = None
+
+
+IncidentTypeSchema.model_rebuild()

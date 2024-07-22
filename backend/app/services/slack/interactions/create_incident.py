@@ -1,6 +1,6 @@
 import structlog
 
-from app.models import Form, User
+from app.models import FieldKind, Form, User
 from app.repos import IncidentRepo, SeverityRepo
 from app.schemas.slack import SlackInteractionSchema
 from app.services.incident import IncidentService
@@ -20,22 +20,22 @@ class CreateIncidentInteraction(BaseForm):
 
     def handle_submit(self, interaction: SlackInteractionSchema, user: User):
         # name
-        name_value = self.get_field_value(self.form, interaction=interaction, field_name="incident_name")
+        name_value = self.get_field_value(self.form, interaction=interaction, field_kind=FieldKind.INCIDENT_NAME)
 
         # severity
-        severity_id = self.get_field_value(self.form, interaction=interaction, field_name="incident_severity")
+        severity_id = self.get_field_value(self.form, interaction=interaction, field_kind=FieldKind.INCIDENT_SEVERITY)
         severity = self.severity_repo.get_severity_by_id(id=severity_id)
         if not severity:
             raise RuntimeError("Could not find severity")
 
         # incident type
-        incident_type_id = self.get_field_value(self.form, interaction=interaction, field_name="incident_type")
+        incident_type_id = self.get_field_value(self.form, interaction=interaction, field_kind=FieldKind.INCIDENT_TYPE)
         incident_type = self.incident_repo.get_incident_type_by_id(id=incident_type_id)
         if not incident_type:
             raise RuntimeError("Could not find incident type")
 
         # description
-        summary = self.get_field_value(self.form, interaction=interaction, field_name="summary")
+        summary = self.get_field_value(self.form, interaction=interaction, field_kind=FieldKind.INCIDENT_SUMMARY)
 
         incident = self.incident_service.create_incident(
             name=name_value, summary=summary, creator=user, incident_severity=severity, incident_type=incident_type

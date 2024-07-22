@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
-import { generatePath, Link } from 'react-router-dom'
+import { generatePath, Link, useLocation, useMatch, useNavigate, useNavigation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import home from '@/assets/icons/home.svg'
+import puzzle from '@/assets/icons/puzzle.svg'
 import Icon from '@/components/Icon/Icon'
 import useGlobal from '@/hooks/useGlobal'
 import { RoutePaths } from '@/routes'
@@ -52,6 +53,8 @@ interface Props {
 
 const SettingsSidebar: React.FC<Props> = () => {
   const { organisation } = useGlobal()
+  const x = useLocation()
+  console.log(x.pathname)
 
   const generateSettingsPath = useCallback(
     (path: string) => {
@@ -75,9 +78,19 @@ const SettingsSidebar: React.FC<Props> = () => {
               </SubMenuTitle>
               <SubItems>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_INDEX)}>Overview</Item>
-                <Item to={generateSettingsPath(RoutePaths.SETTINGS_SEVERITY)}>Severities</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_FIELDS)}>Custom fields</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_ROLES)}>Roles</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_SEVERITY)}>Severities</Item>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_TIMESTAMPS)}>Timestamps</Item>
+                <Item to={generateSettingsPath(RoutePaths.SETTINGS_TYPES)}>Types</Item>
+              </SubItems>
+            </SubMenu>
+
+            <SubMenu>
+              <SubMenuTitle>
+                <Icon icon={puzzle} fixedWidth={true} /> Integrations
+              </SubMenuTitle>
+              <SubItems>
                 <Item to={generateSettingsPath(RoutePaths.SETTINGS_SLACK)}>Slack</Item>
               </SubItems>
             </SubMenu>

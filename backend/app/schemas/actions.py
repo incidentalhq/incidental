@@ -4,9 +4,9 @@ from typing import Annotated
 
 import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, StringConstraints, field_validator
+from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum
+from app.models import IncidentStatusCategoryEnum, InterfaceKind
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -73,18 +73,7 @@ class ExtendedPatchIncidentSchema(PatchIncidentSchema):
     slack_channel_id: str | None = None
 
 
-class AllowAllSchema(BaseSchema):
-    """Allows any/all values"""
-
-    model_config = ConfigDict(extra="allow")
-
-
 class CreateIncidentSchema(BaseSchema):
-    incident_name: str
-    incident_type: str
-    incident_severity: str
-    summary: str | None = None
-
     model_config = ConfigDict(extra="allow")
 
 
@@ -175,3 +164,44 @@ class UpdateIncidentRoleSchema(BaseSchema):
 
 class CreateIncidentRoleSchema(UpdateIncidentRoleSchema):
     pass
+
+
+class CreateFieldSchema(BaseSchema):
+    label: str
+    description: str
+    interface_kind: InterfaceKind
+    available_options: list[str] = []
+
+
+class PatchFieldSchema(BaseSchema):
+    label: str | None = None
+    description: str | None = None
+    interface_kind: InterfaceKind | None = None
+    available_options: list[str] | None = None
+
+
+class CreateIncidentTypeSchema(BaseSchema):
+    name: str
+    description: str
+    fields: list[ModelIdSchema]
+
+
+class PatchIncidentTypeSchema(BaseSchema):
+    name: str | None = None
+    description: str | None = None
+    fields: list[ModelIdSchema] | None = None
+
+
+class FieldValueSchema(BaseSchema):
+    value_text: str | None = None
+    value_single_select: str | None = None
+    value_multi_select: list[str] | None = None
+
+
+class SetIncidentFieldValueSchema(BaseSchema):
+    field: ModelIdSchema
+    value: FieldValueSchema
+
+
+class PatchIncidentFieldValuesSchema(RootModel):
+    root: list[SetIncidentFieldValueSchema]

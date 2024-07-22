@@ -5,6 +5,7 @@ import structlog
 from pydantic import BaseModel, ConfigDict
 
 from app.models import (
+    FieldKind,
     Form,
     FormField,
     Incident,
@@ -12,7 +13,6 @@ from app.models import (
     IncidentStatus,
     IncidentType,
 )
-from app.models.form_field import FormFieldKind
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -216,15 +216,21 @@ class FormRenderer:
         return block
 
     def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict:
-        if form_field.kind == FormFieldKind.TEXT:
-            return self._render_text(form_field=form_field, context=context)
-        elif form_field.kind == FormFieldKind.TEXTAREA:
-            return self._render_multi_line_text(form_field=form_field, context=context)
-        elif form_field.kind == FormFieldKind.SEVERITY_TYPE:
-            return self._render_severity_type(form_field=form_field, context=context)
-        elif form_field.kind == FormFieldKind.INCIDENT_TYPE:
-            return self._render_incident_type(form_field=form_field, context=context)
-        elif form_field.kind == FormFieldKind.INCIDENT_STATUS:
-            return self._render_incident_status(form_field=form_field, context=context)
-        else:
-            raise Exception("Unknown field type")
+        match form_field.field.kind:
+            case FieldKind.USER_DEFINED:
+                return self._render_generic_input(form_field=form_field)
+            case FieldKind.INCIDENT_NAME:
+                return self._render_text(form_field=form_field, context=context)
+            case FieldKind.INCIDENT_SEVERITY:
+                return self._render_severity_type(form_field=form_field, context=context)
+            case FieldKind.INCIDENT_STATUS:
+                return self._render_incident_status(form_field=form_field, context=context)
+            case FieldKind.INCIDENT_SUMMARY:
+                return self._render_multi_line_text(form_field=form_field, context=context)
+            case FieldKind.INCIDENT_TYPE:
+                return self._render_incident_type(form_field=form_field, context=context)
+            case _:
+                raise RuntimeError(f"Unknown field kind {form_field.kind}")
+
+    def _render_generic_input(self, form_field: FormField):
+        pass
