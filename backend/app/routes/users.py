@@ -2,13 +2,13 @@ from fastapi import APIRouter
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
-from app.repos import AnnouncementRepo, FormRepo, IncidentRepo, OrganisationRepo, SeverityRepo, TimestampRepo, UserRepo
+from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import AuthUserSchema, CreateUserSchema
 from app.schemas.models import UserPublicSchema, UserSchema
 from app.schemas.resources import PaginatedResults
+from app.services.factories import create_onboarding_service
 from app.services.identity import IdentityService
 from app.services.login import LoginError, LoginService
-from app.services.onboarding import OnboardingService
 from app.services.security import SecurityService
 
 router = APIRouter(tags=["Users"])
@@ -19,12 +19,6 @@ def user_register(create_in: CreateUserSchema, session: DatabaseSession):
     """Create a new user account"""
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
-    form_repo = FormRepo(session=session)
-    severity_repo = SeverityRepo(session=session)
-    incident_repo = IncidentRepo(session=session)
-    announcement_repo = AnnouncementRepo(session=session)
-    timestamp_repo = TimestampRepo(session=session)
-
     identity_service = IdentityService(
         user_repo,
         organisation_repo,
@@ -32,13 +26,7 @@ def user_register(create_in: CreateUserSchema, session: DatabaseSession):
 
     user = identity_service.create_account(create_in=create_in)
 
-    onboarding_service = OnboardingService(
-        form_repo=form_repo,
-        severity_repo=severity_repo,
-        incident_repo=incident_repo,
-        announcement_repo=announcement_repo,
-        timestamp_repo=timestamp_repo,
-    )
+    onboarding_service = create_onboarding_service(session=session)
     onboarding_service.setup_organisation(organisation=user.organisations[0])
     session.commit()
 
