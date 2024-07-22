@@ -1,6 +1,6 @@
 """Security services"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pyotp
 import structlog
@@ -55,7 +55,7 @@ class SecurityService:
 
         if not totp.verify(code):
             logger.warning("otp code not correct", user=user)
-            user.last_login_attempt_at = datetime.now()
+            user.last_login_attempt_at = datetime.now(tz=timezone.utc)
             user.login_attempts += 1
 
             raise ValidationError("OTP code is incorrect, please try again", ErrorCodes.INCORRECT_CODE)
@@ -69,7 +69,7 @@ class SecurityService:
         if (
             user.login_attempts >= MAX_LOGIN_ATTEMPTS
             and user.last_login_attempt_at
-            and datetime.now() - user.last_login_attempt_at <= COOL_OFF_PERIOD
+            and datetime.now(tz=timezone.utc) - user.last_login_attempt_at <= COOL_OFF_PERIOD
         ):
             return True
         else:
@@ -82,7 +82,7 @@ class SecurityService:
         if (
             user.login_attempts >= MAX_LOGIN_ATTEMPTS
             and user.last_login_attempt_at
-            and datetime.now() - user.last_login_attempt_at > COOL_OFF_PERIOD
+            and datetime.now(tz=timezone.utc) - user.last_login_attempt_at > COOL_OFF_PERIOD
         ):
             user.login_attempts = 0
             return True

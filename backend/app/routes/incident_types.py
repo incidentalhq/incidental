@@ -1,5 +1,5 @@
 import structlog
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
 from app.exceptions import NotPermittedError
@@ -65,11 +65,22 @@ async def incident_types_patch(
     return incident_type
 
 
-@router.delete("/{id}", response_model=IncidentTypeSchema)
+@router.delete("/{id}")
 async def incident_types_delete(
     id: str,
     user: CurrentUser,
     db: DatabaseSession,
 ):
     """Delete incident type"""
+
+    incident_repo = IncidentRepo(session=db)
+    incident_type = incident_repo.get_incident_type_by_id_or_throw(id=id)
+
+    if not user.belongs_to(incident_type.organisation):
+        raise NotPermittedError()
+
+    incident_repo.delete_incident_type(incident_type=incident_type)
+
     db.commit()
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)

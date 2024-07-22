@@ -512,3 +512,7 @@ class IncidentRepo(BaseRepo):
             .limit(1)
         )
         return self.session.scalar(stmt)
+
+    def delete_incident_type(self, incident_type: IncidentType) -> None:
+        incident_type.deleted_at = datetime.now(tz=timezone.utc)
+        self.session.flush()

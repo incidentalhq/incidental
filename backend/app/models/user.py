@@ -30,8 +30,8 @@ class User(Base, TimestampMixin):
     _settings = mapped_column("settings", JSONB(none_as_null=True), nullable=False, default={})
     is_email_verified = mapped_column(Boolean, nullable=False, default=False)
     login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_login_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    last_login_attempt_at = mapped_column(DateTime, nullable=True)
+    last_login_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_login_attempt_at = mapped_column(DateTime(timezone=True), nullable=True)
 
     # slack specific
     slack_user_id = mapped_column(UnicodeText, nullable=True, unique=True)
