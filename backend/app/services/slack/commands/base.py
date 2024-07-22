@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.models import Organisation
@@ -7,6 +8,11 @@ from app.repos import FormRepo, IncidentRepo, SeverityRepo, UserRepo
 from app.schemas.slack import SlackCommandDataSchema
 from app.services.events import Events
 from app.services.factories import create_incident_service, create_slack_user_service
+
+
+class CommandParams(BaseModel):
+    trigger_word: str
+    parameters: list[str]
 
 
 class SlackCommandHandlerBase:
@@ -32,12 +38,14 @@ class SlackCommandHandlerBase:
     def execute(self, command: SlackCommandDataSchema):
         raise NotImplementedError()
 
-    def get_params(self, command: SlackCommandDataSchema) -> tuple[str, list[str]]:
+    def get_params(self, command: SlackCommandDataSchema) -> CommandParams | None:
         if not command.text:
-            return []
+            return None
 
         parts = list(map(lambda it: it.strip(), command.text.split(" ")))
-        return parts[0], parts[1:]
+        params = parts[1:] if len(parts) > 1 else []
+
+        return CommandParams(trigger_word=parts[0], parameters=params)
 
     def _is_incident_channel(self, channel_id: str) -> bool:
         """Is the slack channel associated with an incident"""
@@ -52,10 +60,12 @@ class SlackCommandHandlerBase:
     def can_trigger(self, command: SlackCommandDataSchema) -> bool:
         """Only trigger this if in an incident channel"""
 
-        lead, _ = self.get_params(command=command)
+        params = self.get_params(command=command)
+        if not params:
+            return False
 
         # does not match trigger word
-        if self.trigger_word != lead:
+        if self.trigger_word != params.trigger_word:
             return False
 
         # if command should run in incident channel

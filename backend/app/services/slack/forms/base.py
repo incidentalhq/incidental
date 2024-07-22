@@ -15,7 +15,7 @@ class BaseForm:
     def get_field_value(self, form: Form, interaction: SlackInteractionSchema, field_kind: FieldKind) -> str:
         field: FormField | None = None
         for it in form.form_fields:
-            if it.fields.kind == field_kind:
+            if it.field.kind == field_kind:
                 field = it
                 break
         if not field:

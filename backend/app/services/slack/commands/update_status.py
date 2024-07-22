@@ -11,7 +11,7 @@ logger = structlog.get_logger(logger_name=__name__)
 
 
 class UpdateStatusCommand(SlackCommandHandlerBase):
-    """Assign any role for user"""
+    """Open the update status modal"""
 
     trigger_word = "status"
     trigger_in_incident_channel = True

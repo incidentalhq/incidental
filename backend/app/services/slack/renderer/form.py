@@ -216,7 +216,7 @@ class FormRenderer:
         return block
 
     def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict:
-        match form_field.fields.kind:
+        match form_field.field.kind:
             case FieldKind.USER_DEFINED:
                 return self._render_generic_input(form_field=form_field)
             case FieldKind.INCIDENT_NAME:
