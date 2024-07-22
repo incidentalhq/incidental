@@ -58,6 +58,9 @@ async def incident_types_patch(
     if not user.belongs_to(incident_type.organisation):
         raise NotPermittedError()
 
+    if not incident_type.is_editable:
+        raise NotPermittedError("This incident type cannot be edited")
+
     incident_repo.patch_incident_type(incident_type=incident_type, patch_in=patch_in)
 
     db.commit()
@@ -78,6 +81,9 @@ async def incident_types_delete(
 
     if not user.belongs_to(incident_type.organisation):
         raise NotPermittedError()
+
+    if not incident_type.is_deletable:
+        raise NotPermittedError("This incident type cannot be deleted")
 
     incident_repo.delete_incident_type(incident_type=incident_type)
 
