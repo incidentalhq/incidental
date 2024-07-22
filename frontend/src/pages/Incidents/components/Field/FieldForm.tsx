@@ -1,6 +1,5 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useMemo } from 'react'
-import styled from 'styled-components'
 import * as Yup from 'yup'
 
 import Field from '@/components/Form/Field'
@@ -24,11 +23,6 @@ export interface FormValues {
     valueSingleSelect?: string
   }
 }
-
-const HelpEl = styled.div`
-  font-size: 0.9rem;
-  color: var(--color-gray-500);
-`
 
 const toOptions = (values: string[]) => values.map((it) => ({ value: it, label: it }))
 

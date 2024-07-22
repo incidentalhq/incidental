@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vitest/globals", "typings.d.ts"]
+    "types": ["vitest/globals", "./src/typing.d.ts"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
