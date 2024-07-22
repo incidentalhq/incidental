@@ -16,6 +16,7 @@ import {
   IWorld,
   ModelID
 } from '@/types/models'
+import { ICombinedFieldAndValue } from '@/types/special'
 import { DeepPartial } from '@/types/utils'
 
 import { callApi } from './transport'
@@ -339,6 +340,25 @@ export class ApiService {
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation
       }
+    })
+  }
+
+  getIncidentFieldValues = (incident: IIncident) => {
+    return callApi<PaginatedResults<ICombinedFieldAndValue>>('GET', `/incidents/${incident.id}/field-values`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchIncidentFieldValues = (incident: IIncident, values: unknown) => {
+    return callApi('PATCH', `/incidents/${incident.id}/field-values`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
     })
   }
 }

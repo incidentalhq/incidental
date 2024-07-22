@@ -4,7 +4,7 @@ from typing import Annotated
 
 import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, StringConstraints, field_validator
+from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
 from app.models import IncidentStatusCategoryEnum, InterfaceKind
 
@@ -190,3 +190,18 @@ class PatchIncidentTypeSchema(BaseSchema):
     name: str | None = None
     description: str | None = None
     fields: list[ModelIdSchema] | None = None
+
+
+class FieldValueSchema(BaseSchema):
+    value_text: str | None = None
+    value_single_select: str | None = None
+    value_multi_select: list[str] | None = None
+
+
+class SetIncidentFieldValueSchema(BaseSchema):
+    field: ModelIdSchema
+    value: FieldValueSchema
+
+
+class PatchIncidentFieldValuesSchema(RootModel):
+    root: list[SetIncidentFieldValueSchema]

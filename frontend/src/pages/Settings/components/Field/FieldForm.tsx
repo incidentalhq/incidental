@@ -101,22 +101,24 @@ const FieldForm: React.FC<Props> = ({ onSubmit, field }) => {
           <GeneralError />
           <div>
             <label>Label</label>
-            <Field type="text" name="label" />
-            <span>A short descriptive name for the field</span>
+            <Field type="text" name="label" help="A short descriptive name for the field" />
           </div>
           <div>
             <label>Description</label>
-            <Field name="description" as={'textarea'} />
-            <span>What information should this field convey?</span>
+            <Field name="description" as={'textarea'} help="What information should this field convey?" />
           </div>
           <div>
             <label>Interface</label>
-            <SelectField name="interfaceKind" options={interfaceOptions} />
-            <div>How should we present the field in the interface?</div>
+            <SelectField
+              name="interfaceKind"
+              options={interfaceOptions}
+              help="How should we present the field in the interface?"
+            />
           </div>
           {shouldShowOptionsField(values) ? (
             <div>
               <label>Options</label>
+              <p>Add options for this field below, each must be unique</p>
               <FieldArray
                 name="availableOptions"
                 render={(helpers) => <OptionsArrayField {...helpers} placeholder="Option name" />}

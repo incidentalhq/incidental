@@ -72,6 +72,9 @@ form select {
     no-repeat right 0.6rem center/.6rem 1rem;
   max-width: 100%;
 }
+form p {
+  margin-bottom: 0.5rem;
+}
 
 .space-y-2 > * {
   margin-bottom: 0.5rem;

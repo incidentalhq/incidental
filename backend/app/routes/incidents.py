@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import NotPermittedError
@@ -11,12 +11,14 @@ from app.schemas.actions import (
     CreateIncidentSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
+    PatchIncidentFieldValuesSchema,
     PatchIncidentSchema,
     PatchIncidentTimestampsSchema,
     UpdateIncidentRoleAssignmentSchema,
 )
 from app.schemas.models import IncidentFieldValueSchema, IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
+from app.schemas.special import CombinedFieldAndValueSchema
 from app.services.factories import create_incident_service
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -170,8 +172,8 @@ async def incident_update_role(
     return None
 
 
-@router.get("/{id}/field-values", response_model=PaginatedResults[IncidentFieldValueSchema])
-async def incident_field_values(id: str, db: DatabaseSession, user: CurrentUser):
+@router.get("/{id}/field-values", response_model=PaginatedResults[CombinedFieldAndValueSchema])
+async def incident_get_field_values(id: str, db: DatabaseSession, user: CurrentUser):
     """Get field values"""
     incident_repo = IncidentRepo(session=db)
     incident = incident_repo.get_incident_by_id_or_raise(id)
@@ -179,7 +181,32 @@ async def incident_field_values(id: str, db: DatabaseSession, user: CurrentUser)
     if not user.belongs_to(incident.organisation):
         raise NotPermittedError()
 
-    field_values = incident_repo.get_incident_field_values(incident=incident)
-    results = PaginatedResults(total=len(field_values), page=1, size=len(field_values), items=field_values)
+    field_values = incident_repo.get_incident_fields_with_values(incident=incident)
+    normalized = [
+        {
+            "value": item[1],
+            "field": item[0],
+        }
+        for item in field_values
+    ]
+    results = PaginatedResults(total=len(field_values), page=1, size=len(field_values), items=normalized)
 
     return results
+
+
+@router.patch("/{id}/field-values")
+async def incident_patch_field_values(
+    id: str, patch_in: PatchIncidentFieldValuesSchema, db: DatabaseSession, user: CurrentUser
+):
+    """Update incident field values"""
+    incident_repo = IncidentRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(incident.organisation):
+        raise NotPermittedError()
+
+    incident_repo.patch_incident_custom_fields(incident=incident, patch_in=patch_in)
+
+    db.commit()
+
+    return Response(None, status_code=status.HTTP_202_ACCEPTED)

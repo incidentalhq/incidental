@@ -2,24 +2,19 @@ import { FieldArrayRenderProps, useField } from 'formik'
 import React from 'react'
 import styled from 'styled-components'
 
+import trash from '@/assets/icons/trash.svg'
 import Field from '@/components/Form/Field'
 
-const Root = styled.div`
-  border: 1px solid var(--color-gray-100);
-`
-const Header = styled.div`
-  display: grid;
-  column-gap: 1rem;
-  grid-template-columns: 1fr 1fr 1fr;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-gray-100);
-`
+import Button from '../Button/Button'
+import Icon from '../Icon/Icon'
+
+const Root = styled.div``
 const Row = styled.div`
   width: 100%;
   display: grid;
   column-gap: 1rem;
   grid-template-columns: 2fr 2fr 1fr;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0rem;
   align-items: center;
 
   select,
@@ -27,12 +22,9 @@ const Row = styled.div`
     width: 100%;
   }
 `
-const Delete = styled.a`
-  color: var(--color-red-400);
-`
 const Add = styled.div`
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0rem;
 `
 
 interface CellProps {
@@ -57,10 +49,6 @@ const OptionsArrayField: React.FC<Props> = (props) => {
 
   return (
     <Root>
-      <Header>
-        <div>Option name</div>
-        <div></div>
-      </Header>
       {field.value.map((_, index: number) => {
         return (
           <Row key={index}>
@@ -68,17 +56,15 @@ const OptionsArrayField: React.FC<Props> = (props) => {
               <Field type="text" name={`${field.name}.${index}`} placeholder={props.placeholder} />
             </div>
             <Actions>
-              <Delete href="#delete" onClick={props.handleRemove(index)}>
-                Delete
-              </Delete>
+              <Button $danger={true} onClick={props.handleRemove(index)}>
+                <Icon icon={trash} />
+              </Button>
             </Actions>
           </Row>
         )
       })}
       <Add>
-        <a href="#Add" onClick={props.handlePush('')}>
-          Add option
-        </a>
+        <Button onClick={props.handlePush('')}>Add option</Button>
       </Add>
     </Root>
   )

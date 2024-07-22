@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { generatePath, Link } from 'react-router-dom'
+import { generatePath, Link, useLocation, useMatch, useNavigate, useNavigation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import home from '@/assets/icons/home.svg'
@@ -53,6 +53,8 @@ interface Props {
 
 const SettingsSidebar: React.FC<Props> = () => {
   const { organisation } = useGlobal()
+  const x = useLocation()
+  console.log(x.pathname)
 
   const generateSettingsPath = useCallback(
     (path: string) => {

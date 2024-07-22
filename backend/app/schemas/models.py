@@ -156,9 +156,8 @@ class SettingsSchema(ModelSchema):
 
 
 class IncidentFieldValueSchema(ModelSchema):
-    field: FieldSchema
+    # field: FieldSchema
     value_text: str | None = None
-    value_textarea: str | None = None
     value_single_select: str | None = None
     value_multi_select: list[str] | None = None
 

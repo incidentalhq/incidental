@@ -172,3 +172,9 @@ export interface ISettings extends IModel {
   incidentReferenceFormat: string
   slackAnnouncementChannelName: string
 }
+
+export interface IIncidentFieldValue extends IModel {
+  valueText: string
+  valueSingleSelect: string
+  valueMultiSelect: string[]
+}

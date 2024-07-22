@@ -76,7 +76,7 @@ const SettingsIncidentTypes = () => {
         const normalized = {
           ...values,
           fields: values.fields.map((it) => ({
-            id: it.id
+            id: it.value
           }))
         }
         await apiService.createIncidentType(normalized)
@@ -99,7 +99,7 @@ const SettingsIncidentTypes = () => {
         const normalized = {
           ...values,
           fields: values.fields.map((it) => ({
-            id: it.id
+            id: it.value
           }))
         }
         await apiService.patchIncidentType(type, normalized)
