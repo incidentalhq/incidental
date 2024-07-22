@@ -38,7 +38,7 @@ const Description = styled.div`
 
 const Field = styled.div`
   display: flex;
-  padding: 1rem 0 0.5rem 1rem;
+  padding: 0 0 0.5rem 1rem;
   align-items: center;
 `
 const FieldName = styled.div`
@@ -65,10 +65,10 @@ const FlatButton = styled.button`
     background-color: var(--color-gray-200);
   }
 `
-const SidebarHeader = styled.div`
-  padding: 2rem 0 0 1rem;
+const FieldsHeader = styled.div`
+  padding: 2rem 0 0.5rem 1rem;
   font-weight: 600;
-  color: var(--color-gray-600);
+  font-size: 0.9rem;
 
   display: flex;
 
@@ -77,11 +77,7 @@ const SidebarHeader = styled.div`
     margin-right: 1rem;
   }
 `
-const RelatedFields = styled.div`
-  ${Field} {
-    padding-bottom: 0;
-  }
-`
+const RelatedFields = styled.div``
 
 const InnerButtonContent = styled.div`
   display: flex;
@@ -386,7 +382,7 @@ const ShowIncident = () => {
                 )}
               </ContentMain>
               <ContentSidebar>
-                <SidebarHeader>Properties</SidebarHeader>
+                <FieldsHeader>Properties</FieldsHeader>
                 <RelatedFields>
                   <Field>
                     <FieldName>Slack</FieldName>
@@ -420,7 +416,7 @@ const ShowIncident = () => {
                   </Field>
                 </RelatedFields>
 
-                <SidebarHeader>Roles</SidebarHeader>
+                <FieldsHeader>Roles</FieldsHeader>
                 <RelatedFields>
                   {rolesQuery.data?.items.map((role) => {
                     const assignment = incidentQuery.data.incidentRoleAssignments.find(
@@ -455,14 +451,14 @@ const ShowIncident = () => {
                   })}
                 </RelatedFields>
 
-                <SidebarHeader>
+                <FieldsHeader>
                   <div>Timestamps</div>
                   <div>
                     <FlatButton type="button" onClick={handleShowEditTimestampsModal}>
                       <Icon icon={wrench} />
                     </FlatButton>
                   </div>
-                </SidebarHeader>
+                </FieldsHeader>
                 <RelatedFields>
                   {incidentQuery.data.timestampValues
                     .sort((a, b) => rankSorter(a.timestamp, b.timestamp))
@@ -476,9 +472,9 @@ const ShowIncident = () => {
 
                 {fieldValuesQuery.isSuccess && fieldValuesQuery.data.total > 0 ? (
                   <>
-                    <SidebarHeader>
+                    <FieldsHeader>
                       <div>Custom fields</div>
-                    </SidebarHeader>
+                    </FieldsHeader>
                     <RelatedFields>
                       {fieldValuesQuery.data.items.map((row) => (
                         <Field key={row.field.id}>
