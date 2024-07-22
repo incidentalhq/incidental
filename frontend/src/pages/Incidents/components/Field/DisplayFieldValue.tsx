@@ -4,8 +4,6 @@ import styled from 'styled-components'
 import { FieldInterfaceKind } from '@/types/enums'
 import { IField, IIncidentFieldValue } from '@/types/models'
 
-const Root = styled.div``
-
 const TagList = styled.div`
   display: flex;
   gap: 8px;
