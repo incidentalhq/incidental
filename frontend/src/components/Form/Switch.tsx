@@ -1,7 +1,7 @@
 import { useField } from 'formik'
 import styled from 'styled-components'
 
-import Toggle from './Toggle'
+import Toggle from './Toggle2'
 
 const Root = styled.div`
   display: inline-block;

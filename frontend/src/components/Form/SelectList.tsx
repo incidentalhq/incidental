@@ -2,7 +2,7 @@ import { ErrorMessage, useField } from 'formik'
 import React from 'react'
 import styled from 'styled-components'
 
-import Toggle from './Toggle'
+import Toggle from './Toggle2'
 
 // Types
 export type OptionItem = {
