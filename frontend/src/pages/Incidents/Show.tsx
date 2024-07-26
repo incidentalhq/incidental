@@ -442,7 +442,7 @@ const ShowIncident = () => {
                             </>
                           ) : (
                             <FlatButton type="button" onClick={createShowAssignRoleFormHandler(role)}>
-                              Assign role
+                              Set role
                             </FlatButton>
                           )}
                         </FieldValue>
@@ -489,7 +489,7 @@ const ShowIncident = () => {
                                     onClick={() => createShowEditCustomFieldHandler(row.field, row.value)()}
                                   />
                                 ) : (
-                                  'Not set'
+                                  'Set value'
                                 )}
                               </InnerButtonContent>
                             ) : (
@@ -497,7 +497,7 @@ const ShowIncident = () => {
                                 type="button"
                                 onClick={createShowEditCustomFieldHandler(row.field, row.value)}
                               >
-                                <InnerButtonContent>Not set</InnerButtonContent>
+                                <InnerButtonContent>Set value</InnerButtonContent>
                               </FlatButton>
                             )}
                           </FieldValue>

@@ -2,7 +2,7 @@ import { ErrorMessage, useField } from 'formik'
 import React from 'react'
 import styled from 'styled-components'
 
-import Toggle from './Toggle'
+import CheckboxToggle from './CheckboxToggle'
 
 // Types
 export type OptionItem = {
@@ -56,7 +56,7 @@ const SelectList: React.FC<SelectListItemProps> = ({ availableItems, selectedIte
       return (
         <ListItem key={item.value}>
           {item.label}
-          <Toggle isSelected={isSelected} onClick={() => (isSelected ? onRemove(item) : onSelect(item))} />
+          <CheckboxToggle isSelected={isSelected} onClick={() => (isSelected ? onRemove(item) : onSelect(item))} />
         </ListItem>
       )
     })}
