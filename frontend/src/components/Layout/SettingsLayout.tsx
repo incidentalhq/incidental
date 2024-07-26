@@ -15,7 +15,6 @@ const RightColumn = styled.div`
   margin-top: 8px;
   border-top: 1px solid var(--color-gray-200);
   border-left: 1px solid var(--color-gray-200);
-  border-radius: 4px 0 0 0;
 `
 const LeftColumn = styled.div`
   padding: 1rem;

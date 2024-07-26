@@ -44,11 +44,15 @@ const createValidationSchema = (formFields: IFormField[]) => {
   return Yup.object().shape(fieldsShape)
 }
 
-const createDefaultValues = (formFields: IFormField[]) => {
+const createDefaultValues = (formFields: IFormField[], incidentTypes: IIncidentType[]) => {
   const defaultValues: Record<string, string> = {}
 
   for (const field of formFields) {
-    defaultValues[field.id] = ''
+    if (field.field.kind === FieldKind.INCIDENT_TYPE) {
+      defaultValues[field.id] = incidentTypes.find((it) => it.isDefault)?.id ?? ''
+    } else {
+      defaultValues[field.id] = field.defaultValue ? field.defaultValue : ''
+    }
   }
 
   return defaultValues
@@ -127,7 +131,7 @@ const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
     <Formik
       validationSchema={createValidationSchema(form.formFields)}
       onSubmit={handleSubmit}
-      initialValues={createDefaultValues(form.formFields)}
+      initialValues={createDefaultValues(form.formFields, incidentTypes)}
     >
       {({ isSubmitting }) => (
         <Form className="space-y-2">

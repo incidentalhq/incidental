@@ -58,6 +58,7 @@ class IncidentRepo(BaseRepo):
         is_editable: bool = True,
         is_deletable: bool = True,
         fields: list[ModelIdSchema] | None = None,
+        is_default: bool = False,
     ) -> IncidentType:
         model = IncidentType()
         model.organisation_id = organisation.id
@@ -65,6 +66,7 @@ class IncidentRepo(BaseRepo):
         model.description = description
         model.is_deletable = is_deletable
         model.is_editable = is_editable
+        model.is_default = is_default
         self.session.add(model)
         self.session.flush()
 

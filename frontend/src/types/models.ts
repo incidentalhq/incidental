@@ -89,6 +89,7 @@ export interface IIncidentType extends IModel {
   description: string
   isEditable: boolean
   isDeletable: boolean
+  isDefault: boolean
   fields: Array<IField>
 }
 

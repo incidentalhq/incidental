@@ -15,7 +15,7 @@ router = APIRouter(tags=["Fields"])
 
 @router.get("/search", response_model=PaginatedResults[IncidentTypeSchema])
 async def incident_types_search(
-    user: CurrentUser,
+    _: CurrentUser,
     db: DatabaseSession,
     organisation: CurrentOrganisation,
 ):
@@ -28,7 +28,7 @@ async def incident_types_search(
 
 @router.post("", response_model=IncidentTypeSchema)
 async def incident_types_create(
-    user: CurrentUser,
+    _: CurrentUser,
     db: DatabaseSession,
     create_in: CreateIncidentTypeSchema,
     organisation: CurrentOrganisation,
