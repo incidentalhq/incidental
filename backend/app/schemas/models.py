@@ -46,6 +46,7 @@ class IncidentTypeSchema(ModelSchema):
     description: str
     is_editable: bool
     is_deletable: bool
+    is_default: bool
     fields: list["FieldSchema"]
 
 

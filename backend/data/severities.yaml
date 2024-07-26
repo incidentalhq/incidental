@@ -1,0 +1,15 @@
+severities:
+  - name: SEV-1
+    description: Critical system failure with severe business impact. Immediate response required. Major outage affecting core services or revenue streams.
+
+  - name: SEV-2
+    description: Significant disruption to important functions. Urgent attention needed. Partial service outage or severe performance degradation.
+
+  - name: SEV-3
+    description: Noticeable issues affecting some users or services. Needs attention soon, but business continues. Minor service degradation or non-critical feature failures.
+
+  - name: SEV-4
+    description: Low-impact problems with minimal urgency. Often cosmetic issues or minor bugs that don't hinder core functionality. Addressed during normal operations.
+
+  - name: SEV-5
+    description: Lowest priority. Usually reserved for future enhancements or very minor issues. "Nice-to-fix" items that don't affect day-to-day operations.

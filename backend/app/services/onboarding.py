@@ -33,7 +33,8 @@ class IncidentRoleItemType(TypedDict):
 
 
 # data files
-TIMESTAMPS_SEED_DATA_PATH = "/srv/scripts/timestamps.yaml"
+TIMESTAMPS_SEED_DATA_PATH = "/srv/data/timestamps.yaml"
+SEVERITIES_SEED_DATA_PATH = "/srv/data/severities.yaml"
 
 
 class OnboardingService:
@@ -151,21 +152,17 @@ class OnboardingService:
                 )
 
     def _setup_severities(self, organisation: Organisation):
-        descriptors = [
-            {"name": "Critical", "description": "A critical incident with very high impact"},
-            {"name": "Major", "description": "A major incident with significant impact"},
-            {"name": "Minor", "description": "A minor incident with low impact"},
-        ]
-
-        for idx, item in enumerate(descriptors):
-            severity = self.severity_repo.get_severity_by_name(organisation=organisation, name=item["name"])
-            if not severity:
-                self.severity_repo.create_severity(
-                    organisation=organisation,
-                    name=item["name"],
-                    description=item["description"],
-                    rating=idx,
-                )
+        with open(SEVERITIES_SEED_DATA_PATH) as fp:
+            data = yaml.load(fp, Loader=yaml.CLoader)
+            for idx, item in enumerate(data["severities"]):
+                severity = self.severity_repo.get_severity_by_name(organisation=organisation, name=item["name"])
+                if not severity:
+                    self.severity_repo.create_severity(
+                        organisation=organisation,
+                        name=item["name"],
+                        description=item["description"],
+                        rating=idx,
+                    )
 
     def _setup_incident_types(self, organisation: Organisation):
         descriptors: list[dict[str, Any]] = [
@@ -174,6 +171,7 @@ class OnboardingService:
                 "description": "Default incident type",
                 "is_deletable": False,
                 "is_editable": True,
+                "is_default": True,
             },
         ]
 
@@ -186,6 +184,7 @@ class OnboardingService:
                     description=item["description"],
                     is_editable=item["is_editable"],
                     is_deletable=item["is_deletable"],
+                    is_default=item["is_default"],
                 )
 
     def _setup_incident_statuses(self, organisation: Organisation):

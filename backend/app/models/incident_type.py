@@ -22,6 +22,7 @@ class IncidentType(Base, TimestampMixin, SoftDeleteMixin):
     description: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     is_editable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_deletable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # relationships
     organisation: Mapped["Organisation"] = relationship("Organisation", back_populates="incident_types")
