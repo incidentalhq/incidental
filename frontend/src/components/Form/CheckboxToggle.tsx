@@ -10,7 +10,7 @@ const Root = styled.div``
 const Checkbox = styled.input`
   cursor: default;
   appearance: none;
-  background-color: #dfe1e4;
+  background-color: var(--color-slate-300);
   border-radius: 72px;
   border-style: none;
   flex-shrink: 0;
@@ -42,12 +42,12 @@ const Checkbox = styled.input`
   }
 
   &:hover {
-    background-color: #c9cbcd;
+    background-color: var(--color-slate-300);
     transition-duration: 0s;
   }
 
   &:checked {
-    background-color: #6e79d6;
+    background-color: var(--color-green-500);
   }
 
   &:checked:after {
@@ -56,7 +56,7 @@ const Checkbox = styled.input`
   }
 
   &:checked:hover {
-    background-color: #535db3;
+    background-color: var(--color-green-600);
   }
 
   &:focus:not(.focus-visible) {
@@ -64,7 +64,7 @@ const Checkbox = styled.input`
   }
 `
 
-const Toggle2: React.FC<Props> = ({ isSelected, onClick }) => {
+const CheckboxToggle: React.FC<Props> = ({ isSelected, onClick }) => {
   return (
     <Root>
       <Checkbox type="checkbox" checked={isSelected} onClick={onClick} />
@@ -72,4 +72,4 @@ const Toggle2: React.FC<Props> = ({ isSelected, onClick }) => {
   )
 }
 
-export default Toggle2
+export default CheckboxToggle

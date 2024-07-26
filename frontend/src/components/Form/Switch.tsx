@@ -1,7 +1,7 @@
 import { useField } from 'formik'
 import styled from 'styled-components'
 
-import Toggle from './Toggle2'
+import CheckboxToggle from './CheckboxToggle'
 
 const Root = styled.div`
   display: inline-block;
@@ -20,7 +20,7 @@ const Switch: React.FC<Props> = ({ name, onValue = true, offValue = false }) => 
 
   return (
     <Root>
-      <Toggle isSelected={isChecked} onClick={() => helpers.setValue(isChecked ? offValue : onValue)} />
+      <CheckboxToggle isSelected={isChecked} onClick={() => helpers.setValue(isChecked ? offValue : onValue)} />
     </Root>
   )
 }
