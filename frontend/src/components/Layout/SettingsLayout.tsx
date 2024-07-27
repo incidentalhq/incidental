@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 
-import SettingsSidebar from '@/components/Sections/SettingsSidebar'
+import SettingsSidebar from '@/components/Sidebar/SettingsSidebar'
 import useAuth from '@/hooks/useAuth'
 
 const Container = styled.div`

@@ -38,7 +38,7 @@ const Description = styled.div`
 
 const Field = styled.div`
   display: flex;
-  padding: 0 0 0.5rem 1rem;
+  padding: 0 0 0 1rem;
   align-items: center;
 `
 const FieldName = styled.div`
@@ -66,9 +66,11 @@ const FlatButton = styled.button`
   }
 `
 const FieldsHeader = styled.div`
-  padding: 2rem 0 0.5rem 1rem;
+  margin: 2rem 0 1rem 1rem;
   font-weight: 600;
   font-size: 0.9rem;
+  align-items: center;
+  color: var(--color-gray-600);
 
   display: flex;
 
@@ -77,7 +79,11 @@ const FieldsHeader = styled.div`
     margin-right: 1rem;
   }
 `
-const RelatedFields = styled.div``
+const RelatedFields = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
 
 const InnerButtonContent = styled.div`
   display: flex;
@@ -208,6 +214,7 @@ const ShowIncident = () => {
     setModal(
       <ModalContainer>
         <h2>Change severity</h2>
+        <p>Change the severity of the incident below</p>
         <ChangeSeverityForm severityList={severityList} incident={incidentQuery.data} onSubmit={handleChangeSeverity} />
       </ModalContainer>
     )

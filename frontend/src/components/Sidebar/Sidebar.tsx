@@ -1,7 +1,5 @@
 import { FormikHelpers } from 'formik'
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { generatePath } from 'react-router-dom'
 import styled from 'styled-components'
 
 import bolt from '@/assets/icons/bolt.svg'
@@ -14,7 +12,8 @@ import { RoutePaths } from '@/routes'
 import { IUser } from '@/types/models'
 import { PREF_SELECTED_ORGANISATION, setPreference } from '@/utils/storage'
 
-import SwitchOrganisationForm, { FormValues as SwitchOrganisationFormValues } from './SwitchOrganisationForm'
+import SwitchOrganisationForm, { FormValues as SwitchOrganisationFormValues } from '../Sections/SwitchOrganisationForm'
+import MenuItem from './MenuItem'
 
 const Root = styled.div`
   align-items: center;
@@ -24,20 +23,7 @@ const MenuItems = styled.div`
   padding: 0;
   margin: 0;
 `
-const Item = styled(Link)`
-  display: block;
-  color: #1f4d63;
-  text-decoration: none;
-  margin-bottom: 1rem;
 
-  &:visited {
-    color: #1f4d63;
-  }
-
-  &:hover {
-    color: var(--color-blue-700);
-  }
-`
 const SwitchOrganisationWrapper = styled.div`
   margin-bottom: 1rem;
 `
@@ -78,15 +64,15 @@ const SideBar: React.FC<Props> = () => {
             />
           </SwitchOrganisationWrapper>
           <MenuItems>
-            <Item to={RoutePaths.DASHBOARD}>
+            <MenuItem to={RoutePaths.DASHBOARD}>
               <Icon icon={home} fixedWidth /> Dashboard
-            </Item>
-            <Item to={RoutePaths.INCIDENTS}>
+            </MenuItem>
+            <MenuItem to={RoutePaths.INCIDENTS}>
               <Icon icon={bolt} fixedWidth /> Incidents
-            </Item>
-            <Item to={generatePath(RoutePaths.SETTINGS_INDEX, { organisation: organisation!.slug })}>
+            </MenuItem>
+            <MenuItem to={RoutePaths.SETTINGS_INDEX}>
               <Icon icon={gear} fixedWidth /> Settings
-            </Item>
+            </MenuItem>
           </MenuItems>
         </>
       )}

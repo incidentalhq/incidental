@@ -55,8 +55,11 @@ const RoleForm: React.FC<Props> = ({ users, onSubmit, role, incident }) => {
     >
       {({ isSubmitting }) => (
         <Form className="space-y-2">
-          <label>{role.name}</label>
           <div>
+            <p>{role.description}</p>
+          </div>
+          <div>
+            <label>{role.name}</label>
             <SelectField name="userId" options={options} saveOnChange={false} clearable={true} />
           </div>
           <div>

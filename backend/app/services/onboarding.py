@@ -35,6 +35,7 @@ class IncidentRoleItemType(TypedDict):
 # data files
 TIMESTAMPS_SEED_DATA_PATH = "/srv/data/timestamps.yaml"
 SEVERITIES_SEED_DATA_PATH = "/srv/data/severities.yaml"
+STATUSES_SEED_DATA_PATH = "/srv/data/statuses.yaml"
 
 
 class OnboardingService:
@@ -188,24 +189,19 @@ class OnboardingService:
                 )
 
     def _setup_incident_statuses(self, organisation: Organisation):
-        descriptors: list[CategoryItemType] = [
-            {"name": "Triage", "category": IncidentStatusCategoryEnum.TRIAGE},
-            {"name": "Investigating", "category": IncidentStatusCategoryEnum.ACTIVE},
-            {"name": "Fixing", "category": IncidentStatusCategoryEnum.ACTIVE},
-            {"name": "Monitoring", "category": IncidentStatusCategoryEnum.ACTIVE},
-            {"name": "Documenting", "category": IncidentStatusCategoryEnum.POST_INCIDENT},
-            {"name": "Closed", "category": IncidentStatusCategoryEnum.CLOSED},
-        ]
-
-        for idx, item in enumerate(descriptors):
-            status = self.incident_repo.get_incident_status_by_name(organisation=organisation, name=item["name"])
-            if not status:
-                self.incident_repo.create_incident_status(
-                    organisation=organisation,
-                    name=item["name"],
-                    sort_order=idx,
-                    category=item["category"],
-                )
+        with open(STATUSES_SEED_DATA_PATH) as fp:
+            data = yaml.load(fp, Loader=yaml.CLoader)
+            for idx, item in enumerate(data["statuses"]):
+                status = self.incident_repo.get_incident_status_by_name(organisation=organisation, name=item["name"])
+                category = IncidentStatusCategoryEnum(item["category"])
+                if not status:
+                    self.incident_repo.create_incident_status(
+                        organisation=organisation,
+                        name=item["name"],
+                        sort_order=idx,
+                        category=category,
+                        description=item["description"],
+                    )
 
     def _setup_settings(self, organisation: Organisation) -> None:
         if not organisation.settings:

@@ -1,12 +1,13 @@
-import { generatePath, Link, useMatch } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import home from '@/assets/icons/home.svg'
 import puzzle from '@/assets/icons/puzzle.svg'
 import Icon from '@/components/Icon/Icon'
-import useGlobal from '@/hooks/useGlobal'
 import { RoutePaths } from '@/routes'
 import { IUser } from '@/types/models'
+
+import MenuItem, { MenuItemRoot } from './MenuItem'
 
 const Root = styled.div`
   align-items: center;
@@ -20,66 +21,44 @@ interface ItemProps {
   $selected?: boolean
 }
 
-const onSelectItem = css`
+const onSelectCss = css`
   background-color: var(--color-gray-100);
-  border-radius: 0.4rem;
 `
-
-const Item = styled(Link)<ItemProps>`
+const BackContainer = styled.div`
+  margin-left: calc(16px + 1rem);
+`
+const BackLink = styled(Link)<ItemProps>`
   display: block;
-  color: #1f4d63;
   text-decoration: none;
-  margin-bottom: 1rem;
-  padding: 0.25rem 0.5rem;
-
-  &:visited {
-    color: #1f4d63;
-  }
+  padding: 0.25rem 8px;
+  border-radius: 0.4rem;
+  margin-bottom: 1px;
 
   &:hover {
-    color: var(--color-blue-700);
+    background-color: var(--color-gray-100);
   }
 
-  ${(props) => props.$selected && onSelectItem}
+  ${(props) => props.$selected && onSelectCss}
 `
 const SubMenu = styled.div`
   margin-top: 1rem;
 `
-const SubMenuTitle = styled.div``
+const SubMenuTitle = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0 8px;
+`
 const SubItems = styled.div`
   margin-top: 0.5rem;
-  margin-left: 20px;
 
-  > ${Item} {
-    margin-bottom: 0.5rem;
+  > ${MenuItemRoot} {
+    margin-left: calc(16px + 1rem);
   }
-`
-const BackContainer = styled.div`
-  height: 34.5px;
 `
 
 interface Props {
   user: IUser
-}
-
-interface MenuItemProps {
-  to: RoutePaths
-}
-
-const MenuItem: React.FC<MenuItemProps & React.PropsWithChildren> = ({ to, children }) => {
-  const match = useMatch(to)
-  const { organisation } = useGlobal()
-
-  // This should not happen
-  if (!organisation) {
-    return null
-  }
-
-  return (
-    <Item to={generatePath(to, { organisation: organisation.slug, id: '' })} $selected={match ? true : false}>
-      {children}
-    </Item>
-  )
 }
 
 const SettingsSidebar: React.FC<Props> = () => {
@@ -87,7 +66,7 @@ const SettingsSidebar: React.FC<Props> = () => {
     <Root>
       <MenuItems>
         <BackContainer>
-          <Item to={RoutePaths.DASHBOARD}>&laquo; Back to Dashboard</Item>
+          <BackLink to={RoutePaths.DASHBOARD}>Back to Dashboard</BackLink>
         </BackContainer>
 
         <SubMenu>

@@ -65,6 +65,9 @@ async def fields_patch(
     if not user.belongs_to(field.organisation):
         raise NotPermittedError()
 
+    if not field.is_editable:
+        raise NotPermittedError("This field cannot be edited")
+
     field_repo.patch_field(field=field, patch_in=patch_in)
 
     db.commit()
@@ -84,6 +87,9 @@ async def fields_delete(
 
     if not user.belongs_to(field.organisation):
         raise NotPermittedError()
+
+    if not field.is_deletable:
+        raise NotPermittedError("This field cannot be deleted")
 
     field_repo.soft_delete_field(field)
 
