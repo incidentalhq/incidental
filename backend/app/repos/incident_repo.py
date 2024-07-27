@@ -4,7 +4,7 @@ from typing import Literal, Sequence
 
 from sqlalchemy import Row, and_, delete, func, select
 
-from app.exceptions import ValidationError
+from app.exceptions import FormFieldValidationError, ValidationError
 from app.models import (
     Field,
     Incident,
@@ -195,6 +195,7 @@ class IncidentRepo(BaseRepo):
         name: str,
         sort_order: int,
         category: IncidentStatusCategoryEnum,
+        description: str | None = None,
     ) -> IncidentStatus:
         """Create new incident status"""
         model = IncidentStatus()
@@ -202,6 +203,7 @@ class IncidentRepo(BaseRepo):
         model.name = name
         model.sort_order = sort_order
         model.category = category
+        model.description = description
 
         self.session.add(model)
         self.session.flush()
@@ -407,6 +409,14 @@ class IncidentRepo(BaseRepo):
 
     def update_role(self, role: IncidentRole, update_in: UpdateIncidentRoleSchema) -> None:
         """Update role"""
+
+        # check this slack reference isn't already in use
+        if in_use_slack_reference := self.get_incident_role_by_slack_reference(
+            organisation=role.organisation, slack_reference=update_in.slack_reference
+        ):
+            if in_use_slack_reference.id != role.id:
+                raise FormFieldValidationError("This slack reference is already in use", attribute="slackReference")
+
         role.name = update_in.name
         role.description = update_in.description
         role.slack_reference = update_in.slack_reference

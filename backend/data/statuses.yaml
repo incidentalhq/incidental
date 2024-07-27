@@ -1,0 +1,24 @@
+statuses:
+  - name: Triage
+    category: TRIAGE
+    description: Initial assessment and prioritization of the incident. Information is gathered to understand the scope and severity of the issue.
+
+  - name: Investigating
+    category: ACTIVE
+    description: Active examination of the incident's root cause. Team analyzes logs, system behavior, and recent changes to identify the source of the problem.
+
+  - name: Fixing
+    category: ACTIVE
+    description: Implementation of the identified solution. This may involve deploying code changes, adjusting configurations, or applying other remedies to resolve the issue.
+
+  - name: Monitoring
+    category: ACTIVE
+    description: Observation phase after applying the fix. The team closely watches the system to ensure the solution is effective and no new issues arise.
+
+  - name: Documenting
+    category: POST_INCIDENT
+    description: Creation of a detailed report about the incident, including what happened, actions taken, and lessons learned for future reference.
+
+  - name: Closed
+    category: CLOSED
+    description: Official conclusion of the incident. All documentation is complete, follow-up tasks have been assigned, and the incident can be archived.

@@ -64,6 +64,9 @@ async def role_update(id: str, update_in: UpdateIncidentRoleSchema, user: Curren
     if not user.belongs_to(role.organisation):
         raise NotPermittedError()
 
+    if not role.is_editable:
+        raise NotPermittedError("This role cannot be edited")
+
     incident_repo.update_role(role=role, update_in=update_in)
 
     db.commit()
@@ -79,6 +82,9 @@ async def role_delete(id: str, user: CurrentUser, db: DatabaseSession):
 
     if not user.belongs_to(role.organisation):
         raise NotPermittedError()
+
+    if not role.is_deletable:
+        raise NotPermittedError("This role cannot be deleted")
 
     incident_repo.delete_role(role=role)
 

@@ -10,7 +10,7 @@ import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
 import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
-import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, Pill, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
@@ -21,6 +21,11 @@ import IncidentTypeForm, { FormValues as IncidentTypeFormValues } from './compon
 
 const Intro = styled.div`
   padding: 1rem;
+`
+const Name = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 `
 const Controls = styled.div`
   display: flex;
@@ -158,7 +163,11 @@ const SettingsIncidentTypes = () => {
       [
         {
           name: 'Name',
-          render: (v) => v.name
+          render: (v) => (
+            <Name>
+              {v.name} {v.isDefault ? <Pill>Default</Pill> : null}
+            </Name>
+          )
         },
         {
           name: 'Description',

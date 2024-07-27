@@ -34,11 +34,14 @@ const ChangeStatusForm: React.FC<Props> = ({ statusList, incident, onSubmit }) =
 
   return (
     <Formik<FormValues> validationSchema={validationSchema} initialValues={defaultValues} onSubmit={handleSubmit}>
-      {({ isSubmitting }) => (
+      {({ isSubmitting, values }) => (
         <Form className="space-y-2">
           <label>Status</label>
           <div>
             <SelectField name="status" options={options} saveOnChange={false} />
+          </div>
+          <div>
+            <p>{statusList.find((it) => it.id == values.status)?.description}</p>
           </div>
           <div>
             <StyledButton type="submit" disabled={isSubmitting}>
