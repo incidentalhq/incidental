@@ -146,7 +146,6 @@ class FormSchema(ModelSchema):
     is_published: bool
     template: str | None
     type: str
-    form_fields: list[FormFieldSchema]
 
 
 class SettingsSchema(ModelSchema):

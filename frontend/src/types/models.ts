@@ -29,10 +29,7 @@ export interface IOrganisation extends IModel {
 
 export interface IOrganisationDetail {
   organisation: IOrganisation
-  statusList: IIncidentStatus[]
-  severityList: IIncidentSeverity[]
   forms: IForm[]
-  incidentTypes: IIncidentType[]
   roles: IIncidentRole[]
 }
 
@@ -156,7 +153,6 @@ export interface IForm extends IModel {
   template: string | null
   type: FormType
   isPublished: boolean
-  formFields: IFormField[]
 }
 
 export interface IInvite extends IModel {

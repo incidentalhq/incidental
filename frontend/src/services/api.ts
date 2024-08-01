@@ -375,15 +375,6 @@ export class ApiService {
     })
   }
 
-  getFormFields = (form: IForm) => {
-    return callApi<PaginatedResults<IFormField>>('GET', `/forms/${form.id}`, {
-      user: this.user,
-      headers: {
-        [ORGANISATION_HEADER_KEY]: this.organisation
-      }
-    })
-  }
-
   getIncidentStatuses = () => {
     return callApi<PaginatedResults<IIncidentStatus>>('GET', `/statuses/search`, {
       user: this.user,
@@ -409,6 +400,24 @@ export class ApiService {
         [ORGANISATION_HEADER_KEY]: this.organisation
       },
       json: values
+    })
+  }
+
+  getFormFields = (form: IForm) => {
+    return callApi<PaginatedResults<IFormField>>('GET', `/forms/${form.id}/fields`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentSeverities = () => {
+    return callApi<PaginatedResults<IIncidentSeverity>>('GET', `/severities/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
     })
   }
 }

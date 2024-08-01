@@ -1,5 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { ReactElement } from 'react'
+import { ReactElement, useMemo } from 'react'
 import styled from 'styled-components'
 import * as Yup from 'yup'
 
@@ -8,11 +9,13 @@ import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
 import Icon from '@/components/Icon/Icon'
 import { StyledButton } from '@/components/Theme/Styles'
+import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { FieldInterfaceKind, FieldKind, IncidentStatusCategory } from '@/types/enums'
 import { IForm, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
 import SelectField from '../Form/SelectField'
+import Loading from '../Loading/Loading'
 
 const Optional = styled.span`
   color: var(--color-gray-400);
@@ -27,8 +30,8 @@ interface Props {
 
 interface FormFieldProps {
   formField: IFormField
-  statusList: IIncidentStatus[]
   severityList: IIncidentSeverity[]
+  statusList: IIncidentStatus[]
   incidentTypes: IIncidentType[]
 }
 
@@ -131,28 +134,65 @@ const FormField: React.FC<FormFieldProps> = ({ formField, statusList, severityLi
 }
 
 const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
-  const { statusList, severityList, incidentTypes } = useGlobal()
-  const fields = form.formFields
-    .sort((a, b) => (a.position < b.position ? -1 : 1))
-    .map((it) => (
-      <FormField
-        key={it.id}
-        formField={it}
-        statusList={statusList}
-        severityList={severityList}
-        incidentTypes={incidentTypes}
-      />
-    ))
+  const { organisation } = useGlobal()
+  const { apiService } = useApiService()
+
+  const incidentTypesQuery = useQuery({
+    queryKey: ['incident-types', organisation!.id],
+    queryFn: () => apiService.getIncidentTypes()
+  })
+
+  const formFieldsQuery = useQuery({
+    queryKey: ['form-fields', form.id],
+    queryFn: () => apiService.getFormFields(form)
+  })
+
+  const incidentStatusQuery = useQuery({
+    queryKey: ['incident-statuses', organisation!.id],
+    queryFn: () => apiService.getIncidentStatuses()
+  })
+
+  const severitiesQuery = useQuery({
+    queryKey: ['severities', organisation!.id],
+    queryFn: () => apiService.getIncidentSeverities()
+  })
+
+  const fields = useMemo(() => {
+    if (
+      !incidentTypesQuery.isSuccess ||
+      !formFieldsQuery.isSuccess ||
+      !incidentStatusQuery.isSuccess ||
+      !severitiesQuery.isSuccess
+    ) {
+      return []
+    }
+
+    return formFieldsQuery.data.items
+      .sort((a, b) => (a.position < b.position ? -1 : 1))
+      .map((it) => (
+        <FormField
+          key={it.id}
+          formField={it}
+          statusList={incidentStatusQuery.data.items}
+          severityList={severitiesQuery.data.items}
+          incidentTypes={incidentTypesQuery.data.items}
+        />
+      ))
+  }, [incidentTypesQuery, formFieldsQuery, incidentStatusQuery, severitiesQuery])
 
   const handleSubmit = (values: FormValues, helpers: FormikHelpers<FormValues>) => {
     onSubmit(values, helpers)
   }
 
+  if (!incidentTypesQuery.isSuccess || !formFieldsQuery.isSuccess) {
+    return <Loading />
+  }
+
   return (
     <Formik
-      validationSchema={createValidationSchema(form.formFields)}
+      validationSchema={createValidationSchema(formFieldsQuery.data.items)}
       onSubmit={handleSubmit}
-      initialValues={createDefaultValues(form.formFields, incidentTypes)}
+      initialValues={createDefaultValues(formFieldsQuery.data.items, incidentTypesQuery.data.items)}
     >
       {({ isSubmitting }) => (
         <Form className="space-y-2">

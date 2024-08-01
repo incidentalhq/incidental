@@ -8,10 +8,21 @@ from app.exceptions import ApplicationException, NotPermittedError
 from app.repos import SeverityRepo
 from app.schemas.actions import CreateSeveritySchema, PatchSeveritySchema
 from app.schemas.models import IncidentSeveritySchema
+from app.schemas.resources import PaginatedResults
 
 logger = structlog.get_logger(logger_name=__name__)
 
 router = APIRouter(tags=["Severities"])
+
+
+@router.get("/search", response_model=PaginatedResults[IncidentSeveritySchema])
+async def severity_search(user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation):
+    """Search for severities"""
+    severity_repo = SeverityRepo(session=db)
+    severities = severity_repo.get_all(organisation=organisation)
+    total = len(severities)
+
+    return PaginatedResults(total=total, page=1, size=total, items=severities)
 
 
 @router.post("", response_model=IncidentSeveritySchema)

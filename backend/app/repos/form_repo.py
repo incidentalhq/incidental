@@ -62,8 +62,11 @@ class FormRepo(BaseRepo):
 
     def get_form_by_id(self, id: str) -> Form | None:
         stmt = select(Form).where(Form.id == id, Form.deleted_at.is_(None)).limit(1)
-
         return self.session.scalars(stmt).first()
+
+    def get_form_by_id_or_raise(self, id: str) -> Form:
+        stmt = select(Form).where(Form.id == id, Form.deleted_at.is_(None)).limit(1)
+        return self.session.scalars(stmt).one()
 
     def get_form_field_by_label(self, form: Form, label: str) -> FormField | None:
         stmt = (
