@@ -2,11 +2,15 @@ import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IField,
+  IForm,
+  IFormField,
   IIncident,
   IIncidentRole,
   IIncidentSeverity,
+  IIncidentStatus,
   IIncidentType,
   IIncidentUpdate,
+  ILifecycle,
   ILoggedInUser,
   IOrganisation,
   IPublicUser,
@@ -354,6 +358,52 @@ export class ApiService {
 
   patchIncidentFieldValues = (incident: IIncident, values: unknown) => {
     return callApi('PATCH', `/incidents/${incident.id}/field-values`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  getForms = () => {
+    return callApi<PaginatedResults<IForm>>('GET', `/forms/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getFormFields = (form: IForm) => {
+    return callApi<PaginatedResults<IFormField>>('GET', `/forms/${form.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentStatuses = () => {
+    return callApi<PaginatedResults<IIncidentStatus>>('GET', `/statuses/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getLifecycle = () => {
+    return callApi<ILifecycle>('GET', `/lifecycle`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchLifecycle = (lifecycle: ILifecycle, values: Partial<ILifecycle>) => {
+    return callApi<ILifecycle>('PATCH', `/lifecycle/${lifecycle.id}`, {
       user: this.user,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation

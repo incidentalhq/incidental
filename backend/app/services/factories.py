@@ -6,6 +6,7 @@ from app.repos import (
     FieldRepo,
     FormRepo,
     IncidentRepo,
+    LifecycleRepo,
     OrganisationRepo,
     SeverityRepo,
     TimestampRepo,
@@ -50,6 +51,7 @@ def create_onboarding_service(session: Session) -> OnboardingService:
     announcement_repo = AnnouncementRepo(session=session)
     timestamp_repo = TimestampRepo(session=session)
     field_repo = FieldRepo(session=session)
+    lifecycle_repo = LifecycleRepo(session=session)
 
     onboarding_service = OnboardingService(
         form_repo=form_repo,
@@ -58,6 +60,7 @@ def create_onboarding_service(session: Session) -> OnboardingService:
         announcement_repo=announcement_repo,
         timestamp_repo=timestamp_repo,
         field_repo=field_repo,
+        lifecycle_repo=lifecycle_repo,
     )
 
     return onboarding_service

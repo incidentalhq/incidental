@@ -23,7 +23,7 @@ class IncidentStatus(Base, TimestampMixin, SoftDeleteMixin):
     )
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     description: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
-    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    rank: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     category: Mapped[IncidentStatusCategoryEnum] = mapped_column(
         Enum(IncidentStatusCategoryEnum, native_enum=False), nullable=False
     )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Sequence
+from typing import Sequence
 
 from pydantic import EmailStr
 
@@ -53,7 +53,7 @@ class IncidentTypeSchema(ModelSchema):
 class IncidentStatusSchema(ModelSchema):
     name: str
     description: str | None
-    sort_order: int
+    rank: int
     category: str
 
 
@@ -161,6 +161,10 @@ class IncidentFieldValueSchema(ModelSchema):
     value_text: str | None = None
     value_single_select: str | None = None
     value_multi_select: list[str] | None = None
+
+
+class LifecycleSchema(ModelSchema):
+    is_triage_available: bool
 
 
 IncidentTypeSchema.model_rebuild()

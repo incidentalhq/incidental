@@ -124,7 +124,7 @@ class TimestampRepo(BaseRepo):
         return self.session.scalar(stmt)
 
     def bulk_update_incident_timestamps(self, incident: Incident, put_in: PatchIncidentTimestampsSchema):
-        """Bulk update timetime values for an incident"""
+        """Bulk update timestamp values for an incident"""
         tz = pytz.timezone(put_in.timezone)
         for timestamp_id, naive_datetime in put_in.values.items():
             timestamp = self.get_timestamp_by_id_or_raise(id=timestamp_id)
@@ -145,4 +145,5 @@ class TimestampRepo(BaseRepo):
 
     def get_next_timestamp_rank(self, organisation: Organisation) -> int:
         stmt = select(func.max(Timestamp.rank)).where(Timestamp.organisation_id == organisation.id)
-        return self.session.scalar(stmt) + 1
+        current_max_rank = self.session.scalar(stmt) or 0
+        return current_max_rank + 1

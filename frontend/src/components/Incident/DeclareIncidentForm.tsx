@@ -9,7 +9,7 @@ import GeneralError from '@/components/Form/GeneralError'
 import Icon from '@/components/Icon/Icon'
 import { StyledButton } from '@/components/Theme/Styles'
 import useGlobal from '@/hooks/useGlobal'
-import { FieldInterfaceKind, FieldKind } from '@/types/enums'
+import { FieldInterfaceKind, FieldKind, IncidentStatusCategory } from '@/types/enums'
 import { IForm, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
 import SelectField from '../Form/SelectField'
@@ -91,6 +91,27 @@ const FormField: React.FC<FormFieldProps> = ({ formField, statusList, severityLi
             label: it.name,
             value: it.id
           }))
+          inputComponent = <SelectField name={formField.id} options={options} />
+          break
+        }
+        case FieldKind.INCIDENT_INITIAL_STATUS: {
+          const triage = statusList.find((it) => it.category === IncidentStatusCategory.TRIAGE)
+          const active = statusList.find((it) => it.category == IncidentStatusCategory.ACTIVE)
+          if (!triage || !active) {
+            console.log('Could not find triage or active categories')
+            break
+          }
+          const options = [
+            {
+              label: 'Triage',
+              value: triage.id
+            },
+            {
+              label: 'Active',
+              value: active.id
+            }
+          ]
+
           inputComponent = <SelectField name={formField.id} options={options} />
           break
         }

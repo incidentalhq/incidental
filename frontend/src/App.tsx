@@ -25,18 +25,21 @@ import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
 import ShowIncident from '@/pages/Incidents/Show'
 import OAuthComplete from '@/pages/OAuth/Complete'
+import SettingsForms from '@/pages/Settings/components/Forms/Forms'
 import SettingsFields from '@/pages/Settings/Fields'
 import SettingsIndex from '@/pages/Settings/Index'
 import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
 import SettingsSlack from '@/pages/Settings/Slack'
+import SettingsStatuses from '@/pages/Settings/Statuses'
 import SettingsTimestamps from '@/pages/Settings/Timestamps'
+import SettingsIncidentTypes from '@/pages/Settings/Types'
 import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
 // route definitions
 import { RoutePaths } from '@/routes'
 
-import SettingsIncidentTypes from './pages/Settings/Types'
+import Debug from './components/Debug/Debug'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,10 +90,13 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_ROLES} element={<SettingsRoles />} />
                       <Route path={RoutePaths.SETTINGS_FIELDS} element={<SettingsFields />} />
                       <Route path={RoutePaths.SETTINGS_TYPES} element={<SettingsIncidentTypes />} />
+                      <Route path={RoutePaths.SETTINGS_FORMS_INDEX} element={<SettingsForms />} />
+                      <Route path={RoutePaths.SETTINGS_STATUSES} element={<SettingsStatuses />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />
                 </Routes>
+                <Debug />
               </ModalProvider>
             </AuthProvider>
           </ApiServiceProvider>

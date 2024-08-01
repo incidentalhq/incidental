@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
 class FormKind(enum.Enum):
     CREATE_INCIDENT = "CREATE_INCIDENT"
     UPDATE_INCIDENT = "UPDATE_INCIDENT"
+    ACCEPT_INCIDENT = "ACCEPT_INCIDENT"
 
 
 class Form(Base, TimestampMixin, SoftDeleteMixin):
