@@ -49,16 +49,16 @@ jobs:
         run: cp .env.example .env
 
       - name: Create the docker compose stack
-        run: docker-compose -f docker-compose.yml up -d
+        run: docker compose -f docker-compose.yml up -d
 
       - name: Check local running docker containers
         run: docker ps -a
 
       - name: Migrate db
-        run: docker-compose -f docker-compose.yml exec -T backend sh -c "alembic upgrade head"
+        run: docker compose -f docker-compose.yml exec -T backend sh -c "alembic upgrade head"
 
       - name: Runs tests
-        run: docker-compose -f docker-compose.yml exec -T backend sh -c "coverage run"
+        run: docker compose -f docker-compose.yml exec -T backend sh -c "coverage run"
 
       - name: Get coverage report
-        run: docker-compose -f docker-compose.yml exec -T backend sh -c "coverage report"
+        run: docker compose -f docker-compose.yml exec -T backend sh -c "coverage report"
