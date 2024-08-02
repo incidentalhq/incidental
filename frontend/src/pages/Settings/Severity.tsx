@@ -114,10 +114,6 @@ const SettingsSeverity = () => {
     () =>
       [
         {
-          name: 'Rank',
-          render: (v) => v.rating
-        },
-        {
           name: 'Name',
           render: (v) => v.name
         },
