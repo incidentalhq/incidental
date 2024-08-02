@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
@@ -37,17 +38,81 @@ const SeverityModal = styled.div`
 `
 
 const SettingsSeverity = () => {
-  const { severityList, setSeverityList } = useGlobal()
+  const { organisation } = useGlobal()
   const { setModal, closeModal } = useModal()
   const { apiService } = useApiService()
+
+  const severitiesQuery = useQuery({
+    queryKey: ['severities', organisation!.id],
+    queryFn: () => apiService.getIncidentSeverities()
+  })
+
+  const handleDelete = useCallback(
+    async (severity: IIncidentSeverity) => {
+      try {
+        await apiService.deleteSeverity(severity)
+        severitiesQuery.refetch()
+      } catch (error) {
+        if (error instanceof APIError) {
+          toast(error.message, { type: 'error' })
+        }
+      }
+    },
+    [severitiesQuery, apiService]
+  )
+
+  const handleAddSeverity = useCallback(
+    async (values: SeverityFormValues) => {
+      try {
+        await apiService.createSeverity(values)
+        severitiesQuery.refetch()
+        closeModal()
+        toast('New severity added', { type: 'success' })
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    [apiService, severitiesQuery, closeModal]
+  )
+
+  const handlePatchSeverity = useCallback(
+    async (severity: IIncidentSeverity, values: SeverityFormValues) => {
+      try {
+        await apiService.patchSeverity(severity, values)
+        severitiesQuery.refetch()
+        closeModal()
+        toast('Severity updated', { type: 'success' })
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    [apiService, severitiesQuery, closeModal]
+  )
+
+  const handleOpenCreateModal = useCallback(() => {
+    setModal(
+      <SeverityModal>
+        <h2>Create new severity</h2>
+        <SeverityForm onSubmit={handleAddSeverity} />
+      </SeverityModal>
+    )
+  }, [handleAddSeverity, setModal])
+
+  const handleOpenEditModal = useCallback(
+    (severity: IIncidentSeverity) => {
+      setModal(
+        <SeverityModal>
+          <h2>Edit severity</h2>
+          <SeverityForm severity={severity} onSubmit={(values) => handlePatchSeverity(severity, values)} />
+        </SeverityModal>
+      )
+    },
+    [handlePatchSeverity, setModal]
+  )
 
   const columns = useMemo(
     () =>
       [
-        {
-          name: 'Rank',
-          render: (v) => v.rating
-        },
         {
           name: 'Name',
           render: (v) => v.name
@@ -73,59 +138,8 @@ const SettingsSeverity = () => {
           )
         }
       ] as ColumnProperty<IIncidentSeverity>[],
-    []
+    [handleDelete, handleOpenEditModal]
   )
-
-  const handleDelete = async (severity: IIncidentSeverity) => {
-    try {
-      await apiService.deleteSeverity(severity)
-      setSeverityList(severityList.filter((it) => it.id != severity.id))
-    } catch (error) {
-      if (error instanceof APIError) {
-        toast(error.message, { type: 'error' })
-      }
-    }
-  }
-
-  const handleAddSeverity = async (values: SeverityFormValues) => {
-    const response = await apiService.createSeverity(values)
-    setSeverityList([...severityList, response])
-    closeModal()
-    toast('New severity added', { type: 'success' })
-  }
-
-  const handlePatchSeverity = async (severity: IIncidentSeverity, values: SeverityFormValues) => {
-    const response = await apiService.patchSeverity(severity, values)
-    closeModal()
-    toast('Severity updated', { type: 'success' })
-
-    setSeverityList(
-      severityList.map((it) => {
-        if (it.id == response.id) {
-          return response
-        }
-        return it
-      })
-    )
-  }
-
-  const handleOpenCreateModal = () => {
-    setModal(
-      <SeverityModal>
-        <h2>Create new severity</h2>
-        <SeverityForm onSubmit={handleAddSeverity} />
-      </SeverityModal>
-    )
-  }
-
-  const handleOpenEditModal = (severity: IIncidentSeverity) => {
-    setModal(
-      <SeverityModal>
-        <h2>Edit severity</h2>
-        <SeverityForm severity={severity} onSubmit={(values) => handlePatchSeverity(severity, values)} />
-      </SeverityModal>
-    )
-  }
 
   return (
     <>
@@ -138,7 +152,7 @@ const SettingsSeverity = () => {
             <Intro>
               <p>Shown below are the different severities that can be assigned to incidents.</p>
             </Intro>
-            <Table data={severityList} rowKey={'id'} columns={columns} />
+            <Table data={severitiesQuery.data?.items ?? []} rowKey={'id'} columns={columns} />
             <Actions>
               <StyledButton $primary={true} onClick={handleOpenCreateModal}>
                 Add severity

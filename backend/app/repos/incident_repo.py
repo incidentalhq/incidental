@@ -25,6 +25,7 @@ from app.schemas.actions import (
     ExtendedPatchIncidentSchema,
     FieldValueSchema,
     PatchIncidentFieldValuesSchema,
+    PatchIncidentSchema,
     PatchIncidentTypeSchema,
     UpdateIncidentRoleSchema,
 )
@@ -193,7 +194,7 @@ class IncidentRepo(BaseRepo):
         self,
         organisation: Organisation,
         name: str,
-        sort_order: int,
+        rank: int,
         category: IncidentStatusCategoryEnum,
         description: str | None = None,
     ) -> IncidentStatus:
@@ -201,7 +202,7 @@ class IncidentRepo(BaseRepo):
         model = IncidentStatus()
         model.organisation_id = organisation.id
         model.name = name
-        model.sort_order = sort_order
+        model.rank = rank
         model.category = category
         model.description = description
 
@@ -222,6 +223,22 @@ class IncidentRepo(BaseRepo):
         )
 
         return self.session.scalar(stmt)
+
+    def get_incident_statuses_by_category(
+        self, organisation: Organisation, category: IncidentStatusCategoryEnum
+    ) -> Sequence[IncidentStatus]:
+        """Get all incident status by category, ordered by rank"""
+        stmt = (
+            select(IncidentStatus)
+            .where(
+                IncidentStatus.organisation_id == organisation.id,
+                IncidentStatus.deleted_at.is_(None),
+                IncidentStatus.category == category,
+            )
+            .order_by(IncidentStatus.rank.asc())
+        )
+
+        return self.session.scalars(stmt).all()
 
     def get_total_incidents(self, organisation: Organisation) -> int:
         stmt = select(func.count(Incident.id)).where(Incident.organisation_id == organisation.id)
@@ -303,18 +320,23 @@ class IncidentRepo(BaseRepo):
         return model
 
     def get_incident_by_slack_channel_id(self, id: str) -> Incident | None:
+        """Get the incident associated with a slack channel"""
         stmt = select(Incident).where(Incident.slack_channel_id == id, Incident.deleted_at.is_(None)).limit(1)
 
         return self.session.scalar(stmt)
 
     def get_all_incident_statuses(self, organisation: Organisation) -> Sequence[IncidentStatus]:
-        stmt = select(IncidentStatus).where(
-            IncidentStatus.organisation_id == organisation.id, IncidentStatus.deleted_at.is_(None)
+        """Get all statuses for an organisation ordered by rank"""
+        stmt = (
+            select(IncidentStatus)
+            .where(IncidentStatus.organisation_id == organisation.id, IncidentStatus.deleted_at.is_(None))
+            .order_by(IncidentStatus.rank.asc())
         )
 
         return self.session.scalars(stmt).all()
 
     def get_all_incident_roles(self, organisation: Organisation) -> Sequence[IncidentRole]:
+        """Get all roles for an organisation"""
         stmt = select(IncidentRole).where(
             IncidentRole.organisation_id == organisation.id, IncidentRole.deleted_at.is_(None)
         )
@@ -374,7 +396,7 @@ class IncidentRepo(BaseRepo):
 
         return PaginatedResults(total=total, page=page, size=size, items=results)
 
-    def patch_incident(self, incident: Incident, patch_in: ExtendedPatchIncidentSchema) -> None:
+    def patch_incident(self, incident: Incident, patch_in: ExtendedPatchIncidentSchema | PatchIncidentSchema) -> None:
         for field, value in patch_in.model_dump(exclude_unset=True).items():
             if field == "incident_status":
                 incident.incident_status_id = value["id"]

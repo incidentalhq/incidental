@@ -164,9 +164,13 @@ export const LinkButton = styled(Link)`
   ${buttonCss}
 `
 
-export const Pill = styled.div`
+interface PillProps {
+  $color?: string
+}
+
+export const Pill = styled.div<PillProps>`
   border-radius: var(--radius-lg);
-  background-color: var(--color-green-100);
+  background-color: ${(props) => (props.$color ? props.$color : 'var(--color-green-100)')};
   display: inline-block;
   padding: 0.25rem 0.5rem;
 `

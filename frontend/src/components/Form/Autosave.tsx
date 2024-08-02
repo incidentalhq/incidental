@@ -9,9 +9,10 @@ import { StyledButton } from '@/components/Theme/Styles'
 interface Props {
   debounceMs?: number
   button?: boolean
+  feedback?: boolean
 }
 
-const AutoSave: React.FC<Props> = ({ debounceMs = 3000, button = false }) => {
+const AutoSave: React.FC<Props> = ({ debounceMs = 3000, button = false, feedback = false }) => {
   const formik = useFormikContext()
   const [isSaved, setIsSaved] = useState<boolean>(false)
   const [label, setLabel] = useState<React.ReactElement | string>('Save')
@@ -52,15 +53,14 @@ const AutoSave: React.FC<Props> = ({ debounceMs = 3000, button = false }) => {
 
   return (
     <div>
-      {button ? (
+      {button && (
         <div>
           <StyledButton type="button" disabled={formik.isSubmitting || !formik.dirty} onClick={handleSubmit}>
             {label}
           </StyledButton>
         </div>
-      ) : (
-        <div>{formik.isSubmitting ? 'Saving...' : isSaved ? 'Changes saved.' : null}</div>
       )}
+      {feedback && <div>{formik.isSubmitting ? 'Saving...' : isSaved ? 'Changes saved.' : null}</div>}
     </div>
   )
 }

@@ -16,7 +16,7 @@ from app.schemas.actions import (
     PatchIncidentTimestampsSchema,
     UpdateIncidentRoleAssignmentSchema,
 )
-from app.schemas.models import IncidentFieldValueSchema, IncidentSchema, IncidentUpdateSchema
+from app.schemas.models import IncidentSchema, IncidentUpdateSchema
 from app.schemas.resources import PaginatedResults
 from app.schemas.special import CombinedFieldAndValueSchema
 from app.services.factories import create_incident_service

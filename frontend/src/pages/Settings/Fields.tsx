@@ -10,10 +10,11 @@ import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
 import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
-import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, Pill, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
+import { FieldInterfaceKind, FieldKind } from '@/types/enums'
 import { IField } from '@/types/models'
 import { apiErrorsToFormikErrors } from '@/utils/form'
 
@@ -39,6 +40,19 @@ const ModalContainer = styled.div`
   padding: 1rem;
   min-width: 600px;
 `
+
+const humanizedFieldInterfaceKind = (kind: FieldInterfaceKind) => {
+  switch (kind) {
+    case FieldInterfaceKind.MULTI_SELECT:
+      return 'Multi select'
+    case FieldInterfaceKind.SINGLE_SELECT:
+      return 'Single select'
+    case FieldInterfaceKind.TEXT:
+      return 'Text'
+    case FieldInterfaceKind.TEXTAREA:
+      return 'Textarea'
+  }
+}
 
 const SettingsFields = () => {
   const { setModal, closeModal } = useModal()
@@ -131,11 +145,19 @@ const SettingsFields = () => {
         },
         {
           name: 'UI',
-          render: (v) => v.interfaceKind
+          render: (v) => humanizedFieldInterfaceKind(v.interfaceKind)
         },
         {
           name: 'Kind',
-          render: (v) => v.kind
+          render: (v) => (
+            <>
+              {v.kind === FieldKind.USER_DEFINED ? (
+                <Pill>Custom</Pill>
+              ) : (
+                <Pill $color="var(--color-gray-50)">System</Pill>
+              )}
+            </>
+          )
         },
         {
           name: '',
@@ -165,6 +187,8 @@ const SettingsFields = () => {
     [handleDelete, handleOpenEditModal]
   )
 
+  const fieldsSorted = useMemo(() => fieldsQuery.data?.items.sort((a, _) => (a.isSystem ? -1 : 1)), [fieldsQuery])
+
   return (
     <>
       <Box>
@@ -176,7 +200,7 @@ const SettingsFields = () => {
             <Intro>
               <p>Shown below are the fields are that available</p>
             </Intro>
-            {fieldsQuery.isSuccess ? <Table data={fieldsQuery.data.items} rowKey={'id'} columns={columns} /> : null}
+            {fieldsQuery.isSuccess ? <Table data={fieldsSorted ?? []} rowKey={'id'} columns={columns} /> : null}
             <Actions>
               <StyledButton $primary={true} onClick={handleOpenCreateModal}>
                 Add field

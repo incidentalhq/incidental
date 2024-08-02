@@ -8,9 +8,6 @@ from app.schemas.base import BaseSchema
 from app.schemas.models import (
     FormSchema,
     IncidentRoleSchema,
-    IncidentSeveritySchema,
-    IncidentStatusSchema,
-    IncidentTypeSchema,
     OrganisationSchema,
     UserSchema,
 )
@@ -29,10 +26,7 @@ class PaginatedResults(BaseSchema, Generic[DataT]):
 
 class OrganisationDetail(BaseSchema):
     organisation: OrganisationSchema
-    status_list: list[IncidentStatusSchema]
-    severity_list: list[IncidentSeveritySchema]
     forms: list[FormSchema]
-    incident_types: list[IncidentTypeSchema]
     roles: list[IncidentRoleSchema]
 
 

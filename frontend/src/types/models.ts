@@ -29,10 +29,7 @@ export interface IOrganisation extends IModel {
 
 export interface IOrganisationDetail {
   organisation: IOrganisation
-  statusList: IIncidentStatus[]
-  severityList: IIncidentSeverity[]
   forms: IForm[]
-  incidentTypes: IIncidentType[]
   roles: IIncidentRole[]
 }
 
@@ -96,7 +93,7 @@ export interface IIncidentType extends IModel {
 export interface IIncidentStatus extends IModel {
   name: string
   description: string
-  sortOrder: number
+  rank: number
   category: IncidentStatusCategory
 }
 
@@ -153,10 +150,9 @@ export interface IField extends IModel {
 
 export interface IForm extends IModel {
   name: string
-  isPublished: boolean
   template: string | null
   type: FormType
-  formFields: IFormField[]
+  isPublished: boolean
 }
 
 export interface IInvite extends IModel {
@@ -178,4 +174,8 @@ export interface IIncidentFieldValue extends IModel {
   valueText: string
   valueSingleSelect: string
   valueMultiSelect: string[]
+}
+
+export interface ILifecycle extends IModel {
+  isTriageAvailable: boolean
 }

@@ -76,8 +76,10 @@ const SettingsSidebar: React.FC<Props> = () => {
           <SubItems>
             <MenuItem to={RoutePaths.SETTINGS_INDEX}>Overview</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_FIELDS}>Custom fields</MenuItem>
+            <MenuItem to={RoutePaths.SETTINGS_FORMS_INDEX}>Forms</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_ROLES}>Roles</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_SEVERITY}>Severities</MenuItem>
+            <MenuItem to={RoutePaths.SETTINGS_STATUSES}>Status</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_TIMESTAMPS}>Timestamps</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_TYPES}>Types</MenuItem>
           </SubItems>

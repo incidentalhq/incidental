@@ -62,6 +62,8 @@ class IncidentSearchSchema(PaginationParamsSchema):
 
 
 class PatchIncidentSchema(BaseSchema):
+    """Use by API route to patch incident"""
+
     name: str | None = None
     description: str | None = None
     incident_status: ModelIdSchema | None = None
@@ -69,6 +71,8 @@ class PatchIncidentSchema(BaseSchema):
 
 
 class ExtendedPatchIncidentSchema(PatchIncidentSchema):
+    """This should be used internally"""
+
     slack_channel_name: str | None = None
     slack_channel_id: str | None = None
 
@@ -205,3 +209,7 @@ class SetIncidentFieldValueSchema(BaseSchema):
 
 class PatchIncidentFieldValuesSchema(RootModel):
     root: list[SetIncidentFieldValueSchema]
+
+
+class PatchLifecycleSchema(BaseSchema):
+    is_triage_available: bool | None = None

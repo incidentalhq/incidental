@@ -2,11 +2,15 @@ import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
   IField,
+  IForm,
+  IFormField,
   IIncident,
   IIncidentRole,
   IIncidentSeverity,
+  IIncidentStatus,
   IIncidentType,
   IIncidentUpdate,
+  ILifecycle,
   ILoggedInUser,
   IOrganisation,
   IPublicUser,
@@ -359,6 +363,61 @@ export class ApiService {
         [ORGANISATION_HEADER_KEY]: this.organisation
       },
       json: values
+    })
+  }
+
+  getForms = () => {
+    return callApi<PaginatedResults<IForm>>('GET', `/forms/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentStatuses = () => {
+    return callApi<PaginatedResults<IIncidentStatus>>('GET', `/statuses/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getLifecycle = () => {
+    return callApi<ILifecycle>('GET', `/lifecycle`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  patchLifecycle = (lifecycle: ILifecycle, values: Partial<ILifecycle>) => {
+    return callApi<ILifecycle>('PATCH', `/lifecycle/${lifecycle.id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  getFormFields = (form: IForm) => {
+    return callApi<PaginatedResults<IFormField>>('GET', `/forms/${form.id}/fields`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  getIncidentSeverities = () => {
+    return callApi<PaginatedResults<IIncidentSeverity>>('GET', `/severities/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
     })
   }
 }

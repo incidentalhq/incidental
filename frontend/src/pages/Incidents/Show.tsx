@@ -111,7 +111,13 @@ const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
   const { setModal, closeModal } = useModal()
-  const { statusList, severityList, organisation } = useGlobal()
+  const { organisation } = useGlobal()
+
+  // Incident severities
+  const severitiesQuery = useQuery({
+    queryKey: ['severities', organisation!.id],
+    queryFn: () => apiService.getIncidentSeverities()
+  })
 
   // Incident state
   const incidentQuery = useQuery({
@@ -201,21 +207,25 @@ const ShowIncident = () => {
       <ModalContainer>
         <h2>Change status</h2>
         <p>Update the status of your incident</p>
-        <ChangeStatusForm statusList={statusList} incident={incidentQuery.data} onSubmit={handleChangeStatus} />
+        <ChangeStatusForm incident={incidentQuery.data} onSubmit={handleChangeStatus} />
       </ModalContainer>
     )
   }
 
   const handleEditSeverity = (evt: MouseEvent<HTMLButtonElement>) => {
     evt.preventDefault()
-    if (!incidentQuery.data) {
+    if (!incidentQuery.data || !severitiesQuery.isSuccess) {
       return
     }
     setModal(
       <ModalContainer>
         <h2>Change severity</h2>
         <p>Change the severity of the incident below</p>
-        <ChangeSeverityForm severityList={severityList} incident={incidentQuery.data} onSubmit={handleChangeSeverity} />
+        <ChangeSeverityForm
+          severityList={severitiesQuery.data.items}
+          incident={incidentQuery.data}
+          onSubmit={handleChangeSeverity}
+        />
       </ModalContainer>
     )
   }

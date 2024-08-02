@@ -13,10 +13,12 @@ from app.routes import (
     health,
     incident_types,
     incidents,
+    lifecycle,
     organisations,
     roles,
     severities,
     slack,
+    statuses,
     timestamps,
     users,
     world,
@@ -52,6 +54,8 @@ def create_app() -> FastAPI:
     app.include_router(roles.router, prefix="/roles")
     app.include_router(fields.router, prefix="/fields")
     app.include_router(incident_types.router, prefix="/incident-types")
+    app.include_router(statuses.router, prefix="/statuses")
+    app.include_router(lifecycle.router, prefix="/lifecycle")
 
     # exception handler for form field validation errors
     @app.exception_handler(FormFieldValidationError)

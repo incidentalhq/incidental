@@ -10,6 +10,7 @@ from app.models import (
     IncidentRoleKind,
     IncidentSeverity,
     IncidentStatus,
+    IncidentStatusCategoryEnum,
     IncidentType,
     Organisation,
     User,
@@ -70,10 +71,11 @@ class IncidentService:
         return reference
 
     def create_incident_from_schema(self, create_in: CreateIncidentSchema, user: User):
-        name = None
-        incident_type = None
-        incident_severity = None
-        summary = None
+        name: str | None = None
+        incident_type: IncidentType | None = None
+        incident_severity: IncidentSeverity | None = None
+        summary: str | None = None
+        incident_status: IncidentStatus | None = None
 
         for field_id, value in create_in.model_dump().items():
             form_field = self.form_repo.get_form_field_by_id(id=field_id)
@@ -85,14 +87,19 @@ class IncidentService:
                     name = value
                 case FieldKind.INCIDENT_SEVERITY:
                     incident_severity = self.incident_repo.get_incident_severity_by_id_or_throw(id=value)
-                    if not incident_severity:
-                        raise ValueError("Could not find severity")
                 case FieldKind.INCIDENT_TYPE:
-                    incident_type = self.incident_repo.get_incident_type_by_id(id=value)
-                    if not incident_type:
-                        raise ValueError("Could not find incident type")
+                    incident_type = self.incident_repo.get_incident_type_by_id_or_throw(id=value)
                 case FieldKind.INCIDENT_SUMMARY:
                     summary = value
+                case FieldKind.INCIDENT_INITIAL_STATUS:
+                    incident_status = self.incident_repo.get_incident_status_by_id_or_throw(id=value)
+
+        if name is None:
+            raise ValidationError("Incident name cannot be empty")
+        if not incident_type:
+            raise ValidationError("Incident type not found")
+        if not incident_severity:
+            raise ValidationError("Incident severity not found")
 
         return self.create_incident(
             name=name,
@@ -100,6 +107,7 @@ class IncidentService:
             creator=user,
             incident_severity=incident_severity,
             incident_type=incident_type,
+            incident_status=incident_status,
         )
 
     def create_incident(
@@ -109,16 +117,16 @@ class IncidentService:
         creator: User,
         incident_severity: IncidentSeverity,
         incident_type: IncidentType,
+        incident_status: IncidentStatus | None = None,
     ):
         """Create a new incident"""
 
-        # FIXME: this should not be hardcoded
-        initial_status_name = "Triage"
-        initial_status = self.incident_repo.get_incident_status_by_name(
-            organisation=self.organisation, name=initial_status_name
-        )
-        if not initial_status:
-            raise Exception(f"Could not find status: {initial_status_name}")
+        # default to the first active status when no incident status is specified
+        if not incident_status:
+            statuses = self.incident_repo.get_incident_statuses_by_category(
+                organisation=self.organisation, category=IncidentStatusCategoryEnum.ACTIVE
+            )
+            incident_status = statuses[0]  # use first status
 
         # create incident model
         reference_id = self.generate_reference_id()
@@ -128,7 +136,7 @@ class IncidentService:
             user=creator,
             name=name,
             summary=summary,
-            status=initial_status,
+            status=incident_status,
             severity=incident_severity,
             type=incident_type,
             reference=reference,

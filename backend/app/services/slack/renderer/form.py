@@ -11,7 +11,9 @@ from app.models import (
     Incident,
     IncidentSeverity,
     IncidentStatus,
+    IncidentStatusCategoryEnum,
     IncidentType,
+    Lifecycle,
 )
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -19,6 +21,7 @@ logger = structlog.get_logger(logger_name=__name__)
 
 class RenderContext(BaseModel):
     incident: Incident | None = None
+    lifecycle: Lifecycle | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -60,22 +63,14 @@ class FormRenderer:
     def _render_severity_type(self, form_field: FormField, context: RenderContext | None = None) -> dict:
         options = []
         for sev in self.severities:
-            options.append(
-                {
-                    "text": {"type": "plain_text", "text": sev.name},
-                    "value": sev.id,
-                }
-            )
+            opt = self._create_option_value(name=sev.name, value=sev.id)
+            options.append(opt)
 
         initial_option: None | dict = None
         if context and context.incident:
-            initial_option = {
-                "text": {
-                    "type": "plain_text",
-                    "text": context.incident.incident_severity.name,
-                },
-                "value": context.incident.incident_severity.id,
-            }
+            initial_option = self._create_option_value(
+                name=context.incident.incident_severity.name, value=context.incident.incident_severity.id
+            )
 
         rendered_field: dict[str, Any] = {
             "type": "input",
@@ -101,22 +96,15 @@ class FormRenderer:
         options = []
         initial_option: None | dict = None
         for inc_type in self.incident_types:
-            opt = {
-                "text": {"type": "plain_text", "text": inc_type.name},
-                "value": inc_type.id,
-            }
+            opt = self._create_option_value(name=inc_type.name, value=inc_type.id)
             options.append(opt)
             if inc_type.name == "Default":
                 initial_option = opt
 
         if context and context.incident:
-            initial_option = {
-                "text": {
-                    "type": "plain_text",
-                    "text": context.incident.incident_type.name,
-                },
-                "value": context.incident.incident_type.id,
-            }
+            initial_option = self._create_option_value(
+                name=context.incident.incident_type.name, value=context.incident.incident_type.id
+            )
 
         rendered_field = {
             "type": "input",
@@ -136,27 +124,53 @@ class FormRenderer:
 
         return rendered_field
 
+    def _render_initial_incident_status(
+        self, form_field: FormField, context: RenderContext | None = None
+    ) -> dict[str, Any] | None:
+        # If triage is not available, don't render this field
+        if context and context.lifecycle:
+            if not context.lifecycle.is_triage_available:
+                return None
+
+        triage = list(filter(lambda it: it.category == IncidentStatusCategoryEnum.TRIAGE, self.incident_statuses))[0]
+        active_status = list(
+            filter(lambda it: it.category == IncidentStatusCategoryEnum.ACTIVE, self.incident_statuses)
+        )[0]
+
+        options = [
+            self._create_option_value("Triage", triage.id),
+            self._create_option_value("Active", active_status.id),
+        ]
+
+        rendered_field: dict[str, Any] = {
+            "type": "input",
+            "block_id": f"block-{form_field.id}",
+            "label": {
+                "type": "plain_text",
+                "text": form_field.label,
+            },
+            "element": {
+                "type": "static_select",
+                "action_id": form_field.id,
+                "options": options,
+            },
+            "optional": False if form_field.is_required else True,
+            "dispatch_action": True,
+        }
+
+        return rendered_field
+
     def _render_incident_status(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
         options = []
         initial_option: dict | None = None
         for inc_status in self.incident_statuses:
-            opt = {
-                "text": {
-                    "type": "plain_text",
-                    "text": inc_status.name,
-                },
-                "value": inc_status.id,
-            }
+            opt = self._create_option_value(name=inc_status.name, value=inc_status.id)
             options.append(opt)
 
         if context and context.incident:
-            initial_option = {
-                "text": {
-                    "type": "plain_text",
-                    "text": context.incident.incident_status.name,
-                },
-                "value": context.incident.incident_status.id,
-            }
+            initial_option = self._create_option_value(
+                name=context.incident.incident_status.name, value=context.incident.incident_status.id
+            )
 
         rendered_field: dict[str, Any] = {
             "type": "input",
@@ -215,7 +229,7 @@ class FormRenderer:
 
         return block
 
-    def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict:
+    def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict | None:
         match form_field.field.kind:
             case FieldKind.USER_DEFINED:
                 return self._render_generic_input(form_field=form_field)
@@ -229,8 +243,20 @@ class FormRenderer:
                 return self._render_multi_line_text(form_field=form_field, context=context)
             case FieldKind.INCIDENT_TYPE:
                 return self._render_incident_type(form_field=form_field, context=context)
+            case FieldKind.INCIDENT_INITIAL_STATUS:
+                return self._render_initial_incident_status(form_field=form_field, context=context)
             case _:
-                raise RuntimeError(f"Unknown field kind {form_field.kind}")
+                raise RuntimeError(f"Unknown field kind {form_field.form.kind}")
 
     def _render_generic_input(self, form_field: FormField):
         pass
+
+    def _create_option_value(self, name: str, value: str) -> dict[str, Any]:
+        """Create an option value for use in an select input"""
+        return {
+            "text": {
+                "type": "plain_text",
+                "text": name,
+            },
+            "value": value,
+        }

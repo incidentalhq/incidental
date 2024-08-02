@@ -6,7 +6,6 @@ interface Props {
   onClick: () => void
 }
 
-const Root = styled.div``
 const Checkbox = styled.input`
   cursor: default;
   appearance: none;
@@ -65,11 +64,7 @@ const Checkbox = styled.input`
 `
 
 const CheckboxToggle: React.FC<Props> = ({ isSelected, onClick }) => {
-  return (
-    <Root>
-      <Checkbox type="checkbox" checked={isSelected} onClick={onClick} />
-    </Root>
-  )
+  return <Checkbox type="checkbox" checked={isSelected} onClick={onClick} />
 }
 
 export default CheckboxToggle

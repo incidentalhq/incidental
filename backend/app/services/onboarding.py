@@ -15,7 +15,7 @@ from app.models import (
 )
 from app.models.incident_role import IncidentRoleKind
 from app.models.incident_status import IncidentStatusCategoryEnum
-from app.repos import AnnouncementRepo, FieldRepo, FormRepo, IncidentRepo, SeverityRepo, TimestampRepo
+from app.repos import AnnouncementRepo, FieldRepo, FormRepo, IncidentRepo, LifecycleRepo, SeverityRepo, TimestampRepo
 
 
 class CategoryItemType(TypedDict):
@@ -47,6 +47,7 @@ class OnboardingService:
         announcement_repo: AnnouncementRepo,
         timestamp_repo: TimestampRepo,
         field_repo: FieldRepo,
+        lifecycle_repo: LifecycleRepo,
     ):
         self.form_repo = form_repo
         self.severity_repo = severity_repo
@@ -54,6 +55,7 @@ class OnboardingService:
         self.announcement_repo = announcement_repo
         self.timestamp_repo = timestamp_repo
         self.field_repo = field_repo
+        self.lifecycle_repo = lifecycle_repo
 
     def setup_organisation(self, organisation: Organisation) -> None:
         self._setup_fields(organisation=organisation)
@@ -65,12 +67,15 @@ class OnboardingService:
         self._setup_incident_roles(organisation)
         self._setup_announcement(organisation)
         self._setup_timestamps(organisation)
+        self._setup_lifecycle(organisation)
 
     def _setup_forms(self, organisation: Organisation) -> list[Form]:
         # create incident form
-        create_form = self.form_repo.create_form(
-            organisation=organisation, name="Create incident", _type=FormKind.CREATE_INCIDENT
-        )
+        create_form = self.form_repo.get_form(organisation=organisation, form_type=FormKind.CREATE_INCIDENT)
+        if not create_form:
+            create_form = self.form_repo.create_form(
+                organisation=organisation, name="Create incident", _type=FormKind.CREATE_INCIDENT
+            )
         create_form_fields_descriptor: list[dict[str, Any]] = [
             {
                 "label": "Name",
@@ -88,6 +93,12 @@ class OnboardingService:
             {
                 "label": "Severity",
                 "field_kind": FieldKind.INCIDENT_SEVERITY,
+                "is_required": True,
+                "is_deletable": False,
+            },
+            {
+                "label": "Initial status",
+                "field_kind": FieldKind.INCIDENT_INITIAL_STATUS,
                 "is_required": True,
                 "is_deletable": False,
             },
@@ -198,7 +209,7 @@ class OnboardingService:
                     self.incident_repo.create_incident_status(
                         organisation=organisation,
                         name=item["name"],
-                        sort_order=idx,
+                        rank=idx,
                         category=category,
                         description=item["description"],
                     )
@@ -284,26 +295,37 @@ class OnboardingService:
                 "label": "Incident name",
                 "interface_kind": InterfaceKind.TEXT,
                 "kind": FieldKind.INCIDENT_NAME,
+                "description": "A unique identifier or short title for the incident",
             },
             {
                 "label": "Incident type",
                 "interface_kind": InterfaceKind.SINGLE_SELECT,
                 "kind": FieldKind.INCIDENT_TYPE,
+                "description": "The category of the incident",
             },
             {
                 "label": "Incident severity",
                 "interface_kind": InterfaceKind.SINGLE_SELECT,
                 "kind": FieldKind.INCIDENT_SEVERITY,
+                "description": "The level of impact or urgency of the incident",
             },
             {
                 "label": "Incident summary",
                 "interface_kind": InterfaceKind.TEXTAREA,
                 "kind": FieldKind.INCIDENT_SUMMARY,
+                "description": "A brief overview of the incident, including key details and initial observations",
             },
             {
                 "label": "Incident status",
                 "interface_kind": InterfaceKind.SINGLE_SELECT,
                 "kind": FieldKind.INCIDENT_STATUS,
+                "description": "The current state of the incident",
+            },
+            {
+                "label": "Incident initial status",
+                "interface_kind": InterfaceKind.SINGLE_SELECT,
+                "kind": FieldKind.INCIDENT_INITIAL_STATUS,
+                "description": "Initial status of the incident when it is declared",
             },
         ]
         for field_descriptor in field_descriptors:
@@ -316,4 +338,9 @@ class OnboardingService:
                     label=field_descriptor["label"],
                     interface_kind=field_descriptor["interface_kind"],
                     kind=field_descriptor["kind"],
+                    description=field_descriptor["description"],
                 )
+
+    def _setup_lifecycle(self, organisation: Organisation):
+        if not organisation.lifecycles:
+            self.lifecycle_repo.create_lifecycle(organisation=organisation)
