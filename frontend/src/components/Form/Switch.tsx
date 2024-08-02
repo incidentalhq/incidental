@@ -15,7 +15,7 @@ interface Props {
 }
 
 const Switch: React.FC<Props> = ({ name, onValue = true, offValue = false }) => {
-  const [field, o, helpers] = useField(name)
+  const [field, , helpers] = useField(name)
   const isChecked = field.value === onValue ? true : false
 
   return (

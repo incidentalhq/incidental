@@ -38,7 +38,7 @@ const TriageToggleForm: React.FC<Props> = ({ onSubmit, lifecycle }) => {
       initialValues={defaultValues}
       enableReinitialize={true}
     >
-      {({ isSubmitting }) => (
+      {() => (
         <Form className="space-y-2">
           <AutoSave debounceMs={100} />
           <GeneralError />

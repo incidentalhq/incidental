@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import styled from 'styled-components'
 
-import { Box, Content, ContentMain, Header, Pill, StyledButton, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 
