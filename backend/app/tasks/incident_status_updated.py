@@ -35,6 +35,13 @@ class IncidentStatusUpdatedTask(BaseTask["IncidentStatusUpdatedTaskParameters"])
         """Get matching triggers for status change"""
         triggers: list[str] = []
 
+        # transition from triage to active
+        if (
+            old_status.category == IncidentStatusCategoryEnum.TRIAGE
+            and new_status.category == IncidentStatusCategoryEnum.ACTIVE
+        ):
+            triggers.append("incident.accepted")
+
         # transition from active to closed
         if (
             new_status.category == IncidentStatusCategoryEnum.CLOSED
