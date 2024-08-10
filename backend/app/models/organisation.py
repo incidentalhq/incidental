@@ -30,14 +30,14 @@ class OrganisationTypes(str, enum.Enum):
 class Organisation(Base, TimestampMixin):
     __prefix__ = "org"
 
-    name = mapped_column(UnicodeText, nullable=False)
-    kind = mapped_column(UnicodeText, nullable=False, default=OrganisationTypes.DEFAULT)
-    slug = mapped_column(String(100), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
+    kind: Mapped[OrganisationTypes] = mapped_column(UnicodeText, nullable=False, default=OrganisationTypes.DEFAULT)
+    slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # slack specific columns
-    slack_team_id = mapped_column(UnicodeText, nullable=True, unique=True)
-    slack_team_name = mapped_column(UnicodeText, nullable=True)
-    slack_bot_token = mapped_column(UnicodeText, nullable=True)
+    slack_team_id: Mapped[str | None] = mapped_column(UnicodeText, nullable=True, unique=True)
+    slack_team_name: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
+    slack_bot_token: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
 
     # relationships
     fields: Mapped[list["Field"]] = relationship("Field", back_populates="organisation")

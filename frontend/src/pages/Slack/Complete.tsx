@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -23,14 +24,22 @@ const SlackInstallComplete: React.FC = () => {
   const { apiService } = useApiService()
   const navigate = useNavigate()
   const { switchOrganisation } = useOrganisationSwitcher()
+  const client = useQueryClient()
 
   const processOauth = useCallback(
     async (code: string) => {
-      const response = await apiService.slackCompleteAppInstallation(code)
-      switchOrganisation(response)
+      try {
+        const response = await apiService.slackCompleteAppInstallation(code)
+        await client.refetchQueries({
+          queryKey: ['world']
+        })
+        switchOrganisation(response)
+      } catch (e) {
+        console.error(e)
+      }
       navigate(RoutePaths.DASHBOARD)
     },
-    [apiService, navigate, switchOrganisation]
+    [apiService, navigate, switchOrganisation, client]
   )
 
   useEffect(() => {

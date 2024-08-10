@@ -6,7 +6,7 @@ from slack_sdk import WebClient
 from app.models import MemberRole, Organisation, OrganisationTypes, User
 from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import CreateUserViaSlackSchema
-from app.schemas.resources import CreationResult, Credentials
+from app.schemas.resources import CreationResult, Credentials, OrganisationCreationResult
 from app.utils import generate_password
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -62,7 +62,7 @@ class SlackUserService:
 
         return user
 
-    def get_or_create_user_from_slack_user_credentials_token(self, token: str) -> CreationResult:
+    def complete_slack_login(self, token: str) -> CreationResult:
         """Used by slack login"""
         user_id_key = "https://slack.com/user_id"
         team_id_key = "https://slack.com/team_id"
@@ -95,62 +95,64 @@ class SlackUserService:
                 )
             )
 
-        # create organisation for them
         team_id = response.data.get(team_id_key, "")
         team_name = response.data.get(team_name_key, "")
 
-        organisation = self.organisation_repo.get_by_slack_team_id(team_id)
-        is_new_organisation = False
+        join_result = self._handle_join_slack_organisation(user=user, team_id=team_id, team_name=team_name)
 
-        if not organisation:
-            organisation = self.organisation_repo.create_organisation(
-                name=team_name, slack_team_name=team_name, slack_team_id=team_id, kind=OrganisationTypes.SLACK
-            )
-            is_new_organisation = True
+        return CreationResult(
+            user=user, organisation=join_result.organisation, is_new_organisation=join_result.is_new_organisation
+        )
 
-        # add user to organisation
-        self.organisation_repo.add_member_if_not_exists(user=user, organisation=organisation, role=MemberRole.MEMBER)
-
-        return CreationResult(user=user, organisation=organisation, is_new_organisation=is_new_organisation)
-
-    def update_slack_profile_from_app_install_credentials(self, user: User, credentials: Credentials) -> CreationResult:
-        """
-        1. First user
-            - If sign up via slack
-                - Existing org's access token set
-            - If sign up via email:
-                - Existing org updated with slack team details
-
-        2. Second user
-            - If sign up via slack
-                - Added as member of existing org
-            - If sign up via email
-                - Added to default org
-                - Additional added as a member of existing slack linked organisation
-        """
+    def complete_slack_app_install(self, user: User, credentials: Credentials) -> CreationResult:
+        """When user installs the Slack app"""
         slack_team_id = credentials.original_data["team"]["id"]
-        organisation = self.organisation_repo.get_by_slack_team_id(slack_team_id=slack_team_id)
-        new_organisation = False
+        team_name = credentials.original_data["team"]["name"]
 
-        if organisation:
-            self.organisation_repo.add_member_if_not_exists(
-                user=user, organisation=organisation, role=MemberRole.MEMBER
-            )
-        else:
-            organisation = self.organisation_repo.create_organisation(
-                name=credentials.original_data["team"]["name"],
-                slack_team_id=slack_team_id,
-                slack_team_name=credentials.original_data["team"]["name"],
-                kind=OrganisationTypes.SLACK,
-            )
-            new_organisation = True
-            self.organisation_repo.create_member(user=user, organisation=organisation, role=MemberRole.MEMBER)
+        join_result = self._handle_join_slack_organisation(user=user, team_id=slack_team_id, team_name=team_name)
 
         # set the token for this installation
-        organisation.slack_bot_token = credentials.access_token
+        join_result.organisation.slack_bot_token = credentials.access_token
 
         # if the user did not originally sign up via slack
         if not user.slack_user_id:
             user.slack_user_id = credentials.original_data["authed_user"]["id"]
 
-        return CreationResult(user=user, organisation=organisation, is_new_organisation=new_organisation)
+        return CreationResult(
+            user=user, organisation=join_result.organisation, is_new_organisation=join_result.is_new_organisation
+        )
+
+    def _handle_join_slack_organisation(self, user: User, team_id: str, team_name: str) -> OrganisationCreationResult:
+        """
+        Figure out whether to:
+            - add user to existing slack organisation if it exists
+            - update user's 'default' organisation to a slack organisation
+            - create a new slack organisation
+        """
+        organisation = self.organisation_repo.get_by_slack_team_id(team_id)
+
+        # If slack organisation exists, add user as a member
+        if organisation:
+            self.organisation_repo.add_member_if_not_exists(
+                user=user, organisation=organisation, role=MemberRole.MEMBER
+            )
+            return OrganisationCreationResult(organisation=organisation, is_new_organisation=False)
+
+        # if user is in a default organisation, update that to a slack connected organisation
+        for user_organisation in user.organisations:
+            if user_organisation.kind == OrganisationTypes.DEFAULT:
+                user_organisation.name = team_name
+                user_organisation.slack_team_name = team_name
+                user_organisation.slack_team_id = team_id
+                user_organisation.kind = OrganisationTypes.SLACK
+                self.organisation_repo.session.flush()
+
+                return OrganisationCreationResult(organisation=user_organisation, is_new_organisation=False)
+
+        # otherwise create a new organisation
+        organisation = self.organisation_repo.create_organisation(
+            name=team_name, slack_team_name=team_name, slack_team_id=team_id, kind=OrganisationTypes.SLACK
+        )
+        self.organisation_repo.add_member_if_not_exists(user=user, organisation=organisation, role=MemberRole.MEMBER)
+
+        return OrganisationCreationResult(organisation=organisation, is_new_organisation=True)
