@@ -44,6 +44,13 @@ class CreationResult(BaseSchema):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
+# - misc credentials
+class OrganisationCreationResult(BaseSchema):
+    organisation: Organisation
+    is_new_organisation: bool
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
 class Credentials(BaseSchema):
     access_token: str
     refresh_token: str | None = None

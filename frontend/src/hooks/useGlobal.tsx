@@ -7,10 +7,13 @@ const useGlobalProvider = () => {
   const [forms, setForms] = useState<IForm[]>([])
   const [organisationDetails, setOrganisationDetails] = useState<IOrganisationDetail[]>([])
 
-  const setCurrentOrganisation = useCallback((organisationDetail: IOrganisationDetail) => {
-    setOrganisation(organisationDetail.organisation)
-    setForms(organisationDetail.forms)
-  }, [])
+  const setCurrentOrganisation = useCallback(
+    (organisationDetail: IOrganisationDetail) => {
+      setOrganisation(organisationDetail.organisation)
+      setForms(organisationDetail.forms)
+    },
+    [setOrganisation, setForms]
+  )
 
   return {
     organisationDetails,

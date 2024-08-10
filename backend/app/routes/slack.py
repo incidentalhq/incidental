@@ -96,9 +96,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     organisation_repo = OrganisationRepo(session=session)
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
-    create_result = slack_user_service.get_or_create_user_from_slack_user_credentials_token(
-        token=credentials.access_token
-    )
+    create_result = slack_user_service.complete_slack_login(token=credentials.access_token)
 
     onboarding_service = create_onboarding_service(session=session)
     if create_result.is_new_organisation:
@@ -113,7 +111,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
 async def slack_oauth_complete(
     result: OAuth2AuthorizationResultSchema, user: CurrentUser, session: Session = Depends(get_db)
 ):
-    """Complete installation of slack app"""
+    """Complete installation of slack app."""
     connector = _create_oauth_connector()
     token = connector.complete(code=result.code)
 
@@ -122,7 +120,7 @@ async def slack_oauth_complete(
     onboarding_service = create_onboarding_service(session=session)
 
     slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
-    creation_result = slack_user_service.update_slack_profile_from_app_install_credentials(user=user, credentials=token)
+    creation_result = slack_user_service.complete_slack_app_install(user=user, credentials=token)
 
     if creation_result.is_new_organisation:
         onboarding_service.setup_organisation(organisation=creation_result.organisation)
