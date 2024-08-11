@@ -59,3 +59,7 @@ class CreateSlackMessageTaskParameters(BaseModel):
     channel_id: str
     message: str
     text: str | None = None
+
+
+class SendVerificationEmailParameters(BaseModel):
+    user_id: str

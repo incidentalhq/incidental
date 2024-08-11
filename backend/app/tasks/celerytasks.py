@@ -9,6 +9,7 @@ from app.schemas.tasks import (
     IncidentStatusUpdatedTaskParameters,
     InviteUserToChannelParams,
     JoinChannelTaskParameters,
+    SendVerificationEmailParameters,
     SetChannelTopicParameters,
     SyncBookmarksTaskParameters,
 )
@@ -22,6 +23,7 @@ from app.tasks import (
     IncidentStatusUpdatedTask,
     InviteUserToChannelTask,
     JoinChannelTask,
+    SendVerificationEmailTask,
     SetChannelTopicTask,
     SyncBookmarksTask,
 )
@@ -93,3 +95,9 @@ def incident_status_updated(params: IncidentStatusUpdatedTaskParameters):
 def create_slack_message(params: CreateSlackMessageTaskParameters):
     with session_factory() as session:
         CreateSlackMessageTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def send_email_verification(params: SendVerificationEmailParameters):
+    with session_factory() as session:
+        SendVerificationEmailTask(session=session).execute(parameters=params)

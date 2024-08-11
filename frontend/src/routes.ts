@@ -21,5 +21,8 @@ export enum RoutePaths {
   SHOW_INCIDENT = '/incidents/:id',
 
   SLACK_INSTALL = '/slack/install',
-  SLACK_INSTALL_COMPLETE = '/slack/install/complete'
+  SLACK_INSTALL_COMPLETE = '/slack/install/complete',
+
+  VERIFY_ACCOUNT = '/verify',
+  VERIFY_SEND_CODE = '/verify/send'
 }

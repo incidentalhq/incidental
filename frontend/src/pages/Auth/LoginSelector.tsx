@@ -31,6 +31,7 @@ const LoginSelector: React.FC = () => {
   return (
     <Root data-testid="login-selector">
       <Logo src={logo} />
+      <h2>Welcome</h2>
       <>
         <LoginButton to={RoutePaths.EMAIL_LOGIN}>
           <Icon icon={email} fixedWidth /> Email login

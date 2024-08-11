@@ -34,7 +34,9 @@ const Register: React.FC = () => {
         <RegisterForm onSubmit={handleSubmit} />
       </Content>
       <FooterMessage>
-        Already have an account? <Link to={RoutePaths.EMAIL_LOGIN}>Login here</Link>
+        <div>
+          Already have an account? <Link to={RoutePaths.EMAIL_LOGIN}>Login here</Link>{' '}
+        </div>
       </FooterMessage>
     </Root>
   )

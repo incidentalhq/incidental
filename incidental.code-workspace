@@ -42,6 +42,7 @@
       "pyotp",
       "pytest",
       "pytz",
+      "Sendgrid",
       "sessionmaker",
       "shortuuid",
       "starlette",

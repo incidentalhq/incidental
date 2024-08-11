@@ -11,7 +11,7 @@ const Error = styled.div`
 
 const GeneralError = () => {
   const [, meta] = useField('general')
-  return <>{meta.error && typeof meta.error == 'string' ? <Error>{meta.error}</Error> : null}</>
+  return <>{meta.error && typeof meta.error === 'string' ? <Error>{meta.error}</Error> : null}</>
 }
 
 export default GeneralError

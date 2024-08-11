@@ -213,3 +213,12 @@ class PatchIncidentFieldValuesSchema(RootModel):
 
 class PatchLifecycleSchema(BaseSchema):
     is_triage_available: bool | None = None
+
+
+class VerifyEmailSchema(BaseSchema):
+    email_address: str
+    code: str
+
+
+class SendVerificationEmailSchema(BaseSchema):
+    email_address: str
