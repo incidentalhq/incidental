@@ -12,7 +12,6 @@ interface LoginFormProps {
 export interface LoginFormValues {
   emailAddress: string
   password: string
-  general?: Element
 }
 
 const names = ['Bruce Wayne', 'Peter Parker', 'Tony Stark', 'Steve Rogers', 'Bruce Banner', 'Clark Kent']
