@@ -15,6 +15,7 @@ class ErrorCodes(Enum):
     INACTIVE_ACCOUNT = "INACTIVE_ACCOUNT"
     UNKNOWN = "UNKNOWN"
     VALIDATION = "VALIDATION"
+    ALREADY_VERIFIED = "ALREADY_VERIFIED"
 
 
 class ApplicationException(Exception):

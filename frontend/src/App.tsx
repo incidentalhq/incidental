@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 
+import Debug from '@/components/Debug/Debug'
 // components
 import AuthGuard from '@/components/Guard/AuthGuard'
 import ReadyGuard from '@/components/Guard/ReadyGuard'
@@ -18,8 +19,10 @@ import { GlobalProvider } from '@/hooks/useGlobal'
 import Login from '@/pages/Auth/EmailLogin'
 import LoginSelector from '@/pages/Auth/LoginSelector'
 import Register from '@/pages/Auth/Register'
+import VerifySendCode from '@/pages/Auth/SendCode'
 import SlackLogin from '@/pages/Auth/SlackLogin'
 import RegisterSuccess from '@/pages/Auth/Success'
+import Verify from '@/pages/Auth/Verify'
 import Dashboard from '@/pages/Dashboard/Dashboard'
 import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
@@ -38,8 +41,6 @@ import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
 // route definitions
 import { RoutePaths } from '@/routes'
-
-import Debug from './components/Debug/Debug'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +75,8 @@ const App = () => {
                   <Route path={RoutePaths.REGISTER} element={<Register />} />
                   <Route path={RoutePaths.REGISTER_SUCCESS} element={<RegisterSuccess />} />
                   <Route path={RoutePaths.OAUTH_COMPLETE} element={<OAuthComplete />} />
+                  <Route path={RoutePaths.VERIFY_ACCOUNT} element={<Verify />} />
+                  <Route path={RoutePaths.VERIFY_SEND_CODE} element={<VerifySendCode />} />
                   <Route element={<AuthenticatedRoutes />}>
                     <Route element={<DefaultLayout />}>
                       <Route path={RoutePaths.DASHBOARD} element={<Dashboard />} />

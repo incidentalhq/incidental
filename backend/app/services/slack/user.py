@@ -94,6 +94,9 @@ class SlackUserService:
                     is_email_verified=True,
                 )
             )
+        else:
+            if not user.is_email_verified:
+                user.is_email_verified = True
 
         team_id = response.data.get(team_id_key, "")
         team_name = response.data.get(team_name_key, "")

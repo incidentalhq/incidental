@@ -1,5 +1,6 @@
 """Security services"""
 
+import base64
 from datetime import datetime, timedelta, timezone
 
 import pyotp
@@ -15,9 +16,11 @@ logger = structlog.get_logger(logger_name=__name__)
 # the max times a user is allowed to attempt a login
 MAX_LOGIN_ATTEMPTS = 4
 
+# if too many incorrect passwords, how long before a user can try logging in again
 COOL_OFF_PERIOD = timedelta(minutes=15)
 
-OTP_CODE_EXPIRE_IN_SECONDS = 120
+# how long OPT codes are valid for in seconds
+OTP_CODE_EXPIRE_IN_SECONDS = 15 * 60
 
 
 class SecurityService:
@@ -28,7 +31,8 @@ class SecurityService:
         self.session = session
 
     def _get_user_key(self, user: User) -> str:
-        return f"{settings.APP_SECRET}:{user.id}"
+        secret = f"{settings.APP_SECRET}:{user.id}".encode("utf8")
+        return base64.b32encode(secret).decode("utf8")
 
     def generate_otp_code(self, user: User) -> str:
         """

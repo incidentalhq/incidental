@@ -35,5 +35,10 @@ class Settings(BaseSettings):
 
     LOG_FORMAT: str = "console"  # console or json
 
+    # sendgrid
+    SENDGRID_API_KEY: str = ""
+    SUPPORT_EMAIL: str = ""
+    SUPPORT_EMAIL_NAME: str = ""
+
 
 settings = Settings()

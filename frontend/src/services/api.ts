@@ -420,4 +420,14 @@ export class ApiService {
       }
     })
   }
+
+  verifyAccount = (email: string, code: string) =>
+    callApi('POST', `/users/verify`, {
+      json: { emailAddress: email, code }
+    })
+
+  sendVerificationCode = (email: string) =>
+    callApi('POST', `/users/send-verification`, {
+      json: { emailAddress: email }
+    })
 }

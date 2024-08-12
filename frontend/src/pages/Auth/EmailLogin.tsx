@@ -32,7 +32,10 @@ const Login: React.FC = () => {
         <LoginForm onSubmit={handleSubmit} />
       </Content>
       <FooterMessage>
-        Need a new account? <Link to={RoutePaths.REGISTER}>Register here</Link>
+        <div>
+          Need a new account? <Link to={RoutePaths.REGISTER}>Register here</Link>
+        </div>
+        <Link to={'/verify/send'}>Resend verification code</Link>
       </FooterMessage>
     </Root>
   )
