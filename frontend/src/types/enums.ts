@@ -36,3 +36,7 @@ export enum FieldInterfaceKind {
   TEXT = 'TEXT',
   TEXTAREA = 'TEXTAREA'
 }
+
+export enum MemberRole {
+  MEMBER = 'MEMBER'
+}

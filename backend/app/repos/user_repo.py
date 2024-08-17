@@ -62,11 +62,11 @@ class UserRepo(BaseRepo):
         query = select(User).where(User.slack_user_id == slack_user_id).limit(1)
         return self.session.scalars(query).first()
 
-    def get_all_users_in_organisation(self, organisation: Organisation) -> Sequence[User]:
-        """Get all users within organisation"""
+    def get_all_organisation_members(self, organisation: Organisation) -> Sequence[OrganisationMember]:
+        """Get all members of an organisation"""
         stmt = (
-            select(User)
-            .join(OrganisationMember)
+            select(OrganisationMember)
+            .join(User)
             .where(OrganisationMember.organisation_id == organisation.id, User.is_active.is_(True))
         )
 

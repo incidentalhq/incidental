@@ -231,7 +231,7 @@ class OnboardingService:
                 "description": "The user responsible for first reporting the incident",
                 "slack_reference": "reporter",
                 "is_deletable": False,
-                "is_editable": False,
+                "is_editable": True,
             },
             {
                 "name": "Incident Lead",
@@ -252,6 +252,8 @@ class OnboardingService:
                     description=item["description"],
                     kind=item["kind"],
                     slack_reference=item["slack_reference"],
+                    is_deletable=item["is_deletable"],
+                    is_editable=item["is_editable"],
                 )
 
     def _setup_announcement(self, organisation: Organisation) -> None:

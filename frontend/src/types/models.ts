@@ -4,6 +4,7 @@ import {
   FormType,
   IncidentRoleKind,
   IncidentStatusCategory,
+  MemberRole,
   OrganisationKind
 } from './enums'
 
@@ -178,4 +179,9 @@ export interface IIncidentFieldValue extends IModel {
 
 export interface ILifecycle extends IModel {
   isTriageAvailable: boolean
+}
+
+export interface IOrganisationMember extends IModel {
+  user: IPublicUser
+  role: MemberRole
 }

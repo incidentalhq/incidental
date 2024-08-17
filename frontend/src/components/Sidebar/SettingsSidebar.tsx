@@ -82,6 +82,7 @@ const SettingsSidebar: React.FC<Props> = () => {
             <MenuItem to={RoutePaths.SETTINGS_STATUSES}>Status</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_TIMESTAMPS}>Timestamps</MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_TYPES}>Types</MenuItem>
+            <MenuItem to={RoutePaths.SETTINGS_USERS}>Users</MenuItem>
           </SubItems>
         </SubMenu>
 

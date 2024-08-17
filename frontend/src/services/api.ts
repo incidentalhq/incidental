@@ -13,6 +13,7 @@ import {
   ILifecycle,
   ILoggedInUser,
   IOrganisation,
+  IOrganisationMember,
   IPublicUser,
   ISettings,
   ITimestamp,
@@ -229,8 +230,8 @@ export class ApiService {
     })
   }
 
-  getUsers = () => {
-    return callApi<PaginatedResults<IPublicUser>>('GET', `/users/search`, {
+  getOrganisationMembers = () => {
+    return callApi<PaginatedResults<IOrganisationMember>>('GET', `/users/search`, {
       user: this.user,
       headers: {
         [ORGANISATION_HEADER_KEY]: this.organisation

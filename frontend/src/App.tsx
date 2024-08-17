@@ -31,6 +31,7 @@ import OAuthComplete from '@/pages/OAuth/Complete'
 import SettingsForms from '@/pages/Settings/components/Forms/Forms'
 import SettingsFields from '@/pages/Settings/Fields'
 import SettingsIndex from '@/pages/Settings/Index'
+import SettingsMembers from '@/pages/Settings/Members'
 import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
 import SettingsSlack from '@/pages/Settings/Slack'
@@ -95,6 +96,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_TYPES} element={<SettingsIncidentTypes />} />
                       <Route path={RoutePaths.SETTINGS_FORMS_INDEX} element={<SettingsForms />} />
                       <Route path={RoutePaths.SETTINGS_STATUSES} element={<SettingsStatuses />} />
+                      <Route path={RoutePaths.SETTINGS_USERS} element={<SettingsMembers />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />
