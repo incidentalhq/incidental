@@ -4,7 +4,7 @@ from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsSe
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
 from app.repos import OrganisationRepo, UserRepo
 from app.schemas.actions import AuthUserSchema, CreateUserSchema, SendVerificationEmailSchema, VerifyEmailSchema
-from app.schemas.models import UserPublicSchema, UserSchema
+from app.schemas.models import OrganisationMemberSchema, UserSchema
 from app.schemas.resources import PaginatedResults
 from app.schemas.tasks import SendVerificationEmailParameters
 from app.services.factories import create_onboarding_service
@@ -76,15 +76,15 @@ def me(
     return user
 
 
-@router.get("/search", response_model=PaginatedResults[UserPublicSchema])
+@router.get("/search", response_model=PaginatedResults[OrganisationMemberSchema])
 def users_search(user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation):
     """Get all users in the organisation"""
     user_repo = UserRepo(session=db)
 
-    users = user_repo.get_all_users_in_organisation(organisation=organisation)
-    total = len(users)
+    results = user_repo.get_all_organisation_members(organisation=organisation)
+    total = len(results)
 
-    return PaginatedResults(total=total, page=1, size=total, items=users)
+    return PaginatedResults(total=total, page=1, size=total, items=results)
 
 
 @router.post("/verify")

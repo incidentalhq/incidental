@@ -140,7 +140,7 @@ const ShowIncident = () => {
   // Fetch roles available for the organisation
   const usersQuery = useQuery({
     queryKey: ['users', organisation!.id],
-    queryFn: () => apiService.getUsers()
+    queryFn: () => apiService.getOrganisationMembers()
   })
 
   // Fetch incident field values

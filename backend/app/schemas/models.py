@@ -166,4 +166,9 @@ class LifecycleSchema(ModelSchema):
     is_triage_available: bool
 
 
+class OrganisationMemberSchema(ModelSchema):
+    user: PublicUserSchema
+    role: str
+
+
 IncidentTypeSchema.model_rebuild()
