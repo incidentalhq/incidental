@@ -300,7 +300,7 @@ const ShowIncident = () => {
           <h2>Assign role</h2>
           {usersQuery.isSuccess && incidentQuery.data ? (
             <RoleForm
-              users={usersQuery.data.items}
+              users={usersQuery.data.items.map((it) => it.user)}
               incident={incidentQuery.data}
               role={role}
               onSubmit={(values) => handleSetRole(values, role)}
