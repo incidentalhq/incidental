@@ -15,7 +15,10 @@ export enum RoutePaths {
   SETTINGS_FIELDS = '/:organisation/settings/fields',
   SETTINGS_TYPES = '/:organisation/settings/types',
   SETTINGS_STATUSES = '/:organisation/settings/statuses',
+
   SETTINGS_FORMS_INDEX = '/:organisation/settings/forms',
+  SETTINGS_FORMS_EDIT = '/:organisation/settings/forms/:id',
+
   SETTINGS_USERS = '/:organisation/settings/users',
 
   INCIDENTS = '/incidents',

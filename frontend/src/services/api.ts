@@ -367,6 +367,15 @@ export class ApiService {
     })
   }
 
+  getForm = (id: string) => {
+    return callApi<IForm>('GET', `/forms/${id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
   getForms = () => {
     return callApi<PaginatedResults<IForm>>('GET', `/forms/search`, {
       user: this.user,

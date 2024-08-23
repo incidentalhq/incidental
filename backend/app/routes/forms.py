@@ -22,6 +22,18 @@ def form_search(user: CurrentUser, organisation: CurrentOrganisation, db: Sessio
     return PaginatedResults(total=total, page=1, size=total, items=forms)
 
 
+@router.get("/{id}", response_model=FormSchema)
+def form_get(id: str, user: CurrentUser, organisation: CurrentOrganisation, db: Session = Depends(get_db)):
+    """Get a single form"""
+    form_repo = FormRepo(session=db)
+    form = form_repo.get_form_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=form.organisation):
+        raise NotPermittedError()
+
+    return form
+
+
 @router.get("/{id}/fields", response_model=PaginatedResults[FormFieldSchema])
 def form_fields(id: str, user: CurrentUser, organisation: CurrentOrganisation, db: Session = Depends(get_db)):
     """Get fields for a form"""
