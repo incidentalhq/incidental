@@ -39,8 +39,29 @@ jobs:
           cache-to: type=gha,mode=max
           outputs: type=docker
 
-      - name: Copy env file
-        run: cp backend/.env.example backend/.env
+      - name: Get short commit SHA, display tunnel URL and IP Address of the worker node
+        id: get-subdomain
+        run: |
+          subdomain_frontend="frontend-pr-$(git rev-parse --short HEAD).ngrok.io"
+          subdomain_backend="backend-pr-$(git rev-parse --short HEAD).ngrok.io"
+          echo "Preview frontend url: https://${subdomain_frontend}"
+          echo "subdomain_frontend=$subdomain_frontend" >> $GITHUB_OUTPUT
+          echo "subdomain_backend=$subdomain_backend" >> $GITHUB_OUTPUT
+          worker_ip="$(curl -4 -s ipconfig.io/ip)"
+          echo "Worker node IP address: $worker_ip"
+
+      - name: Create .env file
+        env:
+          SLACK_APP_ID: ${{ secrets.SLACK_APP_ID }}
+          SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
+          SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
+          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+          SLACK_VERIFICATION_TOKEN: ${{ secrets.SLACK_VERIFICATION_TOKEN }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FRONTEND_URL: https://${{ steps.get-subdomain.outputs.subdomain_frontend }}
+        run: |
+          cp backend/.env.preview backend/.env
+          envsubt < backend/.env > backend/.env
 
       - name: Create the docker compose stack
         run: docker compose -f backend/docker-compose.yml up -d
@@ -50,17 +71,6 @@ jobs:
 
       - name: Migrate db
         run: docker compose -f backend/docker-compose.yml exec -T backend sh -c "alembic upgrade head"
-
-      - name: Get short commit SHA, display tunnel URL and IP Address of the worker node
-        id: get-subdomain
-        run: |
-          subdomain_frontend="frontend-pr-$(git rev-parse --short HEAD)"
-          subdomain_backend="backend-pr-$(git rev-parse --short HEAD)"
-          echo "Preview frontend url: https://${subdomain_frontend}.ngrok.io"
-          echo "subdomain_frontend=$subdomain_frontend" >> $GITHUB_OUTPUT
-          echo "subdomain_backend=$subdomain_backend" >> $GITHUB_OUTPUT
-          worker_ip="$(curl -4 -s ipconfig.io/ip)"
-          echo "Worker node IP address: $worker_ip"
 
       - uses: actions/setup-node@v4
         with:
@@ -90,5 +100,5 @@ jobs:
           ngrok config add-authtoken ${NGROK_AUTH_TOKEN}
 
           echo "Starting tunnels.."
-          ngrok http 5000 --domain ${SUBDOMAIN_BACKEND}.ngrok.io &
-          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND}.ngrok.io
+          ngrok http 5000 --domain ${SUBDOMAIN_BACKEND} &
+          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND}
