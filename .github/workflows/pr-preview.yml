@@ -61,7 +61,7 @@ jobs:
           FRONTEND_URL: https://${{ steps.get-subdomain.outputs.subdomain_frontend }}
         run: |
           cp backend/.env.preview backend/.env
-          envsubt < backend/.env > backend/.env
+          envsubst < backend/.env > backend/.env
 
       - name: Create the docker compose stack
         run: docker compose -f backend/docker-compose.yml up -d
