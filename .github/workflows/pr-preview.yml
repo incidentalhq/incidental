@@ -77,7 +77,7 @@ jobs:
           VITE_API_BASE_URL: https://${{ steps.get-subdomain.outputs.subdomain_backend}}
         run: |
           cd frontend
-          pnpm dev
+          pnpm dev &
 
       - name: Start tunnel
         env:
