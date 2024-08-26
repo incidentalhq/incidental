@@ -1,0 +1,70 @@
+name: Run backend API tests
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'preview' }}
+    env:
+      IMAGE_NAME: incidental/backend
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build image
+        uses: docker/build-push-action@v4
+        with:
+          context: backend
+          tags: ${{env.IMAGE_NAME}}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker
+
+      - name: Copy env file
+        run: cp .env.example .env
+
+      - name: Create the docker compose stack
+        run: docker compose -f docker-compose.yml up -d
+
+      - name: Check local running docker containers
+        run: docker ps -a
+
+      - name: Migrate db
+        run: docker compose -f docker-compose.yml exec -T backend sh -c "alembic upgrade head"
+
+      - name: Get short commit SHA, display tunnel URL and IP Address of the worker node
+        id: get-subdomain
+        run: |
+          subdomain="pr-$(git rev-parse --short HEAD)"
+          echo "URL for tunnelling: https://$subdomain.loca.lt"
+          echo "subdomain=$subdomain" >> $GITHUB_OUTPUT
+          worker_ip="$(curl -4 -s ipconfig.io/ip)"
+          echo "Worker node IP address: $worker_ip"
+
+      - name: Start tunnel
+        env:
+          SUBDOMAIN: ${{ steps.get-subdomain.outputs.subdomain }}
+        run: |
+          npm install -g localtunnel
+          host=localhost
+          port=5000
+          lt -p $port -l $host -s $SUBDOMAIN
