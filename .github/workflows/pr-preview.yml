@@ -7,6 +7,7 @@ on:
 jobs:
   preview:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     if: ${{ github.event.label.name == 'preview' }}
     env:
       IMAGE_NAME: incidental/backend
@@ -100,4 +101,37 @@ jobs:
 
           echo "Starting tunnels.."
           ngrok http 5000 --domain ${SUBDOMAIN_BACKEND} &
-          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND}
+          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND} &
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `
+              # New preview environment created
+
+              - Frontend: [https://${{ steps.get-subdomain.outputs.subdomain_frontend }}](https://${{ steps.get-subdomain.outputs.subdomain_frontend }})
+              - Backend: [https://${{ steps.get-subdomain.outputs.subdomain_backend }}](https://${{ steps.get-subdomain.outputs.subdomain_backend }})
+
+              Happy coding! 🚀
+              `
+            })
+
+      - name: Keep job alive
+        run: |
+          start_time=$(date +%s)
+          end_time=$((start_time + 3600))  # 3600 seconds = 1 hour
+
+          while [ $(date +%s) -lt $end_time ]
+          do
+            echo "Current time: $(date)"
+            echo "Running for $(($(date +%s) - start_time)) seconds"
+            sleep 60  # Wait for 60 seconds before the next iteration
+          done
+
+          echo "Job completed after running for 1 hour"
