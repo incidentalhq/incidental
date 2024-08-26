@@ -1,0 +1,133 @@
+name: Launch preview environment
+
+on:
+  pull_request:
+    types: [labeled, opened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: |
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'preview')) ||
+      (github.event.action == 'labeled' && github.event.label.name == 'preview')
+    env:
+      IMAGE_NAME: incidental/backend
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build image
+        uses: docker/build-push-action@v4
+        with:
+          context: backend
+          tags: ${{env.IMAGE_NAME}}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker
+
+      - name: Get short commit SHA, and set subdomains
+        id: get-subdomain
+        run: |
+          subdomain_frontend="frontend-pr-$(git rev-parse --short HEAD).ngrok.io"
+          subdomain_backend="backend-pr-$(git rev-parse --short HEAD).ngrok.io"
+          echo "Preview frontend url: https://${subdomain_frontend}"
+          echo "subdomain_frontend=$subdomain_frontend" >> $GITHUB_OUTPUT
+          echo "subdomain_backend=$subdomain_backend" >> $GITHUB_OUTPUT
+          worker_ip="$(curl -4 -s ipconfig.io/ip)"
+          echo "Worker node IP address: $worker_ip"
+
+      - name: Create .env file
+        env:
+          SLACK_APP_ID: ${{ secrets.SLACK_APP_ID }}
+          SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
+          SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
+          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+          SLACK_VERIFICATION_TOKEN: ${{ secrets.SLACK_VERIFICATION_TOKEN }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FRONTEND_URL: https://${{ steps.get-subdomain.outputs.subdomain_frontend }}
+        run: |
+          envsubst < backend/.env.preview > backend/.env
+
+      - name: Create the docker compose stack
+        run: docker compose -f backend/docker-compose.yml up -d
+
+      - name: Check local running docker containers
+        run: docker ps -a
+
+      - name: Migrate db
+        run: docker compose -f backend/docker-compose.yml exec -T backend sh -c "alembic upgrade head"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "frontend/.nvmrc"
+
+      - name: Install deps
+        run: |
+          cd frontend
+          npm install -g pnpm
+          pnpm install
+
+      - name: Run frontend
+        env:
+          VITE_API_BASE_URL: https://${{ steps.get-subdomain.outputs.subdomain_backend}}
+        run: |
+          cd frontend
+          pnpm dev &
+
+      - name: Start tunnels
+        env:
+          SUBDOMAIN_BACKEND: ${{ steps.get-subdomain.outputs.subdomain_backend }}
+          SUBDOMAIN_FRONTEND: ${{ steps.get-subdomain.outputs.subdomain_frontend }}
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          curl -O https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz  
+          sudo tar -xvzf ./ngrok-v3-stable-linux-amd64.tgz -C /usr/local/bin
+          ngrok config add-authtoken ${NGROK_AUTH_TOKEN}
+
+          echo "Starting tunnels.."
+          ngrok http 5000 --domain ${SUBDOMAIN_BACKEND} &
+          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND} &
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `
+              # New preview environment created
+
+              - Frontend: [https://${{ steps.get-subdomain.outputs.subdomain_frontend }}](https://${{ steps.get-subdomain.outputs.subdomain_frontend }})
+              - Backend: [https://${{ steps.get-subdomain.outputs.subdomain_backend }}](https://${{ steps.get-subdomain.outputs.subdomain_backend }})
+
+              Happy coding! 🚀
+              `
+            })
+
+      - name: Keep job alive
+        run: |
+          start_time=$(date +%s)
+          end_time=$((start_time + 3600))  # 3600 seconds = 1 hour
+
+          while [ $(date +%s) -lt $end_time ]
+          do
+            echo "Current time: $(date)"
+            echo "Running for $(($(date +%s) - start_time)) seconds"
+            sleep 60  # Wait for 60 seconds before the next iteration
+          done
+
+          echo "Job completed after running for 1 hour"
