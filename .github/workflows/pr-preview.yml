@@ -54,18 +54,40 @@ jobs:
       - name: Get short commit SHA, display tunnel URL and IP Address of the worker node
         id: get-subdomain
         run: |
-          subdomain="pr-$(git rev-parse --short HEAD)"
-          echo "URL for tunnelling: https://$subdomain.loca.lt"
+          subdomain_frontend="frontend-pr-$(git rev-parse --short HEAD)"
+          subdomain_backend="backend-pr-$(git rev-parse --short HEAD)"
+          echo "Preview frontend url: https://${subdomain_frontend}.ngrok.io"
           echo "subdomain=$subdomain" >> $GITHUB_OUTPUT
           worker_ip="$(curl -4 -s ipconfig.io/ip)"
           echo "Worker node IP address: $worker_ip"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "frontend/.nvmrc"
+
+      - name: Install deps
+        run: |
+          cd frontend
+          npm install -g pnpm
+          pnpm install
+
+      - name: Run frontend
+        env:
+          VITE_API_BASE_URL: https://${{ steps.get-subdomain.outputs.subdomain_backend}}
+        run: |
+          cd frontend
+          pnpm dev
+
       - name: Start tunnel
         env:
-          SUBDOMAIN: ${{ steps.get-subdomain.outputs.subdomain }}
+          SUBDOMAIN_BACKEND: ${{ steps.get-subdomain.outputs.subdomain_backend }}
+          SUBDOMAIN_FRONTEND: ${{ steps.get-subdomain.outputs.subdomain_frontend }}
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
           curl -O https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz  
           sudo tar -xvzf ./ngrok-v3-stable-linux-amd64.tgz -C /usr/local/bin
           ngrok config add-authtoken ${NGROK_AUTH_TOKEN}
-          ngrok http 5000 --domain ${SUBDOMAIN}.ngrok.io
+
+          echo "Starting tunnels.."
+          ngrok http 5000 --domain ${SUBDOMAIN_BACKEND}.ngrok.io &
+          ngrok http 3000 --domain ${SUBDOMAIN_FRONTEND}.ngrok.io
