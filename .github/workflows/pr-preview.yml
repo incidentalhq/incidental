@@ -1,4 +1,4 @@
-name: Run backend API tests
+name: Launch preview environment
 
 on:
   pull_request:
@@ -40,16 +40,16 @@ jobs:
           outputs: type=docker
 
       - name: Copy env file
-        run: cp .env.example .env
+        run: cp backend/.env.example backend/.env
 
       - name: Create the docker compose stack
-        run: docker compose -f docker-compose.yml up -d
+        run: docker compose -f backend/docker-compose.yml up -d
 
       - name: Check local running docker containers
         run: docker ps -a
 
       - name: Migrate db
-        run: docker compose -f docker-compose.yml exec -T backend sh -c "alembic upgrade head"
+        run: docker compose -f backend/docker-compose.yml exec -T backend sh -c "alembic upgrade head"
 
       - name: Get short commit SHA, display tunnel URL and IP Address of the worker node
         id: get-subdomain
