@@ -57,7 +57,8 @@ jobs:
           subdomain_frontend="frontend-pr-$(git rev-parse --short HEAD)"
           subdomain_backend="backend-pr-$(git rev-parse --short HEAD)"
           echo "Preview frontend url: https://${subdomain_frontend}.ngrok.io"
-          echo "subdomain=$subdomain" >> $GITHUB_OUTPUT
+          echo "subdomain_frontend=$subdomain_frontend" >> $GITHUB_OUTPUT
+          echo "subdomain_backend=$subdomain_backend" >> $GITHUB_OUTPUT
           worker_ip="$(curl -4 -s ipconfig.io/ip)"
           echo "Worker node IP address: $worker_ip"
 
