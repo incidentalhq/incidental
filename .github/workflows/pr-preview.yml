@@ -2,8 +2,7 @@ name: Launch preview environment
 
 on:
   pull_request:
-  pull_request_target:
-    types: [labeled]
+    types: [labeled, opened, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
