@@ -11,7 +11,7 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: ${{ github.event.label.name == 'preview' }}
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
     env:
       IMAGE_NAME: incidental/backend
     permissions:
