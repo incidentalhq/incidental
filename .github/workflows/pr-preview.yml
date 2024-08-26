@@ -13,6 +13,7 @@ jobs:
       IMAGE_NAME: incidental/backend
     permissions:
       issues: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v3
