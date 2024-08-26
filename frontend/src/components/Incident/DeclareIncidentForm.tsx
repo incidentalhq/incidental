@@ -83,7 +83,7 @@ const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
     }
 
     return formFieldsQuery.data.items
-      .sort((a, b) => (a.position < b.position ? -1 : 1))
+      .sort((a, b) => (a.rank < b.rank ? -1 : 1))
       .map((it) => (
         <FormField
           key={it.id}

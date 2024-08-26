@@ -440,4 +440,10 @@ export class ApiService {
     callApi('POST', `/users/send-verification`, {
       json: { emailAddress: email }
     })
+
+  patchFormFieldValues = (formId: string, patchList: Array<Partial<IFormField>>) =>
+    callApi('PATCH', `/forms/${formId}/fields`, {
+      user: this.user,
+      json: patchList
+    })
 }

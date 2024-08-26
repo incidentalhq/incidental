@@ -4,13 +4,14 @@ import {
   DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  UniqueIdentifier,
   useSensor,
   useSensors
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Form, Formik } from 'formik'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -23,7 +24,7 @@ import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Sty
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { FieldKind } from '@/types/enums'
-import { IFormField, IIncidentType } from '@/types/models'
+import { IFormField, IIncidentType, ModelID } from '@/types/models'
 
 import SortableItem from './SortableItem'
 
@@ -48,9 +49,8 @@ const Controls = styled.div`
   gap: 0.5rem;
 `
 const ListContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1;
 `
 
 const createDefaultValues = (formFields: IFormField[], incidentTypes: IIncidentType[]) => {
@@ -74,8 +74,12 @@ type UrlParams = {
 const SettingsFormsEdit = () => {
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
-  const { id } = useParams<UrlParams>()
-  const [items, setItems] = useState<IFormField[]>([])
+  const { id } = useParams<UrlParams>() as UrlParams
+
+  // https://github.com/clauderic/dnd-kit/issues/921
+  const [localOrdering, setLocalOrdering] = useState<Array<UniqueIdentifier>>([])
+  const [localOrderingInitialized, setLocalOrderingInitialized] = useState(false)
+  const [rankingUpdated, setRankingUpdated] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -86,7 +90,7 @@ const SettingsFormsEdit = () => {
 
   const formQuery = useQuery({
     queryKey: ['form', id],
-    queryFn: () => (id ? apiService.getForm(id) : null)
+    queryFn: () => apiService.getForm(id)
   })
 
   const fieldsQuery = useQuery({
@@ -110,21 +114,47 @@ const SettingsFormsEdit = () => {
     queryFn: () => apiService.getIncidentSeverities()
   })
 
-  useEffect(() => {
-    if (fieldsQuery.isSuccess && items.length == 0) {
-      setItems(fieldsQuery.data.items)
+  const updateFormFieldsRankMutation = useMutation({
+    mutationFn: (ranks: Array<ModelID>) => {
+      const patch = ranks.map((id, index) => ({
+        id,
+        rank: index
+      }))
+      return apiService.patchFormFieldValues(id!, patch)
     }
-  }, [fieldsQuery, items])
+  })
 
+  // on load copy over the form fields to local state
+  useEffect(() => {
+    if (!fieldsQuery.isSuccess || localOrderingInitialized) {
+      return
+    }
+
+    setLocalOrdering(fieldsQuery.data.items.map((it) => it.id))
+    setLocalOrderingInitialized(true)
+  }, [fieldsQuery, localOrderingInitialized])
+
+  // update rank when local ordering changes
+  useEffect(() => {
+    if (!localOrderingInitialized || !rankingUpdated) {
+      return
+    }
+    updateFormFieldsRankMutation.mutate(localOrdering as Array<ModelID>)
+
+    // adding the mutation causes an infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localOrdering, localOrderingInitialized, rankingUpdated])
+
+  // when drag finishes for sortable list
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (over && active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.findIndex((it) => it.id === active.id)
-        const newIndex = items.findIndex((it) => it.id === over.id)
-        const newItems = arrayMove(items, oldIndex, newIndex)
-        return newItems
+      setLocalOrdering((fieldIds) => {
+        const oldIndex = fieldIds.indexOf(active.id)
+        const newIndex = fieldIds.indexOf(over.id)
+        return arrayMove(fieldIds, oldIndex, newIndex)
       })
+      setRankingUpdated(true)
     }
   }
 
@@ -146,6 +176,12 @@ const SettingsFormsEdit = () => {
   const isReady =
     fieldsQuery.isSuccess && incidentStatusQuery.isSuccess && severitiesQuery.isSuccess && incidentTypesQuery.isSuccess
 
+  // sort fields based on localOrdering
+  const sortedFields = useMemo(
+    () => localOrdering.map((it) => fieldsQuery.data?.items.find((f) => f.id === it) as IFormField),
+    [localOrdering, fieldsQuery]
+  )
+
   return (
     <>
       <Box>
@@ -157,16 +193,21 @@ const SettingsFormsEdit = () => {
             {isReady && (
               <>
                 <Formik
-                  initialValues={createDefaultValues(items, incidentTypesQuery.data.items)}
+                  initialValues={createDefaultValues(fieldsQuery.data.items, incidentTypesQuery.data.items)}
                   onSubmit={dummySubmit}
                 >
                   <Form>
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                      autoScroll={{ layoutShiftCompensation: false }}
+                    >
+                      <SortableContext items={localOrdering} strategy={verticalListSortingStrategy}>
                         <ListContainer>
-                          {items.map((it) => (
+                          {sortedFields.map((it) => (
                             <SortableItem key={it.id} id={it.id}>
-                              <FieldRow key={it.id}>
+                              <FieldRow>
                                 <Field>
                                   <FormField
                                     formField={it}

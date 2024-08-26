@@ -131,7 +131,7 @@ export interface IIncidentUpdate extends IModel {
 export interface IFormField extends IModel {
   label: string
   description: string | null
-  position: number
+  rank: number
   isRequired: boolean
   isDeletable: boolean
   defaultValue: string | null

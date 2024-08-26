@@ -37,7 +37,7 @@ class Form(Base, TimestampMixin, SoftDeleteMixin):
     form_fields: Mapped[list["FormField"]] = relationship(
         "FormField",
         primaryjoin="and_(FormField.form_id==Form.id, Form.deleted_at.is_(None))",
-        order_by="asc(FormField.position)",
+        order_by="asc(FormField.rank)",
         viewonly=True,
     )
     organisation: Mapped["Organisation"] = relationship("Organisation", viewonly=True)

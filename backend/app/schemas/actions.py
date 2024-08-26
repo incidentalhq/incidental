@@ -222,3 +222,12 @@ class VerifyEmailSchema(BaseSchema):
 
 class SendVerificationEmailSchema(BaseSchema):
     email_address: str
+
+
+class PatchSingleFormFieldSchema(BaseSchema):
+    id: str
+    rank: int | None = None
+
+
+class PatchFormFieldsSchema(RootModel):
+    root: list[PatchSingleFormFieldSchema]

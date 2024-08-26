@@ -36,6 +36,7 @@ class IncidentRoleItemType(TypedDict):
 TIMESTAMPS_SEED_DATA_PATH = "/srv/data/timestamps.yaml"
 SEVERITIES_SEED_DATA_PATH = "/srv/data/severities.yaml"
 STATUSES_SEED_DATA_PATH = "/srv/data/statuses.yaml"
+FORMS_SEED_DATA_PATH = "/srv/data/forms.yaml"
 
 
 class OnboardingService:
@@ -70,95 +71,44 @@ class OnboardingService:
         self._setup_lifecycle(organisation)
 
     def _setup_forms(self, organisation: Organisation) -> list[Form]:
-        # create incident form
-        create_form = self.form_repo.get_form(organisation=organisation, form_type=FormKind.CREATE_INCIDENT)
-        if not create_form:
-            create_form = self.form_repo.create_form(
-                organisation=organisation, name="Create incident", _type=FormKind.CREATE_INCIDENT
-            )
-        create_form_fields_descriptor: list[dict[str, Any]] = [
-            {
-                "label": "Name",
-                "field_kind": FieldKind.INCIDENT_NAME,
-                "is_required": True,
-                "description": "A descriptive name for the incident",
-                "is_deletable": False,
-            },
-            {
-                "label": "Incident type",
-                "field_kind": FieldKind.INCIDENT_TYPE,
-                "is_required": True,
-                "is_deletable": False,
-            },
-            {
-                "label": "Severity",
-                "field_kind": FieldKind.INCIDENT_SEVERITY,
-                "is_required": True,
-                "is_deletable": False,
-            },
-            {
-                "label": "Initial status",
-                "field_kind": FieldKind.INCIDENT_INITIAL_STATUS,
-                "is_required": True,
-                "is_deletable": False,
-            },
-            {
-                "label": "Summary",
-                "field_kind": FieldKind.INCIDENT_SUMMARY,
-                "is_required": False,
-                "description": "Give a summary of the current state of the incident.",
-                "is_deletable": False,
-            },
-        ]
-        self._create_form_fields(form=create_form, field_descriptions=create_form_fields_descriptor)
+        forms: list[Form] = []
 
-        # create a status update form
-        update_status_form = self.form_repo.get_form(organisation=organisation, form_type=FormKind.UPDATE_INCIDENT)
-        if not update_status_form:
-            update_status_form = self.form_repo.create_form(
-                organisation=organisation, name="Update status", _type=FormKind.UPDATE_INCIDENT
-            )
+        with open(FORMS_SEED_DATA_PATH, "r") as fp:
+            data = yaml.load(fp, Loader=yaml.CLoader)
 
-        update_status_form_fields = [
-            {
-                "label": "Status",
-                "field_kind": FieldKind.INCIDENT_STATUS,
-                "is_required": True,
-                "is_deletable": False,
-            },
-            {
-                "label": "Severity",
-                "field_kind": FieldKind.INCIDENT_SEVERITY,
-                "is_required": True,
-                "is_deletable": False,
-            },
-            {
-                "label": "Summary",
-                "field_kind": FieldKind.INCIDENT_SUMMARY,
-                "is_required": False,
-                "description": "Give a summary of the current state of the incident.",
-                "is_deletable": False,
-            },
-        ]
-        self._create_form_fields(form=update_status_form, field_descriptions=update_status_form_fields)
+        for form_key, form_data in data["forms"].items():
+            form_kind = FormKind(form_data["type"])
+            form = self.form_repo.get_form(organisation=organisation, form_type=form_kind)
+            if not form:
+                form = self.form_repo.create_form(
+                    organisation=organisation,
+                    name=form_data["name"],
+                    form_type=form_kind,
+                )
 
-        return [create_form, update_status_form]
+            field_descriptions = form_data["fields"]
+            self._create_form_fields(form=form, field_descriptions=field_descriptions)
+            forms.append(form)
+
+        return forms
 
     def _create_form_fields(self, form: Form, field_descriptions: list[dict[str, Any]]):
         """Setup the form fields for a form"""
 
         for idx, item in enumerate(field_descriptions):
+            field_kind = FieldKind(item["field_kind"])
             form_field = self.form_repo.get_form_field_by_label(form=form, label=item["label"])
-            field = self.field_repo.get_field_by_kind(organisation=form.organisation, kind=item["field_kind"])
+            field = self.field_repo.get_field_by_kind(organisation=form.organisation, kind=field_kind)
             if not form_field:
                 if not field:
                     raise RuntimeError(f"Could not find custom field: {item['field_kind']}")
+
                 form_field = self.form_repo.create_form_field(
                     form=form,
                     field=field,
                     label=item["label"],
                     is_required=item["is_required"],
-                    position=idx,
+                    rank=idx,
                     description=item.get("description"),
                     is_deletable=item["is_deletable"],
                 )

@@ -2,6 +2,7 @@ from typing import Sequence
 
 from sqlalchemy import select
 
+from app.exceptions import ValidationError
 from app.models import (
     Field,
     Form,
@@ -9,6 +10,7 @@ from app.models import (
     FormKind,
     Organisation,
 )
+from app.schemas.actions import PatchFormFieldsSchema
 
 from .base_repo import BaseRepo
 
@@ -19,11 +21,11 @@ class FormRepo(BaseRepo):
 
         return self.session.scalars(stmt).all()
 
-    def create_form(self, organisation: Organisation, name: str, _type: FormKind) -> Form:
+    def create_form(self, organisation: Organisation, name: str, form_type: FormKind) -> Form:
         form = Form()
         form.organisation_id = organisation.id
         form.name = name
-        form.type = _type
+        form.type = form_type
         form.is_published = True
 
         self.session.add(form)
@@ -37,7 +39,7 @@ class FormRepo(BaseRepo):
         field: Field,
         label: str,
         is_required: bool,
-        position: int = 0,
+        rank: int = 0,
         description: str | None = None,
         is_deletable: bool = True,
     ) -> FormField:
@@ -45,7 +47,7 @@ class FormRepo(BaseRepo):
         model.form_id = form.id
         model.field_id = field.id
         model.label = label
-        model.position = position
+        model.rank = rank
         model.description = description
         model.is_required = is_required
         model.is_deletable = is_deletable
@@ -82,3 +84,14 @@ class FormRepo(BaseRepo):
         stmt = select(FormField).where(FormField.id == id, Form.deleted_at.is_(None)).limit(1)
 
         return self.session.scalar(stmt)
+
+    def patch_form_fields(self, form: Form, patch_in: PatchFormFieldsSchema):
+        for field in patch_in.root:
+            form_field = self.get_form_field_by_id(id=field.id)
+            if not form_field:
+                raise ValidationError("Form field does not exist")
+
+            if field.rank is not None:
+                form_field.rank = field.rank
+
+        self.session.flush()

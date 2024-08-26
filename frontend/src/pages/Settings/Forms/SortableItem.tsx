@@ -31,7 +31,8 @@ interface Props extends React.PropsWithChildren {
 }
 
 const SortableItem: React.FC<Props> = (props) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id: props.id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver, setActivatorNodeRef } =
+    useSortable({ id: props.id })
   const style = {
     transform: CSS.Transform.toString({
       x: transform?.x ?? 0,
@@ -43,7 +44,7 @@ const SortableItem: React.FC<Props> = (props) => {
   }
   return (
     <Root ref={setNodeRef} style={style} {...attributes} $isDragging={isDragging}>
-      <Handle {...listeners}>
+      <Handle {...listeners} ref={setActivatorNodeRef}>
         <Icon icon={bars} />
       </Handle>
       <Main>{props.children}</Main>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -6,6 +6,7 @@ from app.deps import CurrentOrganisation, CurrentUser
 from app.exceptions import NotPermittedError
 from app.models import FieldKind
 from app.repos import FormRepo, LifecycleRepo
+from app.schemas.actions import PatchFormFieldsSchema
 from app.schemas.models import FormFieldSchema, FormSchema
 from app.schemas.resources import PaginatedResults
 
@@ -59,3 +60,18 @@ def form_fields(id: str, user: CurrentUser, organisation: CurrentOrganisation, d
     total = len(filtered_fields)
 
     return PaginatedResults(total=total, page=1, size=total, items=filtered_fields)
+
+
+@router.patch("/{id}/fields", status_code=status.HTTP_202_ACCEPTED, response_model=None)
+def patch_form_fields(id: str, patch_in: PatchFormFieldsSchema, user: CurrentUser, db: Session = Depends(get_db)):
+    """Patch the ordering of form fields"""
+    form_repo = FormRepo(session=db)
+    form = form_repo.get_form_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=form.organisation):
+        raise NotPermittedError()
+
+    form_repo.patch_form_fields(form=form, patch_in=patch_in)
+    db.commit()
+
+    return Response()

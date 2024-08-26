@@ -1,0 +1,75 @@
+forms:
+  create-incident:
+    name: "Create incident"
+    type: CREATE_INCIDENT
+    fields:
+      - label: Name
+        field_kind: INCIDENT_NAME
+        description: A descriptive name for the incident
+        is_required: true
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_required: false
+
+      - label: Incident type
+        field_kind: INCIDENT_TYPE
+        is_required: true
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_required: false
+
+      - label: Severity
+        field_kind: INCIDENT_SEVERITY
+        is_required: true
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_required: false
+
+      - label: Initial status
+        field_kind: INCIDENT_INITIAL_STATUS
+        is_required: true
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_required: false
+
+      - label: Summary
+        field_kind: INCIDENT_SUMMARY
+        description: Give a summary of the current state of the incident.
+        is_required: false
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_required: true
+
+  update-status:
+    name: "Update status"
+    type: UPDATE_INCIDENT
+    fields:
+      - label: Status
+        field_kind: INCIDENT_STATUS
+        is_required: true
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: false
+        can_change_required: false
+
+      - label: Severity
+        field_kind: INCIDENT_SEVERITY
+        is_required: true
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_required: false
+
+      - label: Summary
+        field_kind: INCIDENT_SUMMARY
+        description: Give a summary of the current state of the incident.
+        is_required: false
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_required: true
