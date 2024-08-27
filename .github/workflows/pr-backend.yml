@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - backend/**
-      - .github/workflows/pr.yml
+      - .github/workflows/pr-backend.yml
 
 jobs:
   build:
