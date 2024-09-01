@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 import Field from '@/components/Form/Field'
-import getFormFieldComponent from '@/components/Incident/getFieldComponent'
+import { getFormFieldComponent } from '@/components/Incident/Field/getFieldComponent'
 import { IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
 const RadioOptionsList = styled.div``

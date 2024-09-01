@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { RequirementType } from '@/types/enums'
 import { IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
-import getFormFieldComponent from './getFieldComponent'
+import { getFormFieldComponent } from './Field/getFieldComponent'
 
 const Optional = styled.span`
   color: var(--color-gray-400);

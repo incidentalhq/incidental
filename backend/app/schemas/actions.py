@@ -196,15 +196,9 @@ class PatchIncidentTypeSchema(BaseSchema):
     fields: list[ModelIdSchema] | None = None
 
 
-class FieldValueSchema(BaseSchema):
-    value_text: str | None = None
-    value_single_select: str | None = None
-    value_multi_select: list[str] | None = None
-
-
 class SetIncidentFieldValueSchema(BaseSchema):
     field: ModelIdSchema
-    value: FieldValueSchema
+    value: str | list[str]
 
 
 class PatchIncidentFieldValuesSchema(RootModel):
