@@ -9,7 +9,7 @@ import Icon from '@/components/Icon/Icon'
 import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { FieldKind } from '@/types/enums'
+import { FieldKind, RequirementType } from '@/types/enums'
 import { IForm, IFormField, IIncidentType } from '@/types/models'
 
 import Loading from '../Loading/Loading'
@@ -26,7 +26,7 @@ const createValidationSchema = (formFields: IFormField[]) => {
   const fieldsShape: Record<string, Yup.StringSchema> = {}
 
   for (const field of formFields) {
-    if (field.isRequired) {
+    if (field.requirementType === RequirementType.REQUIRED) {
       fieldsShape[field.id] = Yup.string().required('This field is required')
     }
   }

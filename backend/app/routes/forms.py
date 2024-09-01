@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import CurrentOrganisation, CurrentUser
 from app.exceptions import NotPermittedError
-from app.models import FieldKind
-from app.repos import FormRepo, LifecycleRepo
-from app.schemas.actions import PatchFormFieldsSchema
+from app.models import FieldKind, RequirementTypeEnum
+from app.repos import FieldRepo, FormRepo, LifecycleRepo
+from app.schemas.actions import CreateFormFieldSchema, PatchFormFieldsSchema, PatchSingleFormFieldSchema
 from app.schemas.models import FormFieldSchema, FormSchema
 from app.schemas.resources import PaginatedResults
 
@@ -21,6 +21,36 @@ def form_search(user: CurrentUser, organisation: CurrentOrganisation, db: Sessio
     total = len(forms)
 
     return PaginatedResults(total=total, page=1, size=total, items=forms)
+
+
+@router.patch("/fields/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=None)
+def patch_form_field(id: str, patch_in: PatchSingleFormFieldSchema, user: CurrentUser, db: Session = Depends(get_db)):
+    """Patch a single form field"""
+    form_repo = FormRepo(session=db)
+    form_field = form_repo.get_form_field_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=form_field.form.organisation):
+        raise NotPermittedError()
+
+    form_repo.patch_form_field(form_field=form_field, patch_in=patch_in)
+    db.commit()
+
+    return None
+
+
+@router.delete("/fields/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=None)
+def delete_form_field(id: str, user: CurrentUser, db: Session = Depends(get_db)):
+    """Delete a form field"""
+    form_repo = FormRepo(session=db)
+    form_field = form_repo.get_form_field_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=form_field.form.organisation):
+        raise NotPermittedError()
+
+    form_repo.delete_form_field(form_field)
+    db.commit()
+
+    return None
 
 
 @router.get("/{id}", response_model=FormSchema)
@@ -75,3 +105,26 @@ def patch_form_fields(id: str, patch_in: PatchFormFieldsSchema, user: CurrentUse
     db.commit()
 
     return Response()
+
+
+@router.post("/{id}/fields", status_code=status.HTTP_202_ACCEPTED, response_model=FormFieldSchema)
+def create_form_field(id: str, create_in: CreateFormFieldSchema, user: CurrentUser, db: Session = Depends(get_db)):
+    """Create new form field"""
+    form_repo = FormRepo(session=db)
+    field_repo = FieldRepo(session=db)
+    form = form_repo.get_form_by_id_or_raise(id=id)
+
+    if not user.belongs_to(organisation=form.organisation):
+        raise NotPermittedError()
+
+    field = field_repo.get_field_by_id_or_throw(id=create_in.field.id)
+    form_field = form_repo.create_form_field(
+        form=form,
+        field=field,
+        label=field.label,
+        requirement_type=RequirementTypeEnum.REQUIRED,
+        description=field.description,
+    )
+    db.commit()
+
+    return form_field

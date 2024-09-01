@@ -6,7 +6,7 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum, InterfaceKind
+from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -227,7 +227,18 @@ class SendVerificationEmailSchema(BaseSchema):
 class PatchSingleFormFieldSchema(BaseSchema):
     id: str
     rank: int | None = None
+    default_value: str | None = None
+    requirement_type: RequirementTypeEnum | None = None
+    description: str | None = None
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class PatchFormFieldsSchema(RootModel):
     root: list[PatchSingleFormFieldSchema]
+
+
+class CreateFormFieldSchema(BaseSchema):
+    """Create new form field"""
+
+    field: ModelIdSchema

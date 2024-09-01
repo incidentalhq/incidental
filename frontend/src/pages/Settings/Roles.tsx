@@ -37,7 +37,7 @@ const Controls = styled.div`
 const Actions = styled.div`
   padding: 1rem;
 `
-const SeverityModal = styled.div`
+const ModalContainer = styled.div`
   padding: 1rem;
   min-width: 600px;
 `
@@ -104,20 +104,20 @@ const SettingsRoles = () => {
 
   const handleOpenCreateModal = () => {
     setModal(
-      <SeverityModal>
+      <ModalContainer>
         <h2>Create new role</h2>
         <RoleForm onSubmit={handleAddRole} />
-      </SeverityModal>
+      </ModalContainer>
     )
   }
 
   const handleOpenEditModal = useCallback(
     (role: IIncidentRole) => {
       setModal(
-        <SeverityModal>
+        <ModalContainer>
           <h2>Edit role</h2>
           <RoleForm role={role} onSubmit={(values, helpers) => handleUpdateRole(role, values, helpers)} />
-        </SeverityModal>
+        </ModalContainer>
       )
     },
     [handleUpdateRole, setModal]

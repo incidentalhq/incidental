@@ -135,13 +135,13 @@ class FormFieldSchema(ModelSchema):
     label: str
     description: str | None
     rank: int
-    is_required: bool
+    requirement_type: str
     is_deletable: bool
     default_value: str | None
     field: FieldSchema
     can_have_default_value: bool
     can_have_description: bool
-    can_change_required: bool
+    can_change_requirement_type: bool
 
 
 class FormSchema(ModelSchema):

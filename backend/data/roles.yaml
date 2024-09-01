@@ -1,0 +1,13 @@
+roles:
+  - name: Reporter
+    kind: REPORTER
+    description: "The user responsible for first reporting the incident"
+    slack_reference: reporter
+    is_deletable: false
+    is_editable: true
+  - name: Incident Lead
+    kind: LEAD
+    description: "An incident lead coordinates and directs the response to an emergency or crisis, guiding teams to efficiently resolve and mitigate the situation"
+    slack_reference: lead
+    is_deletable: false
+    is_editable: true

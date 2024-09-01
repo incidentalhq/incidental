@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .organisation import Organisation
 
 
-class FormKind(enum.Enum):
+class FormKind(str, enum.Enum):
     CREATE_INCIDENT = "CREATE_INCIDENT"
     UPDATE_INCIDENT = "UPDATE_INCIDENT"
     ACCEPT_INCIDENT = "ACCEPT_INCIDENT"

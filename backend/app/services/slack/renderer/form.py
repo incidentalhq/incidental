@@ -14,6 +14,7 @@ from app.models import (
     IncidentStatusCategoryEnum,
     IncidentType,
     Lifecycle,
+    RequirementTypeEnum,
 )
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -84,7 +85,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
 
         if initial_option:
@@ -119,7 +120,7 @@ class FormRenderer:
                 "options": options,
                 "initial_option": initial_option,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
 
         return rendered_field
@@ -154,7 +155,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
             "dispatch_action": True,
         }
 
@@ -184,7 +185,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
             "dispatch_action": True,
         }
 
@@ -204,7 +205,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "initial_value": form_field.default_value if form_field.default_value else "",
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
         if form_field.description:
             block["hint"] = {"type": "plain_text", "text": form_field.description}
@@ -222,7 +223,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "initial_value": form_field.default_value if form_field.default_value else "",
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
         if form_field.description:
             block["hint"] = {"type": "plain_text", "text": form_field.description}

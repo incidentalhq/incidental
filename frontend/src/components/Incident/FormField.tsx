@@ -1,14 +1,16 @@
-import { ReactElement } from 'react'
 import styled from 'styled-components'
 
-import Field from '@/components/Form/Field'
-import { FieldInterfaceKind, FieldKind, IncidentStatusCategory } from '@/types/enums'
+import { RequirementType } from '@/types/enums'
 import { IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
-import SelectField from '../Form/SelectField'
+import getFormFieldComponent from './getFieldComponent'
 
 const Optional = styled.span`
   color: var(--color-gray-400);
+`
+const Description = styled.div`
+  color: var(--color-gray-600);
+  margin-top: 0.25rem;
 `
 
 interface FormFieldProps {
@@ -19,73 +21,20 @@ interface FormFieldProps {
 }
 
 const FormField: React.FC<FormFieldProps> = ({ formField, statusList, severityList, incidentTypes }) => {
-  let inputComponent: ReactElement | null = null
-
-  switch (formField.field.interfaceKind) {
-    case FieldInterfaceKind.TEXTAREA:
-      inputComponent = <Field as={'textarea'} name={formField.id} type="text" />
-      break
-    case FieldInterfaceKind.TEXT:
-      inputComponent = <Field name={formField.id} type="text" />
-      break
-    case FieldInterfaceKind.SINGLE_SELECT: {
-      switch (formField.field.kind) {
-        case FieldKind.INCIDENT_STATUS: {
-          const options = statusList.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_SEVERITY: {
-          const options = severityList.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_TYPE: {
-          const options = incidentTypes.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_INITIAL_STATUS: {
-          const triage = statusList.find((it) => it.category === IncidentStatusCategory.TRIAGE)
-          const active = statusList.find((it) => it.category == IncidentStatusCategory.ACTIVE)
-          if (!triage || !active) {
-            console.log('Could not find triage or active categories')
-            break
-          }
-          const options = [
-            {
-              label: 'Triage',
-              value: triage.id
-            },
-            {
-              label: 'Active',
-              value: active.id
-            }
-          ]
-
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-      }
-      break
-    }
-  }
+  const inputComponent = getFormFieldComponent(formField.id, formField, statusList, severityList, incidentTypes)
+  const description = formField.description
+    ? formField.description
+    : formField.field.description
+      ? formField.field.description
+      : undefined
 
   return (
     <div key={formField.id}>
       <label>
-        {formField.label} {!formField.isRequired ? <Optional>optional</Optional> : ''}
+        {formField.label} {formField.requirementType === RequirementType.OPTIONAL ? <Optional>optional</Optional> : ''}
       </label>
       {inputComponent}
+      {description && <Description>{description}</Description>}
     </div>
   )
 }

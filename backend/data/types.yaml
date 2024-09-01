@@ -1,0 +1,6 @@
+types:
+  - name: Default
+    description: "Default incident type"
+    is_deletable: false
+    is_editable: true
+    is_default: true

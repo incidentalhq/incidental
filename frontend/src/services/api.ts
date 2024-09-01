@@ -446,4 +446,21 @@ export class ApiService {
       user: this.user,
       json: patchList
     })
+
+  patchFormField = (id: ModelID, patchIn: Partial<IFormField>) =>
+    callApi<IFormField>('PATCH', `/forms/fields/${id}`, {
+      user: this.user,
+      json: patchIn
+    })
+
+  createFormField = (id: string, createIn: { field: { id: string } }) =>
+    callApi<IFormField>('POST', `/forms/${id}/fields`, {
+      user: this.user,
+      json: createIn
+    })
+
+  deleteFormField = (id: string) =>
+    callApi('DELETE', `/forms/fields/${id}`, {
+      user: this.user
+    })
 }

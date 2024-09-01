@@ -76,6 +76,7 @@ class IncidentService:
         incident_severity: IncidentSeverity | None = None
         summary: str | None = None
         incident_status: IncidentStatus | None = None
+        custom_fields = []
 
         for field_id, value in create_in.model_dump().items():
             form_field = self.form_repo.get_form_field_by_id(id=field_id)
@@ -93,6 +94,8 @@ class IncidentService:
                     summary = value
                 case FieldKind.INCIDENT_INITIAL_STATUS:
                     incident_status = self.incident_repo.get_incident_status_by_id_or_throw(id=value)
+                case FieldKind.USER_DEFINED:
+                    pass
 
         if name is None:
             raise ValidationError("Incident name cannot be empty")

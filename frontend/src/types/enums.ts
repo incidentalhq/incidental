@@ -40,3 +40,9 @@ export enum FieldInterfaceKind {
 export enum MemberRole {
   MEMBER = 'MEMBER'
 }
+
+export enum RequirementType {
+  REQUIRED = 'REQUIRED',
+  OPTIONAL = 'OPTIONAL',
+  CONDITIONAL = 'CONDITIONAL'
+}

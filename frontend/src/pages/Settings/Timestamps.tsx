@@ -34,7 +34,7 @@ const FirstOrLast = styled.div`
   padding: 2px 5px;
   border-radius: var(--radius-md);
 `
-const TimestampModalWrapper = styled.div`
+const ModalContainer = styled.div`
   padding: 1rem;
   min-width: 600px;
 `
@@ -128,10 +128,10 @@ const SettingsTimestamps = () => {
 
   const handleOpenCreateModal = () => {
     setModal(
-      <TimestampModalWrapper>
+      <ModalContainer>
         <h2>Create new custom timestamp</h2>
         <TimestampForm onSubmit={handleAddTimestamp} />
-      </TimestampModalWrapper>
+      </ModalContainer>
     )
   }
 
