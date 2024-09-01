@@ -72,7 +72,6 @@ export const getCustomField = (name: string, field: IField) => {
       return <SelectField name={name} options={options} />
     }
     case FieldInterfaceKind.MULTI_SELECT: {
-      const options = []
       return <span>TODO: Multi select is not implemented</span>
     }
   }
