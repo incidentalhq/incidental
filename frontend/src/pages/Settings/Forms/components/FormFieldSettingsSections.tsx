@@ -7,7 +7,7 @@ import { IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@
 const RadioOptionsList = styled.div``
 const RadioOptionRow = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: center;
 `
 
@@ -23,15 +23,19 @@ export const RequiredOrOptionalSection = ({ formField }: { formField: IFormField
   return (
     <RadioOptionsList>
       <RadioOptionRow>
-        <Field type="radio" name="requirementType" value={'REQUIRED'} />
         <div>
-          <label htmlFor="required">Required</label>
+          <Field type="radio" name="requirementType" value={'REQUIRED'} />
+        </div>
+        <div>
+          <label>Required</label>
         </div>
       </RadioOptionRow>
       <RadioOptionRow>
-        <Field type="radio" name="requirementType" value={'OPTIONAL'} />
         <div>
-          <label htmlFor="optional">Optional</label>
+          <Field type="radio" name="requirementType" value={'OPTIONAL'} />
+        </div>
+        <div>
+          <label>Optional</label>
         </div>
       </RadioOptionRow>
     </RadioOptionsList>

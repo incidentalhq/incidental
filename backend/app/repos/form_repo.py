@@ -94,7 +94,7 @@ class FormRepo(BaseRepo):
         return self.session.scalar(stmt)
 
     def get_form_field_by_id(self, id: str) -> FormField | None:
-        stmt = select(FormField).where(FormField.id == id, Form.deleted_at.is_(None)).limit(1)
+        stmt = select(FormField).join(Form).where(FormField.id == id, Form.deleted_at.is_(None)).limit(1)
 
         return self.session.scalar(stmt)
 

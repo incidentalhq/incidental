@@ -78,6 +78,14 @@ class ExtendedPatchIncidentSchema(PatchIncidentSchema):
 
 
 class CreateIncidentSchema(BaseSchema):
+    """Used when declaring/creating a new incident"""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CreateIncidentUpdateSchema(BaseSchema):
+    """Used when creating an incident update"""
+
     model_config = ConfigDict(extra="allow")
 
 

@@ -1,7 +1,8 @@
 import structlog
 
-from app.models import FieldKind, Form, Incident, User
+from app.models import Form, Incident, User
 from app.repos import IncidentRepo
+from app.schemas.actions import CreateIncidentUpdateSchema
 from app.schemas.slack import SlackInteractionSchema
 from app.services.incident import IncidentService
 from app.services.slack.forms.base import BaseForm
@@ -24,30 +25,7 @@ class UpdateIncidentInteraction(BaseForm):
         self.incident_service = incident_service
 
     def handle_submit(self, interaction: SlackInteractionSchema, user: User):
-        incident_severity = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_SEVERITY)
-        incident_status = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_STATUS)
-        summary = self.get_field_value(self.form, interaction, field_kind=FieldKind.INCIDENT_SUMMARY)
-
-        severity = self.incident_repo.get_incident_severity_by_id_or_throw(incident_severity)
-        if not severity:
-            raise RuntimeError("Could not find severity")
-
-        status = self.incident_repo.get_incident_status_by_id_or_throw(incident_status)
-        if not status:
-            raise RuntimeError("Could not find status")
-
-        # only create an update if something has changed
-        if (
-            severity.id != self.incident.incident_severity_id
-            or status.id != self.incident.incident_status_id
-            or summary is not None
-        ):
-            self.incident_service.create_update(
-                incident=self.incident,
-                creator=user,
-                new_status=status,
-                new_severity=severity,
-                summary=summary,
-            )
-
+        values = self.get_form_values(form=self.form, interaction=interaction)
+        create_in = CreateIncidentUpdateSchema.model_validate(values)
+        self.incident_service.create_update_from_schema(incident=self.incident, creator=user, create_in=create_in)
         self.session.flush()
