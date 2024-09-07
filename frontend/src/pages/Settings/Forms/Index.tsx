@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { generatePath, Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
+import { RoutePaths } from '@/routes'
 
 const Intro = styled.div`
   padding: 1rem;
@@ -11,13 +13,13 @@ const Intro = styled.div`
 const FormsList = styled.div`
   display: flex;
 `
-const FormWrapper = styled.div`
+const FormWrapper = styled(Link)`
   padding: 1rem;
   border: 1px solid var(--color-gray-100);
   margin: 1rem;
 `
 
-const SettingsForms = () => {
+const SettingsFormsIndex = () => {
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
 
@@ -41,7 +43,12 @@ const SettingsForms = () => {
             <FormsList>
               {formsQuery.isSuccess &&
                 formsQuery.data.items.map((form) => (
-                  <FormWrapper>
+                  <FormWrapper
+                    to={generatePath(RoutePaths.SETTINGS_FORMS_EDIT, {
+                      id: form.id as string,
+                      organisation: organisation!.slug
+                    })}
+                  >
                     <div>{form.name}</div>
                   </FormWrapper>
                 ))}
@@ -53,4 +60,4 @@ const SettingsForms = () => {
   )
 }
 
-export default SettingsForms
+export default SettingsFormsIndex

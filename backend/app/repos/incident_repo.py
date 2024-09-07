@@ -18,12 +18,12 @@ from app.models import (
     IncidentType,
     IncidentTypeField,
     IncidentUpdate,
+    InterfaceKind,
     Organisation,
     User,
 )
 from app.schemas.actions import (
     ExtendedPatchIncidentSchema,
-    FieldValueSchema,
     PatchIncidentFieldValuesSchema,
     PatchIncidentSchema,
     PatchIncidentTypeSchema,
@@ -516,7 +516,7 @@ class IncidentRepo(BaseRepo):
             self._create_or_update_incident_field_value(incident=incident, field=field, value=item.value)
 
     def _create_or_update_incident_field_value(
-        self, incident: Incident, field: Field, value: FieldValueSchema
+        self, incident: Incident, field: Field, value: str | list[str]
     ) -> IncidentFieldValue:
         field_value = self.get_incident_field_value(incident=incident, field=field)
 
@@ -527,10 +527,17 @@ class IncidentRepo(BaseRepo):
             field_value.field_id = field.id
             self.session.add(field_value)
 
-        # update all values
-        field_value.value_multi_select = value.value_multi_select
-        field_value.value_single_select = value.value_single_select
-        field_value.value_text = value.value_text
+        match field.interface_kind:
+            case InterfaceKind.SINGLE_SELECT:
+                field_value.value_single_select = value  # type: ignore
+            case InterfaceKind.MULTI_SELECT:
+                field_value.value_multi_select = value  # type: ignore
+            case InterfaceKind.TEXT:
+                field_value.value_text = value  # type: ignore
+            case InterfaceKind.TEXTAREA:
+                field_value.value_text = value  # type: ignore
+            case _:
+                raise ValueError("Unkown interface kind")
 
         self.session.flush()
         return field_value

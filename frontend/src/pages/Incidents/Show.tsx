@@ -317,19 +317,13 @@ const ShowIncident = () => {
         console.error('Incident has not been fetched yet')
         return
       }
-      console.log(values)
       try {
         const normalized = [
           {
             field: {
               id: field.id
             },
-            value: {
-              ...values[field.id],
-              valueMultiSelect: values[field.id].valueMultiSelect
-                ? values[field.id].valueMultiSelect?.map((it) => it.value)
-                : undefined
-            }
+            value: values[field.id]
           }
         ]
         await apiService.patchIncidentFieldValues(incidentQuery.data, normalized)

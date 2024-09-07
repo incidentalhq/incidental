@@ -6,7 +6,7 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum, InterfaceKind
+from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -78,6 +78,14 @@ class ExtendedPatchIncidentSchema(PatchIncidentSchema):
 
 
 class CreateIncidentSchema(BaseSchema):
+    """Used when declaring/creating a new incident"""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CreateIncidentUpdateSchema(BaseSchema):
+    """Used when creating an incident update"""
+
     model_config = ConfigDict(extra="allow")
 
 
@@ -196,15 +204,9 @@ class PatchIncidentTypeSchema(BaseSchema):
     fields: list[ModelIdSchema] | None = None
 
 
-class FieldValueSchema(BaseSchema):
-    value_text: str | None = None
-    value_single_select: str | None = None
-    value_multi_select: list[str] | None = None
-
-
 class SetIncidentFieldValueSchema(BaseSchema):
     field: ModelIdSchema
-    value: FieldValueSchema
+    value: str | list[str]
 
 
 class PatchIncidentFieldValuesSchema(RootModel):
@@ -222,3 +224,23 @@ class VerifyEmailSchema(BaseSchema):
 
 class SendVerificationEmailSchema(BaseSchema):
     email_address: str
+
+
+class PatchSingleFormFieldSchema(BaseSchema):
+    id: str
+    rank: int | None = None
+    default_value: str | None = None
+    requirement_type: RequirementTypeEnum | None = None
+    description: str | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class PatchFormFieldsSchema(RootModel):
+    root: list[PatchSingleFormFieldSchema]
+
+
+class CreateFormFieldSchema(BaseSchema):
+    """Create new form field"""
+
+    field: ModelIdSchema

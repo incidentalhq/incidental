@@ -16,12 +16,9 @@ class OrganisationRepo(BaseRepo):
         slack_team_id: str | None = None,
         kind: OrganisationTypes | None = None,
     ) -> Organisation:
-        slug = to_snake(name).replace("_", "-")  # kebab-case it
-        unique_slug = f"{slug}-{uuid()}"
-
         organisation = Organisation()
         organisation.name = name
-        organisation.slug = unique_slug
+        organisation.slug = self.create_unique_slug(name)
         organisation.slack_team_id = slack_team_id
         organisation.slack_team_name = slack_team_name
 
@@ -32,6 +29,23 @@ class OrganisationRepo(BaseRepo):
         self.session.flush()
 
         return organisation
+
+    def create_unique_slug(self, name: str) -> str:
+        """Generate a unique slug based on organisation name"""
+        suffix = 1
+        base_slug = to_snake(name.strip()).replace("_", "-")
+        slug = base_slug
+        while True:
+            existing_organisation = self.get_organisation_by_slug(slug=slug)
+            if not existing_organisation:
+                return slug
+            slug = f"{base_slug}-{suffix}"
+            suffix += 1
+
+    def get_organisation_by_slug(self, slug: str) -> Organisation | None:
+        """Find organisation by slug"""
+        stmt = select(Organisation).where(Organisation.slug == slug).limit(1)
+        return self.session.scalar(stmt)
 
     def get_member(self, user: User, organisation: Organisation) -> OrganisationMember | None:
         stmt = (

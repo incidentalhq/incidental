@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .organisation import Organisation
 
 
-class FormKind(enum.Enum):
+class FormKind(str, enum.Enum):
     CREATE_INCIDENT = "CREATE_INCIDENT"
     UPDATE_INCIDENT = "UPDATE_INCIDENT"
     ACCEPT_INCIDENT = "ACCEPT_INCIDENT"
@@ -37,7 +37,7 @@ class Form(Base, TimestampMixin, SoftDeleteMixin):
     form_fields: Mapped[list["FormField"]] = relationship(
         "FormField",
         primaryjoin="and_(FormField.form_id==Form.id, Form.deleted_at.is_(None))",
-        order_by="asc(FormField.position)",
+        order_by="asc(FormField.rank)",
         viewonly=True,
     )
     organisation: Mapped["Organisation"] = relationship("Organisation", viewonly=True)

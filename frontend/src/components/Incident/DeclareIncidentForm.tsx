@@ -1,25 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { ReactElement, useMemo } from 'react'
-import styled from 'styled-components'
+import { useMemo } from 'react'
 import * as Yup from 'yup'
 
 import spinner from '@/assets/icons/spinner.svg'
-import Field from '@/components/Form/Field'
 import GeneralError from '@/components/Form/GeneralError'
 import Icon from '@/components/Icon/Icon'
 import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { FieldInterfaceKind, FieldKind, IncidentStatusCategory } from '@/types/enums'
-import { IForm, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
+import { FieldKind, RequirementType } from '@/types/enums'
+import { IForm, IFormField, IIncidentType } from '@/types/models'
 
-import SelectField from '../Form/SelectField'
 import Loading from '../Loading/Loading'
-
-const Optional = styled.span`
-  color: var(--color-gray-400);
-`
+import FormField from './FormField'
 
 export type FormValues = Record<string, string>
 
@@ -28,18 +22,11 @@ interface Props {
   onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void | Promise<void>
 }
 
-interface FormFieldProps {
-  formField: IFormField
-  severityList: IIncidentSeverity[]
-  statusList: IIncidentStatus[]
-  incidentTypes: IIncidentType[]
-}
-
 const createValidationSchema = (formFields: IFormField[]) => {
   const fieldsShape: Record<string, Yup.StringSchema> = {}
 
   for (const field of formFields) {
-    if (field.isRequired) {
+    if (field.requirementType === RequirementType.REQUIRED) {
       fieldsShape[field.id] = Yup.string().required('This field is required')
     }
   }
@@ -59,78 +46,6 @@ const createDefaultValues = (formFields: IFormField[], incidentTypes: IIncidentT
   }
 
   return defaultValues
-}
-
-const FormField: React.FC<FormFieldProps> = ({ formField, statusList, severityList, incidentTypes }) => {
-  let inputComponent: ReactElement | null = null
-
-  switch (formField.field.interfaceKind) {
-    case FieldInterfaceKind.TEXTAREA:
-      inputComponent = <Field as={'textarea'} name={formField.id} type="text" />
-      break
-    case FieldInterfaceKind.TEXT:
-      inputComponent = <Field name={formField.id} type="text" />
-      break
-    case FieldInterfaceKind.SINGLE_SELECT: {
-      switch (formField.field.kind) {
-        case FieldKind.INCIDENT_STATUS: {
-          const options = statusList.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_SEVERITY: {
-          const options = severityList.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_TYPE: {
-          const options = incidentTypes.map((it) => ({
-            label: it.name,
-            value: it.id
-          }))
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-        case FieldKind.INCIDENT_INITIAL_STATUS: {
-          const triage = statusList.find((it) => it.category === IncidentStatusCategory.TRIAGE)
-          const active = statusList.find((it) => it.category == IncidentStatusCategory.ACTIVE)
-          if (!triage || !active) {
-            console.log('Could not find triage or active categories')
-            break
-          }
-          const options = [
-            {
-              label: 'Triage',
-              value: triage.id
-            },
-            {
-              label: 'Active',
-              value: active.id
-            }
-          ]
-
-          inputComponent = <SelectField name={formField.id} options={options} />
-          break
-        }
-      }
-      break
-    }
-  }
-
-  return (
-    <div key={formField.id}>
-      <label>
-        {formField.label} {!formField.isRequired ? <Optional>optional</Optional> : ''}
-      </label>
-      {inputComponent}
-    </div>
-  )
 }
 
 const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
@@ -168,7 +83,7 @@ const DeclareIncidentForm: React.FC<Props> = ({ onSubmit, form }) => {
     }
 
     return formFieldsQuery.data.items
-      .sort((a, b) => (a.position < b.position ? -1 : 1))
+      .sort((a, b) => (a.rank < b.rank ? -1 : 1))
       .map((it) => (
         <FormField
           key={it.id}

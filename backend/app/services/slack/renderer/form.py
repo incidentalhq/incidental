@@ -13,7 +13,9 @@ from app.models import (
     IncidentStatus,
     IncidentStatusCategoryEnum,
     IncidentType,
+    InterfaceKind,
     Lifecycle,
+    RequirementTypeEnum,
 )
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -71,6 +73,14 @@ class FormRenderer:
             initial_option = self._create_option_value(
                 name=context.incident.incident_severity.name, value=context.incident.incident_severity.id
             )
+        elif form_field.default_value:
+            label = ""
+            default_sev: list[IncidentSeverity] = list(
+                filter(lambda it: it.id == form_field.default_value, self.severities)
+            )
+            if default_sev:
+                label = default_sev[0].name
+                initial_option = self._create_option_value(name=label, value=form_field.default_value)
 
         rendered_field: dict[str, Any] = {
             "type": "input",
@@ -84,7 +94,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
 
         if initial_option:
@@ -119,7 +129,7 @@ class FormRenderer:
                 "options": options,
                 "initial_option": initial_option,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
 
         return rendered_field
@@ -154,7 +164,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
             "dispatch_action": True,
         }
 
@@ -184,7 +194,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "options": options,
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
             "dispatch_action": True,
         }
 
@@ -204,7 +214,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "initial_value": form_field.default_value if form_field.default_value else "",
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
         if form_field.description:
             block["hint"] = {"type": "plain_text", "text": form_field.description}
@@ -222,7 +232,7 @@ class FormRenderer:
                 "action_id": form_field.id,
                 "initial_value": form_field.default_value if form_field.default_value else "",
             },
-            "optional": False if form_field.is_required else True,
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
         }
         if form_field.description:
             block["hint"] = {"type": "plain_text", "text": form_field.description}
@@ -232,7 +242,7 @@ class FormRenderer:
     def _render_block(self, form_field: FormField, context: RenderContext | None = None) -> dict | None:
         match form_field.field.kind:
             case FieldKind.USER_DEFINED:
-                return self._render_generic_input(form_field=form_field)
+                return self._render_generic_input(form_field=form_field, context=context)
             case FieldKind.INCIDENT_NAME:
                 return self._render_text(form_field=form_field, context=context)
             case FieldKind.INCIDENT_SEVERITY:
@@ -248,8 +258,30 @@ class FormRenderer:
             case _:
                 raise RuntimeError(f"Unknown field kind {form_field.form.kind}")
 
-    def _render_generic_input(self, form_field: FormField):
-        pass
+    def _render_generic_input(self, form_field: FormField, context: RenderContext | None):
+        block = {
+            "type": "input",
+            "block_id": f"block-{form_field.id}",
+            "label": {
+                "type": "plain_text",
+                "text": form_field.label,
+            },
+            "optional": True if form_field.requirement_type == RequirementTypeEnum.OPTIONAL else False,
+            "dispatch_action": True,
+        }
+
+        match form_field.field.interface_kind:
+            case InterfaceKind.SINGLE_SELECT:
+                block["element"] = self._render_select_element(form_field=form_field, context=context)
+            case InterfaceKind.TEXTAREA:
+                block["element"] = self._render_multi_line_element(form_field=form_field, context=context)
+            case InterfaceKind.TEXT:
+                block["element"] = self._render_text_element(form_field=form_field, context=context)
+
+        if form_field.description:
+            block["hint"] = {"type": "plain_text", "text": form_field.description}
+
+        return block
 
     def _create_option_value(self, name: str, value: str) -> dict[str, Any]:
         """Create an option value for use in an select input"""
@@ -260,3 +292,46 @@ class FormRenderer:
             },
             "value": value,
         }
+
+    def _render_select_element(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
+        options = []
+        initial_option: dict | None = None
+
+        if form_field.field.available_options:
+            for option_value in form_field.field.available_options:
+                opt = self._create_option_value(name=option_value, value=option_value)
+                options.append(opt)
+
+        if form_field.default_value:
+            initial_option = self._create_option_value(name=form_field.default_value, value=form_field.default_value)
+
+        element: dict[str, Any] = {
+            "type": "static_select",
+            "action_id": form_field.id,
+            "options": options,
+        }
+
+        if initial_option:
+            element["initial_option"] = initial_option
+
+        return element
+
+    def _render_multi_line_element(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
+        block = {
+            "type": "plain_text_input",
+            "multiline": True,
+            "action_id": form_field.id,
+            "initial_value": form_field.default_value if form_field.default_value else "",
+        }
+
+        return block
+
+    def _render_text_element(self, form_field: FormField, context: RenderContext | None = None) -> dict[str, Any]:
+        block = {
+            "type": "plain_text_input",
+            "multiline": False,
+            "action_id": form_field.id,
+            "initial_value": form_field.default_value if form_field.default_value else "",
+        }
+
+        return block

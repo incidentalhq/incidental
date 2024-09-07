@@ -1,0 +1,25 @@
+fields:
+  - label: "Incident name"
+    interface_kind: TEXT
+    kind: INCIDENT_NAME
+    description: "A unique identifier or short title for the incident"
+  - label: "Incident type"
+    interface_kind: SINGLE_SELECT
+    kind: INCIDENT_TYPE
+    description: "The category of the incident"
+  - label: "Incident severity"
+    interface_kind: SINGLE_SELECT
+    kind: INCIDENT_SEVERITY
+    description: "The level of impact or urgency of the incident"
+  - label: "Incident summary"
+    interface_kind: TEXTAREA
+    kind: INCIDENT_SUMMARY
+    description: "A brief overview of the incident, including key details and initial observations"
+  - label: "Incident status"
+    interface_kind: SINGLE_SELECT
+    kind: INCIDENT_STATUS
+    description: "The current state of the incident"
+  - label: "Incident initial status"
+    interface_kind: SINGLE_SELECT
+    kind: INCIDENT_INITIAL_STATUS
+    description: "Initial status of the incident when it is declared"

@@ -32,7 +32,7 @@ const Controls = styled.div`
 const Actions = styled.div`
   padding: 1rem;
 `
-const SeverityModal = styled.div`
+const ModalContainer = styled.div`
   padding: 1rem;
   min-width: 600px;
 `
@@ -91,20 +91,20 @@ const SettingsSeverity = () => {
 
   const handleOpenCreateModal = useCallback(() => {
     setModal(
-      <SeverityModal>
+      <ModalContainer>
         <h2>Create new severity</h2>
         <SeverityForm onSubmit={handleAddSeverity} />
-      </SeverityModal>
+      </ModalContainer>
     )
   }, [handleAddSeverity, setModal])
 
   const handleOpenEditModal = useCallback(
     (severity: IIncidentSeverity) => {
       setModal(
-        <SeverityModal>
+        <ModalContainer>
           <h2>Edit severity</h2>
           <SeverityForm severity={severity} onSubmit={(values) => handlePatchSeverity(severity, values)} />
-        </SeverityModal>
+        </ModalContainer>
       )
     },
     [handlePatchSeverity, setModal]

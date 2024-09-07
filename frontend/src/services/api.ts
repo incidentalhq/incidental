@@ -367,6 +367,15 @@ export class ApiService {
     })
   }
 
+  getForm = (id: string) => {
+    return callApi<IForm>('GET', `/forms/${id}`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
   getForms = () => {
     return callApi<PaginatedResults<IForm>>('GET', `/forms/search`, {
       user: this.user,
@@ -430,5 +439,28 @@ export class ApiService {
   sendVerificationCode = (email: string) =>
     callApi('POST', `/users/send-verification`, {
       json: { emailAddress: email }
+    })
+
+  patchFormFieldValues = (formId: string, patchList: Array<Partial<IFormField>>) =>
+    callApi('PATCH', `/forms/${formId}/fields`, {
+      user: this.user,
+      json: patchList
+    })
+
+  patchFormField = (id: ModelID, patchIn: Partial<IFormField>) =>
+    callApi<IFormField>('PATCH', `/forms/fields/${id}`, {
+      user: this.user,
+      json: patchIn
+    })
+
+  createFormField = (id: string, createIn: { field: { id: string } }) =>
+    callApi<IFormField>('POST', `/forms/${id}/fields`, {
+      user: this.user,
+      json: createIn
+    })
+
+  deleteFormField = (id: string) =>
+    callApi('DELETE', `/forms/fields/${id}`, {
+      user: this.user
     })
 }

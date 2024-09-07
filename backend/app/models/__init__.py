@@ -2,7 +2,7 @@
 from .announcement import Announcement, AnnouncementActions, AnnouncementFields
 from .field import Field, FieldKind, InterfaceKind
 from .form import Form, FormKind
-from .form_field import FormField
+from .form_field import FormField, RequirementTypeEnum
 from .incident import Incident
 from .incident_field_value import IncidentFieldValue
 from .incident_role import IncidentRole, IncidentRoleKind

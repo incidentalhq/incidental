@@ -27,6 +27,7 @@ export enum FieldKind {
   INCIDENT_STATUS = 'INCIDENT_STATUS',
   INCIDENT_NAME = 'INCIDENT_NAME',
   INCIDENT_INITIAL_STATUS = 'INCIDENT_INITIAL_STATUS',
+  INCIDENT_SUMMARY = 'INCIDENT_SUMMARY',
   USER_DEFINED = 'USER_DEFINED'
 }
 
@@ -39,4 +40,10 @@ export enum FieldInterfaceKind {
 
 export enum MemberRole {
   MEMBER = 'MEMBER'
+}
+
+export enum RequirementType {
+  REQUIRED = 'REQUIRED',
+  OPTIONAL = 'OPTIONAL',
+  CONDITIONAL = 'CONDITIONAL'
 }

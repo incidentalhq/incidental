@@ -5,7 +5,8 @@ import {
   IncidentRoleKind,
   IncidentStatusCategory,
   MemberRole,
-  OrganisationKind
+  OrganisationKind,
+  RequirementType
 } from './enums'
 
 export type ILoggedInUser = Required<IUser>
@@ -131,11 +132,14 @@ export interface IIncidentUpdate extends IModel {
 export interface IFormField extends IModel {
   label: string
   description: string | null
-  position: number
-  isRequired: boolean
+  rank: number
+  requirementType: RequirementType
   isDeletable: boolean
   defaultValue: string | null
   field: IField
+  canChangeRequirementType: boolean
+  canHaveDefaultValue: boolean
+  canHaveDescription: boolean
 }
 
 export interface IField extends IModel {

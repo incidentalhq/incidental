@@ -1,0 +1,75 @@
+forms:
+  create-incident:
+    name: "Create incident"
+    type: CREATE_INCIDENT
+    fields:
+      - label: Name
+        field_kind: INCIDENT_NAME
+        description: A descriptive name for the incident
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_requirement_type: false
+
+      - label: Incident type
+        field_kind: INCIDENT_TYPE
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_requirement_type: false
+
+      - label: Severity
+        field_kind: INCIDENT_SEVERITY
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_requirement_type: false
+
+      - label: Initial status
+        field_kind: INCIDENT_INITIAL_STATUS
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_requirement_type: false
+
+      - label: Summary
+        field_kind: INCIDENT_SUMMARY
+        description: Give a summary of the current state of the incident.
+        requirement_type: OPTIONAL
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_requirement_type: true
+
+  update-status:
+    name: "Update status"
+    type: UPDATE_INCIDENT
+    fields:
+      - label: Status
+        field_kind: INCIDENT_STATUS
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: false
+        can_change_requirement_type: false
+
+      - label: Severity
+        field_kind: INCIDENT_SEVERITY
+        requirement_type: REQUIRED
+        is_deletable: false
+        can_have_default_value: false
+        can_have_description: true
+        can_change_requirement_type: false
+
+      - label: Summary
+        field_kind: INCIDENT_SUMMARY
+        description: Give a summary of the current state of the incident.
+        requirement_type: OPTIONAL
+        is_deletable: false
+        can_have_default_value: true
+        can_have_description: true
+        can_change_requirement_type: true

@@ -28,8 +28,9 @@ import PageNotFound from '@/pages/Error/PageNotFound'
 import IncidentsList from '@/pages/Incidents/List'
 import ShowIncident from '@/pages/Incidents/Show'
 import OAuthComplete from '@/pages/OAuth/Complete'
-import SettingsForms from '@/pages/Settings/components/Forms/Forms'
 import SettingsFields from '@/pages/Settings/Fields'
+import SettingsFormsEdit from '@/pages/Settings/Forms/Edit'
+import SettingsForms from '@/pages/Settings/Forms/Index'
 import SettingsIndex from '@/pages/Settings/Index'
 import SettingsMembers from '@/pages/Settings/Members'
 import SettingsRoles from '@/pages/Settings/Roles'
@@ -95,6 +96,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_FIELDS} element={<SettingsFields />} />
                       <Route path={RoutePaths.SETTINGS_TYPES} element={<SettingsIncidentTypes />} />
                       <Route path={RoutePaths.SETTINGS_FORMS_INDEX} element={<SettingsForms />} />
+                      <Route path={RoutePaths.SETTINGS_FORMS_EDIT} element={<SettingsFormsEdit />} />
                       <Route path={RoutePaths.SETTINGS_STATUSES} element={<SettingsStatuses />} />
                       <Route path={RoutePaths.SETTINGS_USERS} element={<SettingsMembers />} />
                     </Route>

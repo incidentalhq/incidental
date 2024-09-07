@@ -16,7 +16,15 @@ from app.models import (
     User,
 )
 from app.repos import AnnouncementRepo, FormRepo, IncidentRepo
-from app.schemas.actions import CreateIncidentSchema, ExtendedPatchIncidentSchema, PatchIncidentSchema
+from app.schemas.actions import (
+    CreateIncidentSchema,
+    CreateIncidentUpdateSchema,
+    ExtendedPatchIncidentSchema,
+    PatchIncidentFieldValuesSchema,
+    PatchIncidentSchema,
+    SetIncidentFieldValueSchema,
+)
+from app.schemas.models import ModelIdSchema
 from app.schemas.tasks import (
     CreateAnnouncementTaskParameters,
     CreateIncidentUpdateParameters,
@@ -49,7 +57,7 @@ class IncidentService:
         self.organisation = organisation
         self.incident_repo = incident_repo
         self.announcement_repo = announcement_repo
-        self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token)
+        self.slack_service = SlackClientService(auth_token=organisation.slack_bot_token)  # type: ignore
         self.events = events
         self.form_repo = form_repo
 
@@ -76,6 +84,7 @@ class IncidentService:
         incident_severity: IncidentSeverity | None = None
         summary: str | None = None
         incident_status: IncidentStatus | None = None
+        custom_fields_patches = []
 
         for field_id, value in create_in.model_dump().items():
             form_field = self.form_repo.get_form_field_by_id(id=field_id)
@@ -93,6 +102,10 @@ class IncidentService:
                     summary = value
                 case FieldKind.INCIDENT_INITIAL_STATUS:
                     incident_status = self.incident_repo.get_incident_status_by_id_or_throw(id=value)
+                case FieldKind.USER_DEFINED:
+                    custom_fields_patches.append(
+                        SetIncidentFieldValueSchema(field=ModelIdSchema(id=form_field.field.id), value=value)
+                    )
 
         if name is None:
             raise ValidationError("Incident name cannot be empty")
@@ -101,6 +114,8 @@ class IncidentService:
         if not incident_severity:
             raise ValidationError("Incident severity not found")
 
+        patch_incident_field_values_in = PatchIncidentFieldValuesSchema(root=custom_fields_patches)
+
         return self.create_incident(
             name=name,
             summary=summary or "",
@@ -108,6 +123,7 @@ class IncidentService:
             incident_severity=incident_severity,
             incident_type=incident_type,
             incident_status=incident_status,
+            patch_incident_field_values_in=patch_incident_field_values_in,
         )
 
     def create_incident(
@@ -118,6 +134,7 @@ class IncidentService:
         incident_severity: IncidentSeverity,
         incident_type: IncidentType,
         incident_status: IncidentStatus | None = None,
+        patch_incident_field_values_in: PatchIncidentFieldValuesSchema | None = None,
     ):
         """Create a new incident"""
 
@@ -142,6 +159,10 @@ class IncidentService:
             reference=reference,
             reference_id=reference_id,
         )
+
+        # set custom fields
+        if patch_incident_field_values_in:
+            self.incident_repo.patch_incident_custom_fields(incident=incident, patch_in=patch_incident_field_values_in)
 
         # assign role
         role = self.incident_repo.get_incident_role(organisation=self.organisation, kind=IncidentRoleKind.REPORTER)
@@ -203,6 +224,41 @@ class IncidentService:
 
         return incident
 
+    def create_update_from_schema(self, incident: Incident, creator: User, create_in: CreateIncidentUpdateSchema):
+        incident_severity: IncidentSeverity | None = None
+        summary: str | None = None
+        incident_status: IncidentStatus | None = None
+        custom_fields_patches = []
+
+        for field_id, value in create_in.model_dump().items():
+            form_field = self.form_repo.get_form_field_by_id(id=field_id)
+            if not form_field:
+                raise ValidationError("Could not find form field")
+
+            match form_field.field.kind:
+                case FieldKind.INCIDENT_SEVERITY:
+                    incident_severity = self.incident_repo.get_incident_severity_by_id_or_throw(id=value)
+                case FieldKind.INCIDENT_SUMMARY:
+                    summary = value
+                case FieldKind.INCIDENT_STATUS:
+                    incident_status = self.incident_repo.get_incident_status_by_id_or_throw(id=value)
+                case FieldKind.USER_DEFINED:
+                    custom_fields_patches.append(
+                        SetIncidentFieldValueSchema(field=ModelIdSchema(id=form_field.field.id), value=value)
+                    )
+
+        self.create_update(
+            incident=incident,
+            creator=creator,
+            new_status=incident_status,
+            new_severity=incident_severity,
+            summary=summary,
+        )
+
+        # patch any custom fields that were set
+        patch_incident_field_values_in = PatchIncidentFieldValuesSchema(root=custom_fields_patches)
+        self.incident_repo.patch_incident_custom_fields(incident=incident, patch_in=patch_incident_field_values_in)
+
     def create_update(
         self,
         incident: Incident,
@@ -212,6 +268,23 @@ class IncidentService:
         summary: str | None = None,
     ):
         """Create an incident update"""
+        can_update = False
+
+        if summary:
+            can_update = True
+        elif new_severity and new_severity.id != incident.incident_severity_id:
+            can_update = True
+        elif new_status and new_status.id != incident.incident_status_id:
+            can_update = True
+            self.events.queue_job(
+                IncidentStatusUpdatedTaskParameters(
+                    incident_id=incident.id, new_status_id=new_status.id, old_status_id=incident.incident_status_id
+                )
+            )
+
+        if not can_update:
+            return
+
         incident_update = self.incident_repo.create_incident_update(
             incident=incident,
             creator=creator,
@@ -230,26 +303,20 @@ class IncidentService:
     def patch_incident(self, user: User, incident: Incident, patch_in: PatchIncidentSchema):
         """Change details of an incident"""
         new_status = None
-        new_sev = None
+        new_severity = None
 
         if patch_in.incident_status and patch_in.incident_status.id != incident.incident_status_id:
             new_status = self.incident_repo.get_incident_status_by_id_or_throw(patch_in.incident_status.id)
-            self.events.queue_job(
-                IncidentStatusUpdatedTaskParameters(
-                    incident_id=incident.id, new_status_id=new_status.id, old_status_id=incident.incident_status_id
-                )
-            )
 
         if patch_in.incident_severity and patch_in.incident_severity.id != incident.incident_severity_id:
-            new_sev = self.incident_repo.get_incident_severity_by_id_or_throw(patch_in.incident_severity.id)
+            new_severity = self.incident_repo.get_incident_severity_by_id_or_throw(patch_in.incident_severity.id)
 
-        if new_sev or new_status:
-            self.create_update(
-                incident=incident,
-                creator=user,
-                new_severity=new_sev,
-                new_status=new_status,
-            )
+        self.create_update(
+            incident=incident,
+            creator=user,
+            new_severity=new_severity,
+            new_status=new_status,
+        )
 
         self.incident_repo.patch_incident(incident=incident, patch_in=patch_in)
 
