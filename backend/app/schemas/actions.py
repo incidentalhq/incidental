@@ -230,6 +230,7 @@ class PatchSingleFormFieldSchema(BaseSchema):
     id: str
     rank: int | None = None
     default_value: str | None = None
+    default_value_multi: list[str] | None = None
     requirement_type: RequirementTypeEnum | None = None
     description: str | None = None
 

@@ -136,6 +136,7 @@ export interface IFormField extends IModel {
   requirementType: RequirementType
   isDeletable: boolean
   defaultValue: string | null
+  defaultValueMulti: Array<string> | null
   field: IField
   canChangeRequirementType: boolean
   canHaveDefaultValue: boolean

@@ -1,4 +1,4 @@
-import { ErrorMessage, FieldArray, Form, Formik, FormikHelpers } from 'formik'
+import { ErrorMessage, FieldArray, Form, Formik, FormikHelpers, getIn, useFormikContext } from 'formik'
 import * as Yup from 'yup'
 
 import spinner from '@/assets/icons/spinner.svg'
@@ -54,7 +54,7 @@ const validationSchema = Yup.object().shape({
     then: (schema) =>
       schema
         .min(1, 'Please add at least one option')
-        .of(Yup.string().min(2, 'An option must be at least 2 characters').required())
+        .of(Yup.string().min(2, 'An option must be at least 2 characters').required('Cannot be empty'))
         .unique('Options must be unique'),
     otherwise: (schema) => schema.notRequired()
   })
@@ -86,10 +86,25 @@ const interfaceOptions = [
   }
 ]
 
+const ArrayErrorMessage = ({ name }: { name: string }) => {
+  const { errors, touched } = useFormikContext()
+
+  const isTouched = getIn(touched, name)
+  const error = getIn(errors, name)
+
+  if (!isTouched || !error) {
+    return
+  }
+
+  if (!Array.isArray(error) && typeof error === 'string') {
+    return <div className="error-help">{error}</div>
+  }
+}
+
 const FieldForm: React.FC<Props> = ({ onSubmit, field }) => {
   const defaultValues: FormValues = {
     label: field ? field.label : '',
-    description: field ? field.description ?? '' : '',
+    description: field ? (field.description ?? '') : '',
     interfaceKind: field?.interfaceKind ?? FieldInterfaceKind.TEXT,
     availableOptions: field?.availableOptions ? field.availableOptions : ['']
   }
@@ -123,7 +138,7 @@ const FieldForm: React.FC<Props> = ({ onSubmit, field }) => {
                 name="availableOptions"
                 render={(helpers) => <OptionsArrayField {...helpers} placeholder="Option name" />}
               />
-              <ErrorMessage name="availableOptions" component="div" className="error-help" />
+              <ArrayErrorMessage name="availableOptions" className="error-help" />
             </div>
           ) : null}
           <div>

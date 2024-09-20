@@ -26,7 +26,7 @@ import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Sty
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
-import { FieldKind } from '@/types/enums'
+import { FieldInterfaceKind, FieldKind } from '@/types/enums'
 import { IFormField, IIncidentType, ModelID } from '@/types/models'
 import { apiErrorsToFormikErrors } from '@/utils/form'
 
@@ -65,11 +65,16 @@ const FormActions = styled.div`
 `
 
 const createDefaultValues = (formFields: IFormField[], incidentTypes: IIncidentType[]) => {
-  const defaultValues: Record<string, string> = {}
+  const defaultValues: Record<string, string | string[]> = {}
 
   for (const field of formFields) {
     if (field.field.kind === FieldKind.INCIDENT_TYPE) {
       defaultValues[field.id] = incidentTypes.find((it) => it.isDefault)?.id ?? ''
+    } else if (
+      field.field.kind === FieldKind.USER_DEFINED &&
+      field.field.interfaceKind === FieldInterfaceKind.MULTI_SELECT
+    ) {
+      defaultValues[field.id] = field.defaultValueMulti ? field.defaultValueMulti : []
     } else {
       defaultValues[field.id] = field.defaultValue ? field.defaultValue : ''
     }
@@ -323,6 +328,7 @@ const SettingsFormsEdit = () => {
                 <Formik
                   initialValues={createDefaultValues(formFieldsQuery.data.items, incidentTypesQuery.data.items)}
                   onSubmit={dummySubmit}
+                  enableReinitialize={true}
                 >
                   <Form>
                     <DndContext

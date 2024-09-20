@@ -138,6 +138,7 @@ class FormFieldSchema(ModelSchema):
     requirement_type: str
     is_deletable: bool
     default_value: str | None
+    default_value_multi: list[str] | None
     field: FieldSchema
     can_have_default_value: bool
     can_have_description: bool

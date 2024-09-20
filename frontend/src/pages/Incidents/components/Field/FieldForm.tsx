@@ -2,7 +2,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useMemo } from 'react'
 import * as Yup from 'yup'
 
-import { OptionItem } from '@/components/Form/SelectList'
 import { getCustomField } from '@/components/Incident/Field/getFieldComponent'
 import { createCustomDefaultFieldValue, createCustomFieldValidationSchema } from '@/components/Incident/Field/utils'
 import { StyledButton } from '@/components/Theme/Styles'
@@ -16,7 +15,7 @@ interface Props {
 }
 
 export interface FormValues {
-  [x: string]: string | Array<OptionItem> | undefined
+  [x: string]: string | Array<string> | undefined
 }
 
 const FieldForm: React.FC<Props> = ({ value, field, onSubmit }) => {

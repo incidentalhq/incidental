@@ -2,6 +2,7 @@ import enum
 import typing
 
 from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String, UnicodeText, false
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -31,6 +32,7 @@ class FormField(Base, TimestampMixin, SoftDeleteMixin):
     rank: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_deletable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     default_value: Mapped[str | None] = mapped_column(UnicodeText, nullable=True)
+    default_value_multi: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     requirement_type: Mapped[RequirementTypeEnum] = mapped_column(
         Enum(RequirementTypeEnum, native_enum=False), nullable=False
     )
