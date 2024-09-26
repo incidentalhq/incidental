@@ -9,7 +9,7 @@ import Icon from '@/components/Icon/Icon'
 import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { FieldKind, RequirementType } from '@/types/enums'
+import { FieldInterfaceKind, FieldKind, RequirementType } from '@/types/enums'
 import { IForm, IFormField, IIncidentType } from '@/types/models'
 
 import Loading from '../Loading/Loading'
@@ -23,11 +23,15 @@ interface Props {
 }
 
 const createValidationSchema = (formFields: IFormField[]) => {
-  const fieldsShape: Record<string, Yup.StringSchema> = {}
+  const fieldsShape: Record<string, Yup.Schema> = {}
 
   for (const field of formFields) {
     if (field.requirementType === RequirementType.REQUIRED) {
-      fieldsShape[field.id] = Yup.string().required('This field is required')
+      if (field.field.interfaceKind === FieldInterfaceKind.MULTI_SELECT) {
+        fieldsShape[field.id] = Yup.array(Yup.string()).required('This field is required')
+      } else {
+        fieldsShape[field.id] = Yup.string().required('This field is required')
+      }
     }
   }
 

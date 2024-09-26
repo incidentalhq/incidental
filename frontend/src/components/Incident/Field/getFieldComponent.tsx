@@ -1,4 +1,5 @@
 import Field from '@/components/Form/Field'
+import MultiSelectField from '@/components/Form/MultiSelect'
 import SelectField from '@/components/Form/SelectField'
 import { FieldInterfaceKind, FieldKind, IncidentStatusCategory } from '@/types/enums'
 import { IField, IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
@@ -72,7 +73,12 @@ export const getCustomField = (name: string, field: IField) => {
       return <SelectField name={name} options={options} />
     }
     case FieldInterfaceKind.MULTI_SELECT: {
-      return <span>TODO: Multi select is not implemented</span>
+      const options =
+        field.availableOptions?.map((it) => ({
+          label: it,
+          value: it
+        })) ?? []
+      return <MultiSelectField name={name} options={options} />
     }
   }
 }

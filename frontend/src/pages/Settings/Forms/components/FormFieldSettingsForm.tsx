@@ -12,6 +12,7 @@ import { DefaultValueSection, DescriptionSection, RequiredOrOptionalSection } fr
 export type FormValues = {
   requirementType: RequirementType
   defaultValue: string | undefined
+  defaultValueMulti: Array<string> | undefined
   description: string | undefined
 }
 
@@ -27,6 +28,7 @@ const FormFieldSettingsForm: React.FC<Props> = ({ onSubmit, formField, statusLis
   const defaultValues: FormValues = {
     requirementType: formField.requirementType,
     defaultValue: formField.defaultValue ? formField.defaultValue : undefined,
+    defaultValueMulti: formField.defaultValueMulti ? formField.defaultValueMulti : [],
     description: formField.description
       ? formField.description
       : formField.field.description

@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 import Field from '@/components/Form/Field'
 import { getFormFieldComponent } from '@/components/Incident/Field/getFieldComponent'
+import { FieldInterfaceKind } from '@/types/enums'
 import { IFormField, IIncidentSeverity, IIncidentStatus, IIncidentType } from '@/types/models'
 
 const RadioOptionsList = styled.div``
@@ -56,8 +57,15 @@ export const DefaultValueSection = ({
   if (!formField.canHaveDefaultValue) {
     return <div>A default value cannot be set for this field</div>
   }
+  let fieldName = ''
 
-  const formFieldComponent = getFormFieldComponent('defaultValue', formField, statusList, severityList, incidentTypes)
+  if (formField.field.interfaceKind === FieldInterfaceKind.MULTI_SELECT) {
+    fieldName = 'defaultValueMulti'
+  } else {
+    fieldName = 'defaultValue'
+  }
+
+  const formFieldComponent = getFormFieldComponent(fieldName, formField, statusList, severityList, incidentTypes)
 
   return <div>{formFieldComponent}</div>
 }
