@@ -1,4 +1,4 @@
-import { ErrorMessage, FieldArray, Form, Formik, FormikHelpers, getIn, useFormikContext } from 'formik'
+import { FieldArray, Form, Formik, FormikHelpers, getIn, useFormikContext } from 'formik'
 import * as Yup from 'yup'
 
 import spinner from '@/assets/icons/spinner.svg'
@@ -23,7 +23,7 @@ interface Props {
   onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void | Promise<void>
 }
 
-Yup.addMethod(Yup.array, 'unique', function (message, _mapper = (a: unknown) => a) {
+Yup.addMethod(Yup.array, 'unique', function (message) {
   return this.test('unique', message, function <T>(this: Yup.TestContext, list: Array<T> | undefined) {
     const seen = new Set()
     if (!list) {
@@ -138,7 +138,7 @@ const FieldForm: React.FC<Props> = ({ onSubmit, field }) => {
                 name="availableOptions"
                 render={(helpers) => <OptionsArrayField {...helpers} placeholder="Option name" />}
               />
-              <ArrayErrorMessage name="availableOptions" className="error-help" />
+              <ArrayErrorMessage name="availableOptions" />
             </div>
           ) : null}
           <div>

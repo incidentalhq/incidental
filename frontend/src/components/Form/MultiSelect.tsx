@@ -1,5 +1,5 @@
 import { ErrorMessage, useField } from 'formik'
-import Select, { ActionMeta, MultiValue } from 'react-select'
+import Select, { MultiValue } from 'react-select'
 
 type Option = {
   value: string | number
@@ -14,7 +14,7 @@ interface Props {
 const MultiSelectField: React.FC<Props> = ({ name, options }) => {
   const [field, , helpers] = useField(name)
 
-  const handleChange = (newValue: MultiValue<Option>, actionMeta: ActionMeta<Option>) => {
+  const handleChange = (newValue: MultiValue<Option>) => {
     const values = newValue.map((it) => it.value)
     helpers.setValue(values)
   }
