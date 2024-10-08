@@ -9,6 +9,7 @@ from app.models import FormKind
 from app.repos import FormRepo, IncidentRepo, TimestampRepo, UserRepo
 from app.schemas.actions import (
     CreateIncidentSchema,
+    CreateIncidentUpdateSchema,
     IncidentSearchSchema,
     PaginationParamsSchema,
     PatchIncidentFieldValuesSchema,
@@ -210,3 +211,22 @@ async def incident_patch_field_values(
     db.commit()
 
     return Response(None, status_code=status.HTTP_202_ACCEPTED)
+
+
+@router.post("/{id}/updates", response_model=IncidentUpdateSchema | None)
+async def incident_create_update(
+    id: str, create_in: CreateIncidentUpdateSchema, db: DatabaseSession, user: CurrentUser, events: EventsService
+):
+    """Create a new incident update"""
+    incident_repo = IncidentRepo(session=db)
+    incident = incident_repo.get_incident_by_id_or_raise(id)
+
+    if not user.belongs_to(organisation=incident.organisation):
+        raise NotPermittedError()
+
+    incident_service = create_incident_service(session=db, organisation=incident.organisation, events=events)
+    update = incident_service.create_update_from_schema(incident=incident, creator=user, create_in=create_in)
+
+    db.commit()
+
+    return update

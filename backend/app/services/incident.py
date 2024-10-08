@@ -12,6 +12,7 @@ from app.models import (
     IncidentStatus,
     IncidentStatusCategoryEnum,
     IncidentType,
+    IncidentUpdate,
     Organisation,
     User,
 )
@@ -224,7 +225,9 @@ class IncidentService:
 
         return incident
 
-    def create_update_from_schema(self, incident: Incident, creator: User, create_in: CreateIncidentUpdateSchema):
+    def create_update_from_schema(
+        self, incident: Incident, creator: User, create_in: CreateIncidentUpdateSchema
+    ) -> IncidentUpdate | None:
         incident_severity: IncidentSeverity | None = None
         summary: str | None = None
         incident_status: IncidentStatus | None = None
@@ -247,7 +250,7 @@ class IncidentService:
                         SetIncidentFieldValueSchema(field=ModelIdSchema(id=form_field.field.id), value=value)
                     )
 
-        self.create_update(
+        incident_update = self.create_update(
             incident=incident,
             creator=creator,
             new_status=incident_status,
@@ -259,6 +262,8 @@ class IncidentService:
         patch_incident_field_values_in = PatchIncidentFieldValuesSchema(root=custom_fields_patches)
         self.incident_repo.patch_incident_custom_fields(incident=incident, patch_in=patch_incident_field_values_in)
 
+        return incident_update
+
     def create_update(
         self,
         incident: Incident,
@@ -266,7 +271,7 @@ class IncidentService:
         new_status: IncidentStatus | None = None,
         new_severity: IncidentSeverity | None = None,
         summary: str | None = None,
-    ):
+    ) -> IncidentUpdate | None:
         """Create an incident update"""
         can_update = False
 
@@ -283,7 +288,7 @@ class IncidentService:
             )
 
         if not can_update:
-            return
+            return None
 
         incident_update = self.incident_repo.create_incident_update(
             incident=incident,
@@ -299,6 +304,8 @@ class IncidentService:
             ),
         )
         self.events.queue_job(SyncBookmarksTaskParameters(incident_id=incident.id))
+
+        return incident_update
 
     def patch_incident(self, user: User, incident: Incident, patch_in: PatchIncidentSchema):
         """Change details of an incident"""
