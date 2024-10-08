@@ -10,7 +10,7 @@ import { StyledButton } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { FieldInterfaceKind, FieldKind, RequirementType } from '@/types/enums'
-import { IField, IForm, IFormField, IIncident, IIncidentType } from '@/types/models'
+import { IField, IForm, IFormField, IIncident } from '@/types/models'
 import { ICombinedFieldAndValue } from '@/types/special'
 
 import Loading from '../Loading/Loading'
@@ -58,12 +58,7 @@ const getFieldDefaultValue = (field: IField, incident: IIncident, fieldValues: I
   }
 }
 
-const createDefaultValues = (
-  formFields: IFormField[],
-  incidentTypes: IIncidentType[],
-  incident: IIncident,
-  fieldValues: ICombinedFieldAndValue[]
-) => {
+const createDefaultValues = (formFields: IFormField[], incident: IIncident, fieldValues: ICombinedFieldAndValue[]) => {
   const defaultValues: Record<string, string | string[]> = {}
 
   for (const formField of formFields) {
@@ -137,12 +132,7 @@ const ShareUpdateForm: React.FC<Props> = ({ onSubmit, form, incident, fieldValue
     <Formik
       validationSchema={createValidationSchema(formFieldsQuery.data.items)}
       onSubmit={handleSubmit}
-      initialValues={createDefaultValues(
-        formFieldsQuery.data.items,
-        incidentTypesQuery.data.items,
-        incident,
-        fieldValues
-      )}
+      initialValues={createDefaultValues(formFieldsQuery.data.items, incident, fieldValues)}
     >
       {({ isSubmitting }) => (
         <Form className="space-y-2">
