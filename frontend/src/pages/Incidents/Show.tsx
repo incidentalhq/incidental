@@ -7,7 +7,9 @@ import styled from 'styled-components'
 
 import slack from '@/assets/icons/slack.svg'
 import wrench from '@/assets/icons/wrench.svg'
+import Button from '@/components/Button/Button'
 import Icon from '@/components/Icon/Icon'
+import ShareUpdateForm, { FormValues as ShareUpdateFormValues } from '@/components/Incident/ShareUpdateForm'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
@@ -15,7 +17,7 @@ import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
-import { IncidentRoleKind } from '@/types/enums'
+import { FormType, IncidentRoleKind } from '@/types/enums'
 import { IField, IIncidentFieldValue, IIncidentRole } from '@/types/models'
 import { rankSorter } from '@/utils/sort'
 import { getLocalTimeZone } from '@/utils/time'
@@ -102,6 +104,15 @@ const ContentSidebar = styled.div`
   padding: 1rem;
   height: 100vh;
 `
+const ContentHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+const ContentSection = styled.div`
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--color-slate-200);
+  margin-bottom: 1rem;
+`
 
 type UrlParams = {
   id: string
@@ -111,7 +122,7 @@ const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
   const { setModal, closeModal } = useModal()
-  const { organisation } = useGlobal()
+  const { organisation, forms } = useGlobal()
 
   // Incident severities
   const severitiesQuery = useQuery({
@@ -362,6 +373,52 @@ const ShowIncident = () => {
     [setModal, incidentQuery.data, handleSetFieldValue]
   )
 
+  // Show share update modal
+  const handleShowShareUpdateForm = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
+
+    if (!incidentQuery.data || !fieldValuesQuery.data) {
+      return
+    }
+
+    const updateIncidentForm = forms.find((it) => it.type == FormType.UPDATE_INCIDENT)
+    if (!updateIncidentForm) {
+      console.error('Could not find update incident form')
+      return
+    }
+
+    setModal(
+      <ModalContainer>
+        <h2>Share update</h2>
+        <ShareUpdateForm
+          form={updateIncidentForm}
+          onSubmit={handleShareUpdate}
+          incident={incidentQuery.data}
+          fieldValues={fieldValuesQuery.data.items}
+        />
+      </ModalContainer>
+    )
+  }
+
+  const handleShareUpdate = useCallback(
+    async (values: ShareUpdateFormValues) => {
+      if (!incidentQuery.data) {
+        return
+      }
+      try {
+        await apiService.createIncidentUpdate(incidentQuery.data.id, values)
+        incidentUpdatesQuery.refetch()
+        closeModal()
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.detail, { type: 'error' })
+        }
+        console.error(e)
+      }
+    },
+    [incidentQuery, apiService, incidentUpdatesQuery, closeModal]
+  )
+
   const slackUrl = useMemo(
     () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
     [organisation, incidentQuery.data?.slackChannelId]
@@ -380,17 +437,26 @@ const ShowIncident = () => {
             </Header>
             <Content>
               <ContentMain>
-                <h3>Summary</h3>
-                <Description>
-                  <EditDescriptionForm incident={incidentQuery.data} onSubmit={handleChangeDescription} />
-                </Description>
+                <ContentHeader>
+                  <h3>Summary</h3>
+                </ContentHeader>
+                <ContentSection>
+                  <Description>
+                    <EditDescriptionForm incident={incidentQuery.data} onSubmit={handleChangeDescription} />
+                  </Description>
+                </ContentSection>
 
-                <h3>Updates</h3>
-                {incidentUpdatesQuery.isSuccess ? (
-                  <Timeline updates={incidentUpdatesQuery.data.items} />
-                ) : (
-                  <p>There was an issue </p>
-                )}
+                <ContentHeader>
+                  <h3>Updates</h3>
+                  <Button onClick={handleShowShareUpdateForm}>Share update</Button>
+                </ContentHeader>
+                <ContentSection>
+                  {incidentUpdatesQuery.isSuccess ? (
+                    <Timeline updates={incidentUpdatesQuery.data.items} />
+                  ) : (
+                    <p>There was an issue </p>
+                  )}
+                </ContentSection>
               </ContentMain>
               <ContentSidebar>
                 <FieldsHeader>Properties</FieldsHeader>

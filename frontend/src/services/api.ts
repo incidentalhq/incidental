@@ -463,4 +463,10 @@ export class ApiService {
     callApi('DELETE', `/forms/fields/${id}`, {
       user: this.user
     })
+
+  createIncidentUpdate = (incidentId: ModelID, values: Record<string, unknown>) =>
+    callApi('POST', `/incidents/${incidentId}/updates`, {
+      user: this.user,
+      json: values
+    })
 }
