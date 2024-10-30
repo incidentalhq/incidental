@@ -18,5 +18,18 @@ from .organisation_member import MemberRole, OrganisationMember
 from .settings import Settings
 from .slack_bookmark import SlackBookmark
 from .slack_message import SlackMessage
+from .status_page import (
+    Component,
+    ComponentAffected,
+    ComponentEvent,
+    ComponentStatus,
+    ComponentUpdate,
+    StatusPage,
+    StatusPageIncident,
+    StatusPageIncidentStatus,
+    StatusPageIncidentUpdate,
+    StatusPageItem,
+    StatusPageKind,
+)
 from .timestamp import Timestamp, TimestampKind, TimestampRule, TimestampValue
 from .user import User

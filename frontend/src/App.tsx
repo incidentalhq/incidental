@@ -41,6 +41,7 @@ import SettingsTimestamps from '@/pages/Settings/Timestamps'
 import SettingsIncidentTypes from '@/pages/Settings/Types'
 import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
+import StatusPagesIndex from '@/pages/StatusPage/Index'
 // route definitions
 import { RoutePaths } from '@/routes'
 
@@ -86,6 +87,7 @@ const App = () => {
                       <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
                       <Route path={RoutePaths.SLACK_INSTALL} element={<SlackInstall />} />
                       <Route path={RoutePaths.SLACK_INSTALL_COMPLETE} element={<SlackInstallComplete />} />
+                      <Route path={RoutePaths.STATUS_PAGE_INDEX} element={<StatusPagesIndex />} />
                     </Route>
                     <Route element={<SettingsLayout />}>
                       <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />

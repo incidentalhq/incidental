@@ -1,4 +1,5 @@
 """User model"""
+
 import typing
 from datetime import datetime
 
@@ -41,6 +42,8 @@ class User(Base, TimestampMixin):
         "Organisation", secondary="organisation_member", back_populates="users"
     )
     incidents_created = relationship("Incident", back_populates="creator")
+    status_page_incidents_created = relationship("StatusPageIncident", back_populates="creator")
+    status_page_incident_updates_created = relationship("StatusPageIncidentUpdate", back_populates="creator")
 
     # user specific settings
     def _set_settings(self, value):

@@ -3,6 +3,7 @@ from typing import Sequence
 
 from pydantic import EmailStr
 
+from app.models.status_page import StatusPageKind
 from app.schemas.base import BaseSchema
 
 
@@ -173,6 +174,16 @@ class LifecycleSchema(ModelSchema):
 class OrganisationMemberSchema(ModelSchema):
     user: PublicUserSchema
     role: str
+
+
+class StatusPageSchema(ModelSchema):
+    organisation_id: str
+    name: str
+    page_type: StatusPageKind
+    custom_domain: str | None
+    published_at: datetime | None
+    public_url: str
+    slug: str
 
 
 IncidentTypeSchema.model_rebuild()

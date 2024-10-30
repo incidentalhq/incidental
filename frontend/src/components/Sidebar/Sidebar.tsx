@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import bolt from '@/assets/icons/bolt.svg'
 import gear from '@/assets/icons/gear.svg'
 import home from '@/assets/icons/home.svg'
+import traffic from '@/assets/icons/traffic.svg'
 import Icon from '@/components/Icon/Icon'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
@@ -69,6 +70,9 @@ const SideBar: React.FC<Props> = () => {
             </MenuItem>
             <MenuItem to={RoutePaths.INCIDENTS}>
               <Icon icon={bolt} fixedWidth /> Incidents
+            </MenuItem>
+            <MenuItem to={RoutePaths.STATUS_PAGE_INDEX}>
+              <Icon icon={traffic} fixedWidth /> Status page
             </MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_INDEX}>
               <Icon icon={gear} fixedWidth /> Settings

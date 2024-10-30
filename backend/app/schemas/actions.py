@@ -6,7 +6,7 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum
+from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum, StatusPageKind
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -245,3 +245,25 @@ class CreateFormFieldSchema(BaseSchema):
     """Create new form field"""
 
     field: ModelIdSchema
+
+
+class CreateStatusPageComponent(BaseSchema):
+    name: str
+
+
+class CreateStatusPageComponentGroup(BaseSchema):
+    name: str
+    children: list[CreateStatusPageComponent]
+
+
+class CreateStatusPageItemSchema(BaseSchema):
+    component: CreateStatusPageComponent | None = None
+    group: CreateStatusPageComponentGroup | None = None
+
+
+class CreateStatusPageSchema(BaseSchema):
+    """Create new status page"""
+
+    page_type: StatusPageKind
+    name: str
+    items: list[CreateStatusPageItemSchema]

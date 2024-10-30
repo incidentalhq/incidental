@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DATABASE_USER: str = ""
 
     FRONTEND_URL: str = ""
+    STATUS_PAGE_URL: str = ""
 
     # slack
     SLACK_APP_ID: str = ""
