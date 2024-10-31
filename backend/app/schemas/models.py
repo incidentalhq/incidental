@@ -176,6 +176,22 @@ class OrganisationMemberSchema(ModelSchema):
     role: str
 
 
+class StatusPageComponentSchema(ModelSchema):
+    name: str
+
+
+class StatusPageComponentGroupSchema(ModelSchema):
+    name: str
+
+
+class StatusPageItemSchema(ModelSchema):
+    rank: int
+
+    status_page_component: StatusPageComponentSchema | None = None
+    status_page_component_group: StatusPageComponentGroupSchema | None = None
+    status_page_items: list["StatusPageItemSchema"] = []
+
+
 class StatusPageSchema(ModelSchema):
     organisation_id: str
     name: str
@@ -184,6 +200,10 @@ class StatusPageSchema(ModelSchema):
     published_at: datetime | None
     public_url: str
     slug: str
+    has_active_incident: bool
+
+    status_page_items: list[StatusPageItemSchema]
 
 
 IncidentTypeSchema.model_rebuild()
+StatusPageComponentGroupSchema.model_rebuild()

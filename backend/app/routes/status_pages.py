@@ -12,7 +12,12 @@ logger = structlog.get_logger(logger_name=__name__)
 router = APIRouter(tags=["Status Pages"])
 
 
-@router.get("/search", response_model=PaginatedResults[StatusPageSchema])
+@router.get(
+    "/search",
+    response_model=PaginatedResults[StatusPageSchema],
+    response_model_exclude_defaults=True,
+    response_model_exclude_none=True,
+)
 async def status_pages_search(user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation):
     """Get all status pages for this organisation"""
 
@@ -22,7 +27,9 @@ async def status_pages_search(user: CurrentUser, db: DatabaseSession, organisati
     return PaginatedResults(items=status_pages, total=len(status_pages), page=1, size=len(status_pages))
 
 
-@router.post("", response_model=StatusPageSchema)
+@router.post(
+    "", response_model=StatusPageSchema, response_model_exclude_none=True, response_model_exclude_defaults=True
+)
 async def status_pages_create(
     create_in: CreateStatusPageSchema, user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation
 ):

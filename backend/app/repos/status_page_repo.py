@@ -1,11 +1,12 @@
+from datetime import datetime, timezone
 from typing import Sequence
 
 from sqlalchemy import select
 
 from app.env import settings
-from app.models import Organisation, StatusPage, User
+from app.models import Organisation, StatusPage, StatusPageComponent, StatusPageComponentGroup, StatusPageItem
 from app.repos.base_repo import BaseRepo
-from app.schemas.actions import CreateStatusPageSchema
+from app.schemas.actions import CreateStatusPageComponent, CreateStatusPageComponentGroup, CreateStatusPageSchema
 from app.utils import generate_slug
 
 
@@ -28,9 +29,62 @@ class StatusPageRepo(BaseRepo):
         self.session.add(model)
         self.session.flush()
 
-        for create_item_in in create_in.items:
-            if create_item_in.group:
-                pass
+        for rank, create_item_in in enumerate(create_in.items):
+            # A group
+            if create_item_in.group and create_item_in.items:
+                group = self._create_component_group(create_in=create_item_in.group)
+
+                group_item = StatusPageItem()
+                group_item.status_page_id = model.id
+                group_item.status_page_component_group_id = group.id
+                group_item.rank = rank
+
+                self.session.add(group_item)
+                self.session.flush()
+
+                # add children
+
+                for group_item_rank, sub_create_item_in in enumerate(create_item_in.items):
+                    group_item_child = StatusPageItem()
+                    group_item_child.parent_id = group_item.id
+                    group_item_child.status_page_id = model.id
+                    group_item_child.rank = group_item_rank
+
+                    self.session.add(group_item_child)
+                    self.session.flush()
+
+                    if sub_create_item_in.component:
+                        component = self._create_component(model, create_in=sub_create_item_in.component)
+                        group_item_child.status_page_component_id = component.id
+
+            if create_item_in.component:
+                component = self._create_component(model, create_in=create_item_in.component)
+
+                component_item = StatusPageItem()
+                component_item.status_page_id = model.id
+                component_item.status_page_component_id = component.id
+                component_item.rank = rank
+
+                self.session.add(component_item)
+                self.session.flush()
+
+        return model
+
+    def _create_component_group(self, create_in: CreateStatusPageComponentGroup) -> StatusPageComponentGroup:
+        group = StatusPageComponentGroup()
+        group.name = create_in.name
+        self.session.add(group)
+        self.session.flush()
+
+        return group
+
+    def _create_component(self, status_page: StatusPage, create_in: CreateStatusPageComponent) -> StatusPageComponent:
+        model = StatusPageComponent()
+        model.status_page_id = status_page.id
+        model.name = create_in.name
+        model.published_at = datetime.now(tz=timezone.utc)
+        self.session.add(model)
+        self.session.flush()
 
         return model
 

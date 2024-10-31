@@ -16,6 +16,7 @@ import {
   IOrganisationMember,
   IPublicUser,
   ISettings,
+  IStatusPage,
   ITimestamp,
   IUser,
   IWorld,
@@ -468,5 +469,13 @@ export class ApiService {
     callApi('POST', `/incidents/${incidentId}/updates`, {
       user: this.user,
       json: values
+    })
+
+  searchStatusPages = () =>
+    callApi<PaginatedResults<IStatusPage>>('GET', `/status-pages/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
     })
 }

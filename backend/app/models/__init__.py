@@ -19,12 +19,13 @@ from .settings import Settings
 from .slack_bookmark import SlackBookmark
 from .slack_message import SlackMessage
 from .status_page import (
-    Component,
-    ComponentAffected,
-    ComponentEvent,
     ComponentStatus,
-    ComponentUpdate,
     StatusPage,
+    StatusPageComponent,
+    StatusPageComponentAffected,
+    StatusPageComponentEvent,
+    StatusPageComponentGroup,
+    StatusPageComponentUpdate,
     StatusPageIncident,
     StatusPageIncidentStatus,
     StatusPageIncidentUpdate,

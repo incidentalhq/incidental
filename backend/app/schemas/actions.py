@@ -253,12 +253,12 @@ class CreateStatusPageComponent(BaseSchema):
 
 class CreateStatusPageComponentGroup(BaseSchema):
     name: str
-    children: list[CreateStatusPageComponent]
 
 
 class CreateStatusPageItemSchema(BaseSchema):
     component: CreateStatusPageComponent | None = None
     group: CreateStatusPageComponentGroup | None = None
+    items: list["CreateStatusPageItemSchema"] | None = None
 
 
 class CreateStatusPageSchema(BaseSchema):
@@ -267,3 +267,6 @@ class CreateStatusPageSchema(BaseSchema):
     page_type: StatusPageKind
     name: str
     items: list[CreateStatusPageItemSchema]
+
+
+CreateStatusPageComponentGroup.model_rebuild()

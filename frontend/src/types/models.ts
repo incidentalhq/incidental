@@ -190,3 +190,27 @@ export interface IOrganisationMember extends IModel {
   user: IPublicUser
   role: MemberRole
 }
+
+export interface IStatusPage extends IModel {
+  name: string
+  pageType: string
+  publicUrl: string
+  slug: string
+  statusPageItems: Array<IStatusPageItem>
+  hasActiveIncident: boolean
+}
+
+export interface IStatusPageItem extends IModel {
+  rank: number
+  statusPageComponent?: IStatusPageComponent
+  statusPageComponentGroup?: IStatusPageComponentGroup
+}
+
+export interface IStatusPageComponent {
+  name: string
+}
+
+export interface IStatusPageComponentGroup {
+  name: string
+  statusPageItems?: Array<IStatusPageItem>
+}
