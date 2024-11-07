@@ -25,6 +25,7 @@ export enum RoutePaths {
   SHOW_INCIDENT = '/incidents/:id',
 
   STATUS_PAGE_INDEX = '/status-pages',
+  STATUS_PAGE_SHOW = '/status-pages/:id',
 
   SLACK_INSTALL = '/slack/install',
   SLACK_INSTALL_COMPLETE = '/slack/install/complete',

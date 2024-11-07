@@ -204,13 +204,13 @@ export interface IStatusPageItem extends IModel {
   rank: number
   statusPageComponent?: IStatusPageComponent
   statusPageComponentGroup?: IStatusPageComponentGroup
-}
-
-export interface IStatusPageComponent {
-  name: string
-}
-
-export interface IStatusPageComponentGroup {
-  name: string
   statusPageItems?: Array<IStatusPageItem>
+}
+
+export interface IStatusPageComponent extends IModel {
+  name: string
+}
+
+export interface IStatusPageComponentGroup extends IModel {
+  name: string
 }

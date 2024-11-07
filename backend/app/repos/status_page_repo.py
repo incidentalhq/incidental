@@ -4,9 +4,17 @@ from typing import Sequence
 from sqlalchemy import select
 
 from app.env import settings
+from app.exceptions import ValidationError
 from app.models import Organisation, StatusPage, StatusPageComponent, StatusPageComponentGroup, StatusPageItem
 from app.repos.base_repo import BaseRepo
-from app.schemas.actions import CreateStatusPageComponent, CreateStatusPageComponentGroup, CreateStatusPageSchema
+from app.schemas.actions import (
+    CreateStatusPageComponentSchema,
+    CreateStatusPageGroupSchema,
+    CreateStatusPageSchema,
+    PatchStatusPageComponentSchema,
+    PatchStatusPageGroupSchema,
+    UpdateStatusPageItemsRankSchema,
+)
 from app.utils import generate_slug
 
 
@@ -16,6 +24,40 @@ class StatusPageRepo(BaseRepo):
         stmt = select(StatusPage).where(StatusPage.organisation_id == organisation.id)
 
         return self.session.scalars(stmt).all()
+
+    def get_by_id_or_raise(self, id: str) -> StatusPage:
+        """Get status page by ID"""
+        stmt = select(StatusPage).where(StatusPage.id == id, StatusPage.deleted_at.is_(None))
+        return self.session.execute(stmt).scalar_one()
+
+    def get_group_by_id_or_raise(self, id: str) -> StatusPageComponentGroup:
+        stmt = (
+            select(StatusPageComponentGroup)
+            .join(StatusPageItem)
+            .join(StatusPage)
+            .where(
+                StatusPageComponentGroup.id == id,
+                StatusPage.deleted_at.is_(None),
+                StatusPageComponentGroup.deleted_at.is_(None),
+            )
+        )
+        return self.session.execute(stmt).scalar_one()
+
+    def get_component_by_id_or_raise(self, id: str) -> StatusPageComponent:
+        stmt = (
+            select(StatusPageComponent)
+            .join(StatusPage)
+            .where(
+                StatusPageComponent.id == id,
+                StatusPage.deleted_at.is_(None),
+                StatusPageComponent.deleted_at.is_(None),
+            )
+        )
+        return self.session.execute(stmt).scalar_one()
+
+    def get_item_by_id_or_raise(self, id: str) -> StatusPageItem:
+        stmt = select(StatusPageItem).where(StatusPageItem.id == id)
+        return self.session.execute(stmt).scalar_one()
 
     def create(self, organisation: Organisation, create_in: CreateStatusPageSchema) -> StatusPage:
         """Create new status page"""
@@ -70,7 +112,7 @@ class StatusPageRepo(BaseRepo):
 
         return model
 
-    def _create_component_group(self, create_in: CreateStatusPageComponentGroup) -> StatusPageComponentGroup:
+    def _create_component_group(self, create_in: CreateStatusPageGroupSchema) -> StatusPageComponentGroup:
         group = StatusPageComponentGroup()
         group.name = create_in.name
         self.session.add(group)
@@ -78,7 +120,9 @@ class StatusPageRepo(BaseRepo):
 
         return group
 
-    def _create_component(self, status_page: StatusPage, create_in: CreateStatusPageComponent) -> StatusPageComponent:
+    def _create_component(
+        self, status_page: StatusPage, create_in: CreateStatusPageComponentSchema
+    ) -> StatusPageComponent:
         model = StatusPageComponent()
         model.status_page_id = status_page.id
         model.name = create_in.name
@@ -100,3 +144,95 @@ class StatusPageRepo(BaseRepo):
                 return slug
 
             suffix += 1
+
+    def patch_group(self, group: StatusPageComponentGroup, patch_in: PatchStatusPageGroupSchema) -> None:
+        """Update group"""
+        for key, value in patch_in.model_dump(exclude_unset=True).items():
+            setattr(group, key, value)
+
+        self.session.flush()
+
+    def patch_component(self, component: StatusPageComponent, patch_in: PatchStatusPageComponentSchema) -> None:
+        """Update component"""
+        for key, value in patch_in.model_dump(exclude_unset=True).items():
+            setattr(component, key, value)
+
+        self.session.flush()
+
+    def update_items_rank(self, status_page: StatusPage, update_in: list[UpdateStatusPageItemsRankSchema]):
+        for item_data in update_in:
+            item = self.get_item_by_id_or_raise(id=item_data.id)
+            item.rank = item_data.rank
+            if item.parent:
+                item.parent_id = None
+
+            if item_data.status_page_items:
+                for child_item_data in item_data.status_page_items:
+                    child_item = self.get_item_by_id_or_raise(id=child_item_data.id)
+                    child_item.rank = child_item_data.rank
+                    child_item.parent_id = item.id
+
+        self.session.flush()
+
+    def create_group(self, status_page: StatusPage, create_in: CreateStatusPageGroupSchema) -> StatusPageComponentGroup:
+        total_items = len(status_page.status_page_items)
+
+        group = StatusPageComponentGroup()
+        group.name = create_in.name
+        self.session.add(group)
+        self.session.flush()
+
+        item = StatusPageItem()
+        item.status_page_id = status_page.id
+        item.status_page_component_group_id = group.id
+        item.rank = total_items
+        self.session.add(item)
+        self.session.flush()
+
+        return group
+
+    def create_component(
+        self, status_page: StatusPage, create_in: CreateStatusPageComponentSchema
+    ) -> StatusPageComponent:
+        """Create new component"""
+        total_items = len(status_page.status_page_items)
+
+        component = StatusPageComponent()
+        component.name = create_in.name
+        component.status_page_id = status_page.id
+        component.published_at = datetime.now(tz=timezone.utc)
+        self.session.add(component)
+        self.session.flush()
+
+        item = StatusPageItem()
+        item.status_page_id = status_page.id
+        item.rank = total_items
+        item.status_page_component_id = component.id
+        self.session.add(item)
+        self.session.flush()
+
+        return component
+
+    def delete_group(self, group: StatusPageComponentGroup) -> None:
+        """Delete group"""
+
+        # Check if group has children
+        if group.status_page_item.status_page_items:
+            raise ValidationError("Group has children")
+
+        group.deleted_at = datetime.now(tz=timezone.utc)
+
+        if group.status_page_item:
+            self.session.delete(group.status_page_item)
+
+        self.session.flush()
+
+    def delete_component(self, component: StatusPageComponent) -> None:
+        """Delete component"""
+        component.deleted_at = datetime.now(tz=timezone.utc)
+
+        # Delete the connected status page item
+        if component.status_page_item:
+            self.session.delete(component.status_page_item)
+
+        self.session.flush()

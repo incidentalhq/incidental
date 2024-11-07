@@ -1,10 +1,18 @@
 import structlog
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
+from app.exceptions import NotPermittedError
 from app.repos import StatusPageRepo
-from app.schemas.actions import CreateStatusPageSchema
-from app.schemas.models import StatusPageSchema
+from app.schemas.actions import (
+    CreateStatusPageComponentSchema,
+    CreateStatusPageGroupSchema,
+    CreateStatusPageSchema,
+    PatchStatusPageComponentSchema,
+    PatchStatusPageGroupSchema,
+    UpdateStatusPageItemsRankSchema,
+)
+from app.schemas.models import StatusPageComponentGroupSchema, StatusPageComponentSchema, StatusPageSchema
 from app.schemas.resources import PaginatedResults
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -20,7 +28,6 @@ router = APIRouter(tags=["Status Pages"])
 )
 async def status_pages_search(user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation):
     """Get all status pages for this organisation"""
-
     status_page_repo = StatusPageRepo(session=db)
     status_pages = status_page_repo.search(organisation=organisation)
 
@@ -34,10 +41,167 @@ async def status_pages_create(
     create_in: CreateStatusPageSchema, user: CurrentUser, db: DatabaseSession, organisation: CurrentOrganisation
 ):
     """Create a new status page"""
-
     status_page_repo = StatusPageRepo(session=db)
     status_page = status_page_repo.create(organisation=organisation, create_in=create_in)
 
     db.commit()
 
     return status_page
+
+
+@router.get(
+    "/{status_page_id}",
+    response_model=StatusPageSchema,
+    response_model_exclude_defaults=True,
+    response_model_exclude_none=True,
+)
+async def get_status_page(status_page_id: str, user: CurrentUser, db: DatabaseSession):
+    """Get a single status page by ID"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    return status_page
+
+
+@router.patch("/{status_page_id}/group/{group_id}", response_model=StatusPageComponentGroupSchema)
+async def patch_status_page_group(
+    status_page_id: str, group_id: str, patch_in: PatchStatusPageGroupSchema, user: CurrentUser, db: DatabaseSession
+):
+    """Update group information"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    group = status_page_repo.get_group_by_id_or_raise(id=group_id)
+
+    status_page_repo.patch_group(group=group, patch_in=patch_in)
+
+    db.commit()
+
+    return group
+
+
+@router.patch("/{status_page_id}/component/{component_id}", response_model=StatusPageComponentSchema)
+async def patch_status_page_component(
+    status_page_id: str,
+    component_id: str,
+    patch_in: PatchStatusPageComponentSchema,
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    """Update component information"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    component = status_page_repo.get_component_by_id_or_raise(id=component_id)
+
+    status_page_repo.patch_component(component=component, patch_in=patch_in)
+
+    db.commit()
+
+    return component
+
+
+@router.put("/{status_page_id}/components/rank", response_model=StatusPageSchema)
+async def status_page_patch_item_rank(
+    status_page_id: str,
+    update_in: list[UpdateStatusPageItemsRankSchema],
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    """Update components rank"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    status_page_repo.update_items_rank(status_page=status_page, update_in=update_in)
+
+    db.commit()
+
+    return status_page
+
+
+@router.post("/{status_page_id}/group", response_model=StatusPageComponentGroupSchema)
+async def status_page_create_group(
+    status_page_id: str,
+    create_in: CreateStatusPageGroupSchema,
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    """Create new group"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    group = status_page_repo.create_group(status_page=status_page, create_in=create_in)
+
+    db.commit()
+
+    return group
+
+
+@router.post("/{status_page_id}/component", response_model=StatusPageComponentSchema)
+async def status_page_create_component(
+    status_page_id: str,
+    create_in: CreateStatusPageComponentSchema,
+    user: CurrentUser,
+    db: DatabaseSession,
+):
+    """Create new component"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    component = status_page_repo.create_component(status_page=status_page, create_in=create_in)
+
+    db.commit()
+
+    return component
+
+
+@router.delete("/{status_page_id}/group/{group_id}")
+async def status_page_delete_group(status_page_id: str, group_id: str, user: CurrentUser, db: DatabaseSession):
+    """Delete group"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+    group = status_page_repo.get_group_by_id_or_raise(id=group_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    status_page_repo.delete_group(group=group)
+
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/{status_page_id}/component/{component_id}")
+async def status_page_delete_component(status_page_id: str, component_id: str, user: CurrentUser, db: DatabaseSession):
+    """Delete component"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+    component = status_page_repo.get_component_by_id_or_raise(id=component_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    status_page_repo.delete_component(component=component)
+
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

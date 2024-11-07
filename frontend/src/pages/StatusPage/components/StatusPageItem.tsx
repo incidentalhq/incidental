@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import greenCheckmark from '@/assets/icons/green-check.svg'
@@ -8,12 +8,14 @@ import { IStatusPage } from '@/types/models'
 
 interface Props {
   statusPage: IStatusPage
+  onClick: (statusPage: IStatusPage) => void
 }
 
 const Root = styled.div`
   padding: 16px;
   margin-bottom: 16px;
   box-shadow: var(--shadow);
+  cursor: pointer;
 `
 
 const Title = styled.h1`
@@ -36,9 +38,17 @@ const Row = styled.div`
   align-items: center;
 `
 
-const StatusPageItem: React.FC<Props> = ({ statusPage }) => {
+const StatusPageItem: React.FC<Props> = ({ statusPage, onClick }) => {
+  const handleClick = useCallback(
+    (evt: React.MouseEvent<HTMLDivElement>) => {
+      evt.preventDefault()
+      onClick(statusPage)
+    },
+    [onClick, statusPage]
+  )
+
   return (
-    <Root>
+    <Root onClick={handleClick}>
       <Title>{statusPage.name}</Title>
 
       <Row>

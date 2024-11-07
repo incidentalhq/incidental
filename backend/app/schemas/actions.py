@@ -247,17 +247,17 @@ class CreateFormFieldSchema(BaseSchema):
     field: ModelIdSchema
 
 
-class CreateStatusPageComponent(BaseSchema):
+class CreateStatusPageComponentSchema(BaseSchema):
     name: str
 
 
-class CreateStatusPageComponentGroup(BaseSchema):
+class CreateStatusPageGroupSchema(BaseSchema):
     name: str
 
 
 class CreateStatusPageItemSchema(BaseSchema):
-    component: CreateStatusPageComponent | None = None
-    group: CreateStatusPageComponentGroup | None = None
+    component: CreateStatusPageComponentSchema | None = None
+    group: CreateStatusPageGroupSchema | None = None
     items: list["CreateStatusPageItemSchema"] | None = None
 
 
@@ -266,7 +266,27 @@ class CreateStatusPageSchema(BaseSchema):
 
     page_type: StatusPageKind
     name: str
-    items: list[CreateStatusPageItemSchema]
+    items: list[CreateStatusPageItemSchema] = []
+    slug: str | None = None
 
 
-CreateStatusPageComponentGroup.model_rebuild()
+class PatchStatusPageGroupSchema(BaseSchema):
+    name: str | None = None
+
+
+class PatchStatusPageComponentSchema(BaseSchema):
+    name: str | None = None
+    is_hidden: bool | None = None
+    is_uptime_shown: bool | None = None
+
+
+class UpdateStatusPageItemsRankSchema(BaseSchema):
+    id: str
+    rank: int
+    status_page_component_group: ModelIdSchema | None = None
+    status_page_component: ModelIdSchema | None = None
+    status_page_items: list["UpdateStatusPageItemsRankSchema"] | None = None
+
+
+CreateStatusPageGroupSchema.model_rebuild()
+UpdateStatusPageItemsRankSchema.model_rebuild()

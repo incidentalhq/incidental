@@ -1,11 +1,19 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useCallback, useState } from 'react'
+import { generatePath, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import Button from '@/components/Button/Button'
+import Loading from '@/components/Loading/Loading'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
+import { RoutePaths } from '@/routes'
+import { IStatusPage } from '@/types/models'
 
-import StatusPageItem from './components/StatusPageItem/StatusPageItem'
+import StatusPageItem from './components/StatusPageItem'
+
+import CreateStatusPageModal from './CreateStatusPageModal'
 
 const SectionHeader = styled.h3`
   margin-bottom: 1rem;
@@ -22,6 +30,8 @@ const StatusPagesList = styled.div`
 const StatusPagesIndex = () => {
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
+  const navigate = useNavigate()
+  const [showCreateModel, setShowCreateModal] = useState(false)
 
   const {
     data: statusPages,
@@ -32,19 +42,29 @@ const StatusPagesIndex = () => {
     queryFn: () => apiService.searchStatusPages()
   })
 
+  const onClick = (statusPage: IStatusPage) => {
+    navigate(generatePath(RoutePaths.STATUS_PAGE_SHOW, { id: statusPage.id }))
+  }
+
+  const handleAddStatusPage = useCallback(() => {
+    setShowCreateModal(true)
+  }, [])
+
   return (
     <>
+      {showCreateModel && <CreateStatusPageModal onClose={() => setShowCreateModal(false)} />}
       <Box>
         <Header>
           <Title>Status pages</Title>
+          <Button onClick={handleAddStatusPage}>Add status page</Button>
         </Header>
         <Content>
           <ContentMain>
-            {isLoading && <p>Loading...</p>}
+            {isLoading && <Loading text="Loading status pages" />}
             {error && <p>Error loading status pages</p>}
             <SectionHeader>Public status pages</SectionHeader>
             <StatusPagesList>
-              {statusPages && statusPages.items.map((it) => <StatusPageItem statusPage={it} />)}
+              {statusPages && statusPages.items.map((it) => <StatusPageItem statusPage={it} onClick={onClick} />)}
             </StatusPagesList>
           </ContentMain>
         </Content>

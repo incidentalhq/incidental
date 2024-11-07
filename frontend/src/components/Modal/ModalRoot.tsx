@@ -10,7 +10,6 @@ interface Props {
 }
 
 export const ModalRoot: React.FC<Props> = ({ modal, onClickOutside }) => {
-  //const ref = React.useRef<HTMLDivElement>()
   const ref = createRef<HTMLDivElement>()
 
   useOnClickOutside(ref, onClickOutside)

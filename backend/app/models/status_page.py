@@ -46,7 +46,7 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     page_type: Mapped[StatusPageKind] = mapped_column(Enum(StatusPageKind), nullable=False)
     custom_domain: Mapped[str | None] = mapped_column(String, nullable=True)
-    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     public_url: Mapped[str] = mapped_column(String, nullable=False)
     slug: Mapped[str] = mapped_column(String, nullable=False)
     has_active_incident: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -60,6 +60,7 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
         "StatusPageItem",
         back_populates="status_page",
         primaryjoin="and_(StatusPageItem.status_page_id == StatusPage.id, StatusPageItem.parent_id.is_(None))",
+        order_by="StatusPageItem.rank.asc()",
     )
     status_page_incidents: Mapped[list["StatusPageIncident"]] = relationship(
         "StatusPageIncident", back_populates="status_page"
@@ -78,7 +79,7 @@ class StatusPageComponent(Base, TimestampMixin, SoftDeleteMixin):
     name: Mapped[str] = mapped_column(String, nullable=False)
     is_hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_uptime_shown: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # relationships
     status_page: Mapped["StatusPage"] = relationship("StatusPage", back_populates="status_page_components")
@@ -104,7 +105,7 @@ class StatusPageComponentGroup(Base, TimestampMixin, SoftDeleteMixin):
 class StatusPageItem(Base, TimestampMixin):
     __prefix__ = "sp_it"
 
-    parent_id: Mapped[str] = mapped_column(
+    parent_id: Mapped[str | None] = mapped_column(
         String(50), ForeignKey("status_page_item.id", ondelete="cascade"), nullable=True, index=True
     )
     status_page_id: Mapped[str] = mapped_column(
@@ -132,7 +133,7 @@ class StatusPageItem(Base, TimestampMixin):
         "StatusPageItem", remote_side="StatusPageItem.id", back_populates="status_page_items"
     )
     status_page_items: Mapped[list["StatusPageItem"]] = relationship(
-        "StatusPageItem", back_populates="parent", cascade="all, delete-orphan"
+        "StatusPageItem", back_populates="parent", cascade="all, delete-orphan", order_by="StatusPageItem.rank.asc()"
     )
 
 
@@ -144,7 +145,7 @@ class StatusPageIncident(Base, TimestampMixin, SoftDeleteMixin):
     )
     creator_id: Mapped[str] = mapped_column(String(50), ForeignKey("user.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
 
     # relationship
@@ -187,7 +188,7 @@ class StatusPageIncidentUpdate(Base, TimestampMixin, SoftDeleteMixin):
     creator_id: Mapped[str] = mapped_column(String(50), ForeignKey("user.id"), nullable=False, index=True)
     message: Mapped[str] = mapped_column(String, nullable=True)
     status: Mapped[StatusPageIncidentStatus] = mapped_column(Enum(StatusPageIncidentStatus), nullable=False)
-    published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # relationships
     status_page_incident: Mapped["StatusPageIncident"] = relationship(
@@ -226,8 +227,8 @@ class StatusPageComponentEvent(Base, TimestampMixin, SoftDeleteMixin):
         String(50), ForeignKey("status_page_component.id"), nullable=False, index=True
     )
     status: Mapped[ComponentStatus] = mapped_column(Enum(ComponentStatus), nullable=False)
-    started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # relationships
     status_page_incident: Mapped["StatusPageIncident"] = relationship(

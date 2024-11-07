@@ -47,3 +47,9 @@ export enum RequirementType {
   OPTIONAL = 'OPTIONAL',
   CONDITIONAL = 'CONDITIONAL'
 }
+
+export enum StatusPageKind {
+  PUBLIC = 'PUBLIC',
+  CUSTOMER = 'CUSTOMER',
+  INTERNAL = 'INTERNAL'
+}
