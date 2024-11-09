@@ -5,7 +5,14 @@ from sqlalchemy import select
 
 from app.env import settings
 from app.exceptions import ValidationError
-from app.models import Organisation, StatusPage, StatusPageComponent, StatusPageComponentGroup, StatusPageItem
+from app.models import (
+    Organisation,
+    StatusPage,
+    StatusPageComponent,
+    StatusPageComponentEvent,
+    StatusPageComponentGroup,
+    StatusPageItem,
+)
 from app.repos.base_repo import BaseRepo
 from app.schemas.actions import (
     CreateStatusPageComponentSchema,
@@ -28,6 +35,16 @@ class StatusPageRepo(BaseRepo):
     def get_by_id_or_raise(self, id: str) -> StatusPage:
         """Get status page by ID"""
         stmt = select(StatusPage).where(StatusPage.id == id, StatusPage.deleted_at.is_(None))
+        return self.session.execute(stmt).scalar_one()
+
+    def get_by_slug_or_raise(self, slug: str) -> StatusPage:
+        """Get status page by slug"""
+        stmt = select(StatusPage).where(StatusPage.slug == slug, StatusPage.deleted_at.is_(None))
+        return self.session.execute(stmt).scalar_one()
+
+    def get_by_domain_or_raise(self, domain: str) -> StatusPage:
+        """Get status page by domain"""
+        stmt = select(StatusPage).where(StatusPage.custom_domain == domain, StatusPage.deleted_at.is_(None))
         return self.session.execute(stmt).scalar_one()
 
     def get_group_by_id_or_raise(self, id: str) -> StatusPageComponentGroup:
@@ -236,3 +253,21 @@ class StatusPageRepo(BaseRepo):
             self.session.delete(component.status_page_item)
 
         self.session.flush()
+
+    def get_status_page_events(
+        self, status_page: StatusPage, start_date: datetime, end_date: datetime
+    ) -> Sequence[StatusPageComponentEvent]:
+        """Get all events for a status page"""
+        stmt = (
+            select(StatusPageComponentEvent)
+            .join(StatusPageComponent)
+            .join(StatusPage)
+            .where(
+                StatusPageComponent.status_page_id == status_page.id,
+                StatusPageComponentEvent.started_at >= start_date,
+                StatusPageComponentEvent.ended_at <= end_date,
+                StatusPageComponentEvent.deleted_at.is_(None),
+            )
+            .order_by(StatusPageComponentEvent.created_at.desc())
+        )
+        return self.session.execute(stmt).scalars().all()

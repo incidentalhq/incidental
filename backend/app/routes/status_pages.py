@@ -1,8 +1,11 @@
+import collections
+from datetime import datetime, timedelta, timezone
+
 import structlog
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Query, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
-from app.exceptions import NotPermittedError
+from app.exceptions import NotPermittedError, ValidationError
 from app.repos import StatusPageRepo
 from app.schemas.actions import (
     CreateStatusPageComponentSchema,
@@ -12,7 +15,13 @@ from app.schemas.actions import (
     PatchStatusPageGroupSchema,
     UpdateStatusPageItemsRankSchema,
 )
-from app.schemas.models import StatusPageComponentGroupSchema, StatusPageComponentSchema, StatusPageSchema
+from app.schemas.models import (
+    StatusPageComponentEventSchema,
+    StatusPageComponentGroupSchema,
+    StatusPageComponentSchema,
+    StatusPageSchema,
+    StatusPageWithEventsSchema,
+)
 from app.schemas.resources import PaginatedResults
 
 logger = structlog.get_logger(logger_name=__name__)
@@ -47,6 +56,58 @@ async def status_pages_create(
     db.commit()
 
     return status_page
+
+
+@router.get(
+    "/status",
+    response_model=StatusPageWithEventsSchema,
+    response_model_exclude_defaults=True,
+    response_model_exclude_none=True,
+)
+async def get_status_page_status(
+    db: DatabaseSession,
+    slug: str | None = Query(None),
+    domain: str | None = Query(None),
+):
+    """Public status page"""
+    status_page_repo = StatusPageRepo(session=db)
+
+    if slug:
+        status_page = status_page_repo.get_by_slug_or_raise(slug=slug)
+
+    if domain:
+        status_page = status_page_repo.get_by_domain_or_raise(domain=domain)
+
+    if not slug and not domain:
+        raise ValidationError("Either slug or domain must be provided")
+
+    # Get events for the last 90 days
+    start_date = datetime.now(tz=timezone.utc) - timedelta(days=90)
+    end_date = datetime.now(tz=timezone.utc)
+
+    # Get all events for this status page
+    events = status_page_repo.get_status_page_events(status_page=status_page, start_date=start_date, end_date=end_date)
+    # Calculate downtime for each component
+    downtime_by_component: dict[str, float] = collections.defaultdict(float)
+
+    for event in events:
+        event_downtime = (
+            event.ended_at - event.started_at if event.ended_at else datetime.now(tz=timezone.utc) - event.started_at
+        )
+        downtime_by_component[event.status_page_component_id] += event_downtime.total_seconds()
+
+    # Calculate uptime for each component as a percentage
+    uptime_by_component: dict[str, float] = {}
+    for component_id, downtime in downtime_by_component.items():
+        uptime = 1 - downtime / (end_date - start_date).total_seconds()
+        uptime_by_component[component_id] = uptime
+
+    response = StatusPageWithEventsSchema(
+        status_page=StatusPageSchema.model_validate(status_page),
+        events=[StatusPageComponentEventSchema.model_validate(event) for event in events],
+    )
+
+    return response
 
 
 @router.get(
