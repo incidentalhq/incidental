@@ -165,12 +165,16 @@ export const LinkButton = styled(Link)`
 `
 
 interface PillProps {
-  $color?: string
+  $backgroundColor?: string
+  $borderColor?: string
+  $textColor?: string
 }
 
 export const Pill = styled.div<PillProps>`
   border-radius: var(--radius-lg);
-  background-color: ${(props) => (props.$color ? props.$color : 'var(--color-green-100)')};
+  background-color: ${(props) => (props.$backgroundColor ? props.$backgroundColor : 'var(--color-green-100)')};
   display: inline-block;
   padding: 0.25rem 0.5rem;
+  color: ${(props) => (props.$textColor ? props.$textColor : 'initial')};
+  border: 1px solid ${(props) => (props.$borderColor ? props.$borderColor : 'transparent')};
 `

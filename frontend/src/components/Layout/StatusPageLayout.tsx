@@ -1,8 +1,10 @@
 import { Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 
-import DefaultSideBar from '@/components/Sidebar/DefaultSidebar'
+import SettingsSidebar from '@/components/Sidebar/SettingsSidebar'
 import useAuth from '@/hooks/useAuth'
+
+import StatusPageSidebar from '../Sidebar/StatusPageSidebar'
 
 const Container = styled.div`
   display: flex;
@@ -22,7 +24,7 @@ const LeftColumn = styled.div`
   height: 100vh;
 `
 
-const DefaultLayout = () => {
+const StatusPageLayout = () => {
   const { user } = useAuth()
 
   if (!user) {
@@ -32,7 +34,7 @@ const DefaultLayout = () => {
   return (
     <Container>
       <LeftColumn>
-        <DefaultSideBar user={user} />
+        <StatusPageSidebar user={user} />
       </LeftColumn>
       <RightColumn>
         <Outlet />
@@ -41,4 +43,4 @@ const DefaultLayout = () => {
   )
 }
 
-export default DefaultLayout
+export default StatusPageLayout

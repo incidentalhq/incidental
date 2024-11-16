@@ -1,15 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Button from '@/components/Button/Button'
 import Loading from '@/components/Loading/Loading'
-import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
+import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
-import useGlobal from '@/hooks/useGlobal'
 import { ModelID } from '@/types/models'
 
 import ManageComponentsSection from './components/ManageComponentsSection'
+import StatusPageIncidentRow from './components/StatusPageIncidentRow'
+
+import CreateIncidentModal from './CreateIncidentModal'
 
 type UrlParams = {
   id: ModelID
@@ -29,8 +32,8 @@ const ContentSection = styled.div`
 
 const ShowStatusPage = () => {
   const { apiService } = useApiService()
-  const { organisation } = useGlobal()
   const { id } = useParams() as UrlParams
+  const [showCreateIncidentModal, setShowCreateIncidentModal] = useState(false)
 
   const {
     data: statusPage,
@@ -41,14 +44,28 @@ const ShowStatusPage = () => {
     queryFn: () => apiService.getStatusPage(id)
   })
 
+  const incidentsQuery = useQuery({
+    queryKey: ['get-active-status-page-incidents', id],
+    queryFn: () =>
+      apiService.getStatusPageIncidents({
+        id,
+        isActive: true
+      })
+  })
+
   return (
     <>
       <Box>
         <Header>
           <Title>Status page</Title>
-          <Button>Create status page incident</Button>
+          <Button $primary onClick={() => setShowCreateIncidentModal(true)}>
+            Create status page incident
+          </Button>
         </Header>
         <Content>
+          {showCreateIncidentModal && statusPage && (
+            <CreateIncidentModal statusPage={statusPage} onClose={() => setShowCreateIncidentModal(false)} />
+          )}
           {isLoading && <Loading text="Loading status page" />}
           {error && <p>Error loading status page</p>}
           {statusPage ? (
@@ -59,6 +76,20 @@ const ShowStatusPage = () => {
                 </ContentHeader>
                 <ContentSection>
                   <div>{statusPage.publicUrl}</div>
+                </ContentSection>
+                <ContentSection>
+                  <h3>Active Incidents</h3>
+                  {incidentsQuery.isLoading && <Loading text="Loading incidents" />}
+                  {incidentsQuery.error && <p>Error loading incidents</p>}
+                  {incidentsQuery.data && incidentsQuery.data.items.length === 0 && <p>No active incidents</p>}
+
+                  {incidentsQuery.data && (
+                    <div>
+                      {incidentsQuery.data.items.map((incident) => (
+                        <StatusPageIncidentRow isBlock incident={incident} key={incident.id} />
+                      ))}
+                    </div>
+                  )}
                 </ContentSection>
                 <ContentHeader>
                   <h3>Components</h3>

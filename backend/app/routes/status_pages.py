@@ -1,8 +1,9 @@
 import collections
 from datetime import datetime, timedelta, timezone
+from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
 from app.exceptions import NotPermittedError, ValidationError
@@ -10,7 +11,9 @@ from app.repos import StatusPageRepo
 from app.schemas.actions import (
     CreateStatusPageComponentSchema,
     CreateStatusPageGroupSchema,
+    CreateStatusPageIncidentSchema,
     CreateStatusPageSchema,
+    PaginationParamsSchema,
     PatchStatusPageComponentSchema,
     PatchStatusPageGroupSchema,
     UpdateStatusPageItemsRankSchema,
@@ -19,6 +22,7 @@ from app.schemas.models import (
     StatusPageComponentEventSchema,
     StatusPageComponentGroupSchema,
     StatusPageComponentSchema,
+    StatusPageIncidentSchema,
     StatusPageSchema,
     StatusPageWithEventsSchema,
 )
@@ -105,6 +109,7 @@ async def get_status_page_status(
     response = StatusPageWithEventsSchema(
         status_page=StatusPageSchema.model_validate(status_page),
         events=[StatusPageComponentEventSchema.model_validate(event) for event in events],
+        uptimes=uptime_by_component,
     )
 
     return response
@@ -266,3 +271,58 @@ async def status_page_delete_component(status_page_id: str, component_id: str, u
     db.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{status_page_id}/incidents")
+async def status_page_create_incident(
+    status_page_id: str, create_in: CreateStatusPageIncidentSchema, user: CurrentUser, db: DatabaseSession
+):
+    """Create new incident for a status page"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    incident = status_page_repo.create_incident(creator=user, status_page=status_page, create_in=create_in)
+
+    db.commit()
+
+    return incident
+
+
+@router.get("/{status_page_id}/components/status")
+async def status_page_component_get_component_status(status_page_id: str, user: CurrentUser, db: DatabaseSession):
+    """Get status of all components for a status page"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    response = status_page_repo.get_component_status(status_page=status_page)
+
+    return response
+
+
+@router.get("/{status_page_id}/incidents", response_model=PaginatedResults[StatusPageIncidentSchema])
+async def status_page_get_incidents(
+    status_page_id: str,
+    pagination: Annotated[PaginationParamsSchema, Depends(PaginationParamsSchema)],
+    user: CurrentUser,
+    db: DatabaseSession,
+    is_active: bool | None = Query(None, alias="isActive"),
+):
+    """Get all incidents for a status page"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    print(is_active)
+
+    incidents = status_page_repo.get_incidents(status_page=status_page, pagination=pagination, is_active=is_active)
+    response = PaginatedResults(items=incidents, total=len(incidents), page=pagination.page, size=pagination.size)
+
+    return response

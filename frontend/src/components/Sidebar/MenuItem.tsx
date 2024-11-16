@@ -1,4 +1,4 @@
-import { generatePath, Link, useMatch } from 'react-router-dom'
+import { generatePath, Link, PathParam, useMatch } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import useGlobal from '@/hooks/useGlobal'
@@ -30,11 +30,17 @@ const MenuLink = styled(Link)<ItemProps>`
 
 export const MenuItemRoot = styled.div``
 
-interface MenuItemProps {
-  to: RoutePaths
+interface MenuItemProps<Path extends string> {
+  to: Path
+  pathParams?: Omit<
+    {
+      [key in PathParam<RoutePaths>]: string | null
+    },
+    'organisation'
+  >
 }
 
-const MenuItem: React.FC<MenuItemProps & React.PropsWithChildren> = ({ to, children }) => {
+const MenuItem: React.FC<MenuItemProps<string> & React.PropsWithChildren> = ({ to, children, pathParams }) => {
   const match = useMatch(to)
   const { organisation } = useGlobal()
 
@@ -45,7 +51,10 @@ const MenuItem: React.FC<MenuItemProps & React.PropsWithChildren> = ({ to, child
 
   return (
     <MenuItemRoot>
-      <MenuLink to={generatePath(to, { organisation: organisation.slug, id: '' })} $selected={match ? true : false}>
+      <MenuLink
+        to={generatePath(to, { organisation: organisation.slug, ...(pathParams || {}) })}
+        $selected={match ? true : false}
+      >
         {children}
       </MenuLink>
     </MenuItemRoot>

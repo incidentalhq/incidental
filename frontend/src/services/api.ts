@@ -1,3 +1,11 @@
+import { is } from 'date-fns/locale'
+
+import {
+  CreateStatusPageIncident,
+  CreateStatusPageIncidentUpdate,
+  GetStatusPageIncidentsRequest,
+  PaginationParams
+} from '@/types/action'
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
@@ -18,7 +26,9 @@ import {
   ISettings,
   IStatusPage,
   IStatusPageComponent,
+  IStatusPageComponentEvent,
   IStatusPageComponentGroup,
+  IStatusPageIncident,
   ITimestamp,
   IUser,
   IWorld,
@@ -532,6 +542,37 @@ export class ApiService {
 
   deleteStatusPageGroup = (statusPageId: string, groupId: string) =>
     callApi('DELETE', `/status-pages/${statusPageId}/group/${groupId}`, {
+      user: this.user
+    })
+
+  createStatusPageIncident = (statusPageId: string, values: CreateStatusPageIncident) =>
+    callApi('POST', `/status-pages/${statusPageId}/incidents`, {
+      user: this.user,
+      json: values
+    })
+
+  getStatusPageIncidents = (params: GetStatusPageIncidentsRequest) =>
+    callApi<PaginatedResults<IStatusPageIncident>>('GET', `/status-pages/${params.id}/incidents`, {
+      user: this.user,
+      params: {
+        ...(params.pagination || {}),
+        isActive: params.isActive
+      }
+    })
+
+  getStatusPageIncident = (incidentId: string) =>
+    callApi<IStatusPageIncident>('GET', `/status-page-incidents/${incidentId}`, {
+      user: this.user
+    })
+
+  createStatusPageIncidentUpdate = (incidentId: ModelID, values: CreateStatusPageIncidentUpdate) =>
+    callApi('POST', `/status-page-incidents/${incidentId}/updates`, {
+      user: this.user,
+      json: values
+    })
+
+  getStatusPageIncidentEvents = (incidentId: ModelID) =>
+    callApi<PaginatedResults<IStatusPageComponentEvent>>('GET', `/status-page-incidents/${incidentId}/events`, {
       user: this.user
     })
 }

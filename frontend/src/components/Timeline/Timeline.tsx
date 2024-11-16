@@ -1,8 +1,5 @@
+import { ReactElement } from 'react'
 import styled from 'styled-components'
-
-import { IIncidentUpdate } from '@/types/models'
-
-import IncidentUpdate from './IncidentUpdate'
 
 const Root = styled.div`
   margin-top: 1rem;
@@ -37,11 +34,16 @@ const Root = styled.div`
   }
 `
 
-interface Props {
-  updates: Array<IIncidentUpdate>
+interface Props<T> {
+  updates: Array<T>
+  render: (props: T) => ReactElement<T>
 }
 
-const Timeline: React.FC<Props> = ({ updates }) => {
+interface Update {
+  id: string
+}
+
+const Timeline = <T extends Update>({ updates, render }: Props<T>): ReactElement => {
   return (
     <Root>
       {updates.length == 0 ? (
@@ -49,9 +51,7 @@ const Timeline: React.FC<Props> = ({ updates }) => {
       ) : (
         <ul>
           {updates.map((item) => (
-            <li key={item.id}>
-              <IncidentUpdate key={item.id} incidentUpdate={item} />
-            </li>
+            <li key={item.id}>{render(item)}</li>
           ))}
         </ul>
       )}

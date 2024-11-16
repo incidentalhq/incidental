@@ -1,27 +1,38 @@
 from datetime import datetime, timezone
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import distinct, func, or_, select
 
 from app.env import settings
 from app.exceptions import ValidationError
 from app.models import (
+    ComponentStatus,
     Organisation,
     StatusPage,
     StatusPageComponent,
+    StatusPageComponentAffected,
     StatusPageComponentEvent,
     StatusPageComponentGroup,
+    StatusPageComponentUpdate,
+    StatusPageIncident,
+    StatusPageIncidentStatus,
+    StatusPageIncidentUpdate,
     StatusPageItem,
+    User,
 )
 from app.repos.base_repo import BaseRepo
 from app.schemas.actions import (
     CreateStatusPageComponentSchema,
     CreateStatusPageGroupSchema,
+    CreateStatusPageIncidentSchema,
+    CreateStatusPageIncidentUpdateSchema,
     CreateStatusPageSchema,
+    PaginationParamsSchema,
     PatchStatusPageComponentSchema,
     PatchStatusPageGroupSchema,
     UpdateStatusPageItemsRankSchema,
 )
+from app.schemas.resources import ComponentsCurrentStatusSchema, ComponentStatusSchema
 from app.utils import generate_slug
 
 
@@ -91,7 +102,7 @@ class StatusPageRepo(BaseRepo):
         for rank, create_item_in in enumerate(create_in.items):
             # A group
             if create_item_in.group and create_item_in.items:
-                group = self._create_component_group(create_in=create_item_in.group)
+                group = self._create_component_group(status_page=model, create_in=create_item_in.group)
 
                 group_item = StatusPageItem()
                 group_item.status_page_id = model.id
@@ -102,7 +113,6 @@ class StatusPageRepo(BaseRepo):
                 self.session.flush()
 
                 # add children
-
                 for group_item_rank, sub_create_item_in in enumerate(create_item_in.items):
                     group_item_child = StatusPageItem()
                     group_item_child.parent_id = group_item.id
@@ -129,8 +139,12 @@ class StatusPageRepo(BaseRepo):
 
         return model
 
-    def _create_component_group(self, create_in: CreateStatusPageGroupSchema) -> StatusPageComponentGroup:
+    def _create_component_group(
+        self, status_page: StatusPage, create_in: CreateStatusPageGroupSchema
+    ) -> StatusPageComponentGroup:
+        """Create a new component group"""
         group = StatusPageComponentGroup()
+        group.status_page_id = status_page.id
         group.name = create_in.name
         self.session.add(group)
         self.session.flush()
@@ -140,6 +154,7 @@ class StatusPageRepo(BaseRepo):
     def _create_component(
         self, status_page: StatusPage, create_in: CreateStatusPageComponentSchema
     ) -> StatusPageComponent:
+        """Create a new component"""
         model = StatusPageComponent()
         model.status_page_id = status_page.id
         model.name = create_in.name
@@ -195,6 +210,7 @@ class StatusPageRepo(BaseRepo):
         total_items = len(status_page.status_page_items)
 
         group = StatusPageComponentGroup()
+        group.status_page_id = status_page.id
         group.name = create_in.name
         self.session.add(group)
         self.session.flush()
@@ -255,7 +271,11 @@ class StatusPageRepo(BaseRepo):
         self.session.flush()
 
     def get_status_page_events(
-        self, status_page: StatusPage, start_date: datetime, end_date: datetime
+        self,
+        status_page: StatusPage,
+        start_date: datetime,
+        end_date: datetime,
+        incident: StatusPageIncident | None = None,
     ) -> Sequence[StatusPageComponentEvent]:
         """Get all events for a status page"""
         stmt = (
@@ -265,9 +285,222 @@ class StatusPageRepo(BaseRepo):
             .where(
                 StatusPageComponent.status_page_id == status_page.id,
                 StatusPageComponentEvent.started_at >= start_date,
-                StatusPageComponentEvent.ended_at <= end_date,
+                or_(StatusPageComponentEvent.ended_at <= end_date, StatusPageComponentEvent.ended_at.is_(None)),
                 StatusPageComponentEvent.deleted_at.is_(None),
             )
             .order_by(StatusPageComponentEvent.created_at.desc())
         )
+
+        if incident:
+            stmt = stmt.where(StatusPageComponentEvent.status_page_incident_id == incident.id)
+
         return self.session.execute(stmt).scalars().all()
+
+    def create_incident(
+        self, creator: User, status_page: StatusPage, create_in: CreateStatusPageIncidentSchema
+    ) -> StatusPageIncident:
+        """Create new incident"""
+
+        # Create incident
+        incident = StatusPageIncident()
+        incident.status_page_id = status_page.id
+        incident.name = create_in.name
+        incident.status = create_in.status
+        incident.creator_id = creator.id
+        incident.published_at = datetime.now(tz=timezone.utc)
+        self.session.add(incident)
+        self.session.flush()
+
+        # Create incident update
+        update = StatusPageIncidentUpdate()
+        update.status_page_incident = incident
+        update.message = create_in.message
+        update.published_at = datetime.now(tz=timezone.utc)
+        update.creator_id = creator.id
+        update.status = create_in.status
+        self.session.add(update)
+        self.session.flush()
+
+        for component_id, status in create_in.affected_components.items():
+            # Add affected components
+            affected = StatusPageComponentAffected()
+            affected.status_page_incident = incident
+            affected.status_page_component_id = component_id
+            affected.status = status
+            self.session.add(affected)
+            self.session.flush()
+
+            # add component update
+            component_update = StatusPageComponentUpdate()
+            component_update.status_page_component_id = component_id
+            component_update.status = status
+            component_update.status_page_incident_update = update
+            self.session.add(component_update)
+            self.session.flush()
+
+            # add event
+            event = StatusPageComponentEvent()
+            event.status_page_component_id = component_id
+            event.status = status
+            event.status_page_incident = incident
+            event.started_at = datetime.now(tz=timezone.utc)
+            self.session.add(event)
+            self.session.flush()
+
+        return incident
+
+    def get_component_status(self, status_page: StatusPage):
+        stmt = (
+            select(
+                StatusPageComponentEvent.status_page_component_id,
+                func.array_agg(distinct(StatusPageComponentEvent.status)),
+            )
+            .join(StatusPageIncident)
+            .where(
+                StatusPageIncident.status_page_id == status_page.id,
+                StatusPageComponentEvent.deleted_at.is_(None),
+                StatusPageIncident.deleted_at.is_(None),
+                StatusPageComponentEvent.ended_at.is_(None),
+            )
+            .group_by(StatusPageComponentEvent.status_page_component_id)
+        )
+
+        result = self.session.execute(stmt).all()
+        status_ordered = list(ComponentStatus)
+        results: list[ComponentStatusSchema] = []
+
+        for component_id, status_list in result:
+            component = self.get_component_by_id_or_raise(component_id)
+            indexes = map(status_ordered.index, status_list)
+            most_serve_status = status_ordered[max(indexes)]
+            item = ComponentStatusSchema(component=component, status=most_serve_status)
+            results.append(item)
+
+        return ComponentsCurrentStatusSchema(components=results)
+
+    def get_incidents(
+        self, status_page: StatusPage, pagination: PaginationParamsSchema, is_active: bool | None = None
+    ) -> Sequence[StatusPageIncident]:
+        """Get all incidents for a status page"""
+        offset = (pagination.page - 1) * pagination.size
+        stmt = (
+            select(StatusPageIncident)
+            .where(StatusPageIncident.status_page_id == status_page.id, StatusPageIncident.deleted_at.is_(None))
+            .order_by(StatusPageIncident.published_at.desc())
+            .offset(offset)
+            .limit(pagination.size)
+        )
+
+        if is_active is True:
+            stmt = stmt.where(
+                StatusPageIncident.status != StatusPageIncidentStatus.RESOLVED,
+            )
+        if is_active is False:
+            stmt = stmt.where(
+                StatusPageIncident.status == StatusPageIncidentStatus.RESOLVED,
+            )
+
+        return self.session.execute(stmt).scalars().all()
+
+    def get_incident_or_raise(self, id: str) -> StatusPageIncident:
+        """Get incident by ID"""
+        stmt = select(StatusPageIncident).where(StatusPageIncident.id == id, StatusPageIncident.deleted_at.is_(None))
+        return self.session.execute(stmt).scalar_one()
+
+    def create_incident_update(
+        self, creator: User, incident: StatusPageIncident, create_in: CreateStatusPageIncidentUpdateSchema
+    ):
+        """Create new incident update"""
+        now = datetime.now(tz=timezone.utc)
+        incident.status = create_in.status
+
+        # Create incident update
+        update = StatusPageIncidentUpdate()
+        update.status_page_incident = incident
+        update.message = create_in.message
+        update.published_at = datetime.now(tz=timezone.utc)
+        update.creator_id = creator.id
+        update.status = create_in.status
+        self.session.add(update)
+        self.session.flush()
+
+        for component_id, status in create_in.affected_components.items():
+            component = self.get_component_by_id_or_raise(component_id)
+
+            # Update affected component status
+            affected = self.get_affected_component(incident, component)
+            if affected:
+                affected.status = status
+            else:
+                affected = StatusPageComponentAffected()
+                affected.status_page_incident = incident
+                affected.status_page_component_id = component_id
+                affected.status = status
+                self.session.add(affected)
+                self.session.flush()
+
+            # add component update
+            component_update = StatusPageComponentUpdate()
+            component_update.status_page_component_id = component_id
+            component_update.status = status
+            component_update.status_page_incident_update = update
+            self.session.add(component_update)
+            self.session.flush()
+
+            # add event
+            event = self.get_most_recent_component_not_ended_event(incident, component)
+            if event:
+                # If the status has changed, end the current event and create a new one
+                if event.status != status:
+                    event.ended_at = now
+                    event.updated_at = now
+                    self.session.flush()
+
+                    event = StatusPageComponentEvent()
+                    event.status_page_component_id = component_id
+                    event.status = status
+                    event.status_page_incident = incident
+                    event.started_at = now
+                    self.session.add(event)
+                    self.session.flush()
+                # If the status has not changed, update the event
+                else:
+                    event.updated_at = now
+                    self.session.flush()
+            # If there is no event, create a new one
+            else:
+                event = StatusPageComponentEvent()
+                event.status_page_component_id = component_id
+                event.status = status
+                event.status_page_incident = incident
+                event.started_at = now
+                self.session.add(event)
+                self.session.flush()
+
+        return update
+
+    def get_affected_component(
+        self, incident: StatusPageIncident, component: StatusPageComponent
+    ) -> StatusPageComponentAffected | None:
+        """Get affected component"""
+        stmt = select(StatusPageComponentAffected).where(
+            StatusPageComponentAffected.status_page_incident_id == incident.id,
+            StatusPageComponentAffected.status_page_component_id == component.id,
+        )
+        return self.session.execute(stmt).scalar_one_or_none()
+
+    def get_most_recent_component_not_ended_event(
+        self, incident: StatusPageIncident, component: StatusPageComponent
+    ) -> StatusPageComponentEvent | None:
+        """Get most recent component event that has not ended"""
+        stmt = (
+            select(StatusPageComponentEvent)
+            .where(
+                StatusPageComponentEvent.status_page_component_id == component.id,
+                StatusPageComponentEvent.status_page_incident_id == incident.id,
+                StatusPageComponentEvent.deleted_at.is_(None),
+                StatusPageComponentEvent.ended_at.is_(None),
+            )
+            .order_by(StatusPageComponentEvent.created_at.desc())
+        )
+        return self.session.execute(stmt).scalar_one_or_none()

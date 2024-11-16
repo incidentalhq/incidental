@@ -6,7 +6,14 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum, StatusPageKind
+from app.models import (
+    ComponentStatus,
+    IncidentStatusCategoryEnum,
+    InterfaceKind,
+    RequirementTypeEnum,
+    StatusPageIncidentStatus,
+    StatusPageKind,
+)
 
 from .base import BaseSchema
 from .models import ModelIdSchema
@@ -286,6 +293,19 @@ class UpdateStatusPageItemsRankSchema(BaseSchema):
     status_page_component_group: ModelIdSchema | None = None
     status_page_component: ModelIdSchema | None = None
     status_page_items: list["UpdateStatusPageItemsRankSchema"] | None = None
+
+
+class CreateStatusPageIncidentSchema(BaseSchema):
+    name: str
+    message: str
+    status: StatusPageIncidentStatus
+    affected_components: dict[str, ComponentStatus] = {}
+
+
+class CreateStatusPageIncidentUpdateSchema(BaseSchema):
+    message: str
+    status: StatusPageIncidentStatus
+    affected_components: dict[str, ComponentStatus] = {}
 
 
 CreateStatusPageGroupSchema.model_rebuild()

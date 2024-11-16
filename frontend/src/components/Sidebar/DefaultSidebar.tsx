@@ -33,7 +33,7 @@ interface Props {
   user: IUser
 }
 
-const SideBar: React.FC<Props> = () => {
+const DefaultSideBar: React.FC<Props> = () => {
   const { organisationDetails, organisation, setCurrentOrganisation } = useGlobal()
   const { apiService } = useApiService()
 
@@ -71,7 +71,7 @@ const SideBar: React.FC<Props> = () => {
             <MenuItem to={RoutePaths.INCIDENTS}>
               <Icon icon={bolt} fixedWidth /> Incidents
             </MenuItem>
-            <MenuItem to={RoutePaths.STATUS_PAGE_INDEX}>
+            <MenuItem to={RoutePaths.STATUS_PAGES_LIST}>
               <Icon icon={traffic} fixedWidth /> Status page
             </MenuItem>
             <MenuItem to={RoutePaths.SETTINGS_INDEX}>
@@ -84,4 +84,4 @@ const SideBar: React.FC<Props> = () => {
   )
 }
 
-export default SideBar
+export default DefaultSideBar

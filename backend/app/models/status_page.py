@@ -68,6 +68,9 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     status_page_components: Mapped[list["StatusPageComponent"]] = relationship(
         "StatusPageComponent", back_populates="status_page"
     )
+    status_page_component_groups: Mapped[list["StatusPageComponentGroup"]] = relationship(
+        "StatusPageComponentGroup", back_populates="status_page"
+    )
 
 
 class StatusPageComponent(Base, TimestampMixin, SoftDeleteMixin):
@@ -84,10 +87,16 @@ class StatusPageComponent(Base, TimestampMixin, SoftDeleteMixin):
     # relationships
     status_page: Mapped["StatusPage"] = relationship("StatusPage", back_populates="status_page_components")
     component_events: Mapped[list["StatusPageComponentEvent"]] = relationship(
-        "StatusPageComponentEvent", back_populates="component"
+        "StatusPageComponentEvent", back_populates="status_page_component"
     )
     status_page_item: Mapped[Optional["StatusPageItem"]] = relationship(
         "StatusPageItem", back_populates="status_page_component"
+    )
+    components_affected: Mapped[list["StatusPageComponentAffected"]] = relationship(
+        "StatusPageComponentAffected", back_populates="status_page_component"
+    )
+    component_updates: Mapped[list["StatusPageComponentUpdate"]] = relationship(
+        "StatusPageComponentUpdate", back_populates="status_page_component"
     )
 
 
@@ -95,11 +104,15 @@ class StatusPageComponentGroup(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp_com_grp"
 
     name: Mapped[str] = mapped_column(String, nullable=False)
+    status_page_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("status_page.id", ondelete="cascade"), nullable=False, index=True
+    )
 
     # relationships
     status_page_item: Mapped["StatusPageItem"] = relationship(
         "StatusPageItem", back_populates="status_page_component_group"
     )
+    status_page: Mapped["StatusPage"] = relationship("StatusPage", back_populates="status_page_component_groups")
 
 
 class StatusPageItem(Base, TimestampMixin):
@@ -154,7 +167,9 @@ class StatusPageIncident(Base, TimestampMixin, SoftDeleteMixin):
     )
     creator: Mapped["User"] = relationship("User", back_populates="status_page_incidents_created")
     incident_updates: Mapped[list["StatusPageIncidentUpdate"]] = relationship(
-        "StatusPageIncidentUpdate", back_populates="status_page_incident"
+        "StatusPageIncidentUpdate",
+        back_populates="status_page_incident",
+        order_by="StatusPageIncidentUpdate.published_at.desc()",
     )
     status_page: Mapped["StatusPage"] = relationship("StatusPage", back_populates="status_page_incidents")
     component_events: Mapped[list["StatusPageComponentEvent"]] = relationship(
@@ -162,7 +177,7 @@ class StatusPageIncident(Base, TimestampMixin, SoftDeleteMixin):
     )
 
 
-class StatusPageComponentAffected(Base):
+class StatusPageComponentAffected(Base, TimestampMixin):
     __prefix__ = "sp_com_aff"
 
     status_page_incident_id: Mapped[str] = mapped_column(
@@ -176,6 +191,9 @@ class StatusPageComponentAffected(Base):
     # relationships
     status_page_incident: Mapped["StatusPageIncident"] = relationship(
         "StatusPageIncident", back_populates="components_affected"
+    )
+    status_page_component: Mapped["StatusPageComponent"] = relationship(
+        "StatusPageComponent", back_populates="components_affected"
     )
 
 
@@ -212,8 +230,11 @@ class StatusPageComponentUpdate(Base, TimestampMixin, SoftDeleteMixin):
     status: Mapped[ComponentStatus] = mapped_column(Enum(ComponentStatus), nullable=False)
 
     # relationships
-    status_page_incident_update: Mapped["StatusPageIncident"] = relationship(
+    status_page_incident_update: Mapped["StatusPageIncidentUpdate"] = relationship(
         "StatusPageIncidentUpdate", back_populates="component_updates"
+    )
+    status_page_component: Mapped["StatusPageComponent"] = relationship(
+        "StatusPageComponent", back_populates="component_updates"
     )
 
 
@@ -234,4 +255,6 @@ class StatusPageComponentEvent(Base, TimestampMixin, SoftDeleteMixin):
     status_page_incident: Mapped["StatusPageIncident"] = relationship(
         "StatusPageIncident", back_populates="component_events"
     )
-    component: Mapped["StatusPageComponent"] = relationship("StatusPageComponent", back_populates="component_events")
+    status_page_component: Mapped["StatusPageComponent"] = relationship(
+        "StatusPageComponent", back_populates="component_events"
+    )

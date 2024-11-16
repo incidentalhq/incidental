@@ -3,7 +3,7 @@ from typing import Sequence
 
 from pydantic import EmailStr
 
-from app.models.status_page import ComponentStatus, StatusPageKind
+from app.models.status_page import ComponentStatus, StatusPageIncidentStatus, StatusPageKind
 from app.schemas.base import BaseSchema
 
 
@@ -215,6 +215,34 @@ class StatusPageComponentEventSchema(ModelSchema):
 class StatusPageWithEventsSchema(BaseSchema):
     status_page: StatusPageSchema
     events: list[StatusPageComponentEventSchema]
+    uptimes: dict[str, float]
+
+
+class StatusPageComponentAffectedSchema(ModelSchema):
+    status_page_component: StatusPageComponentSchema
+    status: ComponentStatus
+
+
+class StatusPageComponentUpdateSchema(ModelSchema):
+    status_page_component: StatusPageComponentSchema
+    status: ComponentStatus
+
+
+class StatusPageIncidentUpdateSchema(ModelSchema):
+    message: str
+    published_at: datetime
+    creator: UserPublicSchema
+    status: StatusPageIncidentStatus
+    component_updates: list[StatusPageComponentUpdateSchema]
+
+
+class StatusPageIncidentSchema(ModelSchema):
+    name: str
+    published_at: datetime
+    status: StatusPageIncidentStatus
+    creator: UserPublicSchema
+    incident_updates: list[StatusPageIncidentUpdateSchema]
+    status_page: ModelIdSchema
 
 
 IncidentTypeSchema.model_rebuild()

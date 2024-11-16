@@ -1,7 +1,8 @@
 import type { UniqueIdentifier } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 
-import { IStatusPage } from '@/types/models'
+import { ComponentStatus } from '@/types/enums'
+import { IStatusPage, ModelID } from '@/types/models'
 
 import { type FlattenedItem, ItemType, type TreeItem, type TreeItems } from './types'
 
@@ -238,7 +239,7 @@ export const toServerSideItems = (items: TreeItems): Partial<IStatusPage> => {
     return item
   })
 
-  return payload
+  return payload as Partial<IStatusPage>
 }
 
 export const fromServerSideItems = (statusPage: IStatusPage) => {
@@ -279,4 +280,40 @@ export const fromServerSideItems = (statusPage: IStatusPage) => {
     }
   }
   return items
+}
+
+export const statusToTitleCase = (status: string) => {
+  return status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+export const mapComponentStatusToStyleProps = (status: ComponentStatus) => {
+  switch (status) {
+    case ComponentStatus.OPERATIONAL:
+      return {
+        $backgroundColor: 'var(--color-green-100)',
+        $borderColor: 'var(--color-green-300)',
+        $textColor: 'var(--color-green-900)'
+      }
+    case ComponentStatus.DEGRADED_PERFORMANCE:
+      return {
+        $backgroundColor: 'var(--color-yellow-100)',
+        $borderColor: 'var(--color-yellow-300)',
+        $textColor: 'var(--color-yellow-900)'
+      }
+    case ComponentStatus.PARTIAL_OUTAGE:
+      return {
+        $backgroundColor: 'var(--color-orange-100)',
+        $borderColor: 'var(--color-orange-300)',
+        $textColor: 'var(--color-orange-900)'
+      }
+    case ComponentStatus.FULL_OUTAGE:
+      return {
+        $backgroundColor: 'var(--color-red-100)',
+        $borderColor: 'var(--color-red-300)',
+        $textColor: 'var(--color-red-900)'
+      }
+  }
 }

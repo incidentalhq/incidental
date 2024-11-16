@@ -1,4 +1,5 @@
 import {
+  ComponentStatus,
   FieldInterfaceKind,
   FieldKind,
   FormType,
@@ -6,7 +7,8 @@ import {
   IncidentStatusCategory,
   MemberRole,
   OrganisationKind,
-  RequirementType
+  RequirementType,
+  StatusPageIncidentStatus
 } from './enums'
 
 export type ILoggedInUser = Required<IUser>
@@ -213,4 +215,41 @@ export interface IStatusPageComponent extends IModel {
 
 export interface IStatusPageComponentGroup extends IModel {
   name: string
+}
+
+export interface IStatusPageIncident extends IModel {
+  name: string
+  status: StatusPageIncidentStatus
+  incidentUpdates: Array<IStatusPageIncidentUpdate>
+  statusPage: IStatusPage
+  creator: IPublicUser
+}
+
+export interface IStatusPageComponentAffected extends IModel {
+  statusPageComponent: IStatusPageComponent
+  status: ComponentStatus
+}
+
+export interface IStatusPageComponentUpdated extends IModel {
+  statusPageComponent: IStatusPageComponent
+  status: ComponentStatus
+}
+
+export interface IStatusPageIncidentUpdate extends IModel {
+  status: StatusPageIncidentStatus
+  message: string
+  componentUpdates: Array<IStatusPageComponentUpdated>
+  creator: IPublicUser
+}
+
+export interface IStatusPageComponentUpdate extends IModel {
+  statusPageComponent: IStatusPageComponent
+  status: ComponentStatus
+}
+
+export interface IStatusPageComponentEvent extends IModel {
+  statusPageComponent: IStatusPageComponent
+  status: ComponentStatus
+  startedAt: string
+  endedAt: string | null
 }

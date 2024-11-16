@@ -10,6 +10,7 @@ import ReadyGuard from '@/components/Guard/ReadyGuard'
 import SlackInstallGuard from '@/components/Guard/SlackInstallGuard'
 import DefaultLayout from '@/components/Layout/DefaultLayout'
 import SettingsLayout from '@/components/Layout/SettingsLayout'
+import StatusPageLayout from '@/components/Layout/StatusPageLayout'
 import ModalProvider from '@/components/Modal/ModalProvider'
 // hooks
 import { ApiServiceProvider } from '@/hooks/useApi'
@@ -41,8 +42,10 @@ import SettingsTimestamps from '@/pages/Settings/Timestamps'
 import SettingsIncidentTypes from '@/pages/Settings/Types'
 import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
-import StatusPagesIndex from '@/pages/StatusPage/Index'
-import ShowStatusPage from '@/pages/StatusPage/Show'
+import ShowStatusPage from '@/pages/StatusPages/ShowStatusPage'
+import ShowStatusPageIncident from '@/pages/StatusPages/ShowStatusPageIncident'
+import StatusPageListIncidents from '@/pages/StatusPages/StatusPageListIncidents'
+import StatusPagesList from '@/pages/StatusPages/StatusPagesList'
 // route definitions
 import { RoutePaths } from '@/routes'
 
@@ -88,8 +91,12 @@ const App = () => {
                       <Route path={RoutePaths.SHOW_INCIDENT} element={<ShowIncident />} />
                       <Route path={RoutePaths.SLACK_INSTALL} element={<SlackInstall />} />
                       <Route path={RoutePaths.SLACK_INSTALL_COMPLETE} element={<SlackInstallComplete />} />
-                      <Route path={RoutePaths.STATUS_PAGE_INDEX} element={<StatusPagesIndex />} />
+                      <Route path={RoutePaths.STATUS_PAGES_LIST} element={<StatusPagesList />} />
+                    </Route>
+                    <Route element={<StatusPageLayout />}>
                       <Route path={RoutePaths.STATUS_PAGE_SHOW} element={<ShowStatusPage />} />
+                      <Route path={RoutePaths.STATUS_PAGE_ALL_INCIDENTS} element={<StatusPageListIncidents />} />
+                      <Route path={RoutePaths.STATUS_PAGE_SHOW_INCIDENT} element={<ShowStatusPageIncident />} />
                     </Route>
                     <Route element={<SettingsLayout />}>
                       <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />
