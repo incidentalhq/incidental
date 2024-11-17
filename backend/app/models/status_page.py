@@ -36,6 +36,16 @@ class ComponentStatus(str, enum.Enum):
     PARTIAL_OUTAGE = "PARTIAL_OUTAGE"
     FULL_OUTAGE = "FULL_OUTAGE"
 
+    @classmethod
+    def ranked(cls, status: "ComponentStatus") -> int:
+        """Return a rank for the status"""
+        return {
+            cls.OPERATIONAL: 0,
+            cls.DEGRADED_PERFORMANCE: 1,
+            cls.PARTIAL_OUTAGE: 2,
+            cls.FULL_OUTAGE: 3,
+        }[status]
+
 
 class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp"

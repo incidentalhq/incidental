@@ -430,7 +430,10 @@ class StatusPageRepo(BaseRepo):
             # Update affected component status
             affected = self.get_affected_component(incident, component)
             if affected:
-                affected.status = status
+                old_rank = ComponentStatus.ranked(affected.status)
+                new_rank = ComponentStatus.ranked(status)
+                if new_rank > old_rank:
+                    affected.status = status
             else:
                 affected = StatusPageComponentAffected()
                 affected.status_page_incident = incident

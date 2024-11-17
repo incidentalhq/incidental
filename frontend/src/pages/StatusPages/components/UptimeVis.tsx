@@ -1,15 +1,83 @@
 import { useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import { ComponentStatus } from '@/types/enums'
 import { IStatusPageComponentEvent } from '@/types/models'
+
+import { calculateTimeWindowWithBuffer, mapComponentStatusToStyleProps } from '../utils'
+
+interface SegmentProps {
+  $left: number
+  $width: number
+  $backgroundColor: string
+  $borderColor: string
+  $removeRightRadius?: boolean
+  $removeLeftRadius?: boolean
+}
+const TimelineSegment = styled.div<SegmentProps>`
+  position: absolute;
+  height: 100%;
+  border-style: solid;
+  border-color: ${(props) => props.$borderColor};
+  background-color: ${(props) => props.$backgroundColor};
+  left: ${(props) => props.$left}%;
+  width: ${(props) => props.$width}%;
+  border-radius: var(--radius-lg);
+  ${(props) =>
+    props.$removeRightRadius &&
+    'border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 1px solid transparent;'}
+
+  ${(props) =>
+    props.$removeLeftRadius &&
+    'border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid transparent;'}
+`
+const Root = styled.div``
+const ComponentTimeline = styled.div`
+  margin-bottom: 1rem;
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+`
+const TimelineBar = styled.div`
+  position: relative;
+  height: 20px;
+`
+
+const CurrentTimeMarker = styled.div<{ $left: number }>`
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background-color: var(--color-slate-600);
+  left: ${(props) => props.$left}%;
+`
+interface Segment {
+  status: ComponentStatus
+  startTime: Date
+  endTime: Date
+}
+
+const consolidateSegments = (segments: Segment[]) => {
+  const consolidated: typeof segments = []
+  segments.forEach((segment) => {
+    if (
+      consolidated.length > 0 &&
+      consolidated[consolidated.length - 1].status === segment.status &&
+      consolidated[consolidated.length - 1].endTime >= segment.startTime
+    ) {
+      consolidated[consolidated.length - 1].endTime = segment.endTime
+    } else {
+      consolidated.push(segment)
+    }
+  })
+  return consolidated
+}
 
 const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => {
   const [timeline, setTimeline] = useState<{
     [key: string]: { status: ComponentStatus; startTime: Date; endTime: Date }[]
   }>({})
   const now = useMemo(() => new Date(), [])
-
-  // earliest event startedAt to consider for the timeline
   const earliestEventStartedAt = useMemo(
     () =>
       events.reduce((earliest, event) => {
@@ -18,11 +86,14 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
       }, now),
     [events, now]
   )
+  const [bufferStart, bufferEnd] = useMemo(
+    () => calculateTimeWindowWithBuffer(earliestEventStartedAt, now),
+    [earliestEventStartedAt, now]
+  )
 
   useEffect(() => {
-    // Prepare the timeline for the last 30 days
     const prepareTimeline = () => {
-      const components: { [key: string]: { status: ComponentStatus; startTime: Date; endTime: Date }[] } = {}
+      const components: { [key: string]: Segment[] } = {}
 
       events.forEach((event) => {
         const { name } = event.statusPageComponent
@@ -40,10 +111,9 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
         }
       })
 
-      // Sort the events for each component
       Object.keys(components).forEach((componentName) => {
-        components[componentName] = components[componentName].sort(
-          (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        components[componentName] = consolidateSegments(
+          components[componentName].sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
         )
       })
 
@@ -53,68 +123,94 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
     prepareTimeline()
   }, [events, earliestEventStartedAt, now])
 
-  const getStatusColor = (status: ComponentStatus) => {
-    switch (status) {
-      case 'FULL_OUTAGE':
-        return 'red'
-      case 'PARTIAL_OUTAGE':
-        return 'orange'
-      case 'DEGRADED_PERFORMANCE':
-        return 'yellow'
-      case 'OPERATIONAL':
-        return 'green'
-      default:
-        return 'gray'
-    }
-  }
+  const totalDuration = bufferEnd.getTime() - bufferStart.getTime()
 
   return (
-    <div>
+    <Root>
       {Object.keys(timeline).map((componentName) => (
-        <div key={componentName}>
+        <ComponentTimeline key={componentName}>
           <h3>{componentName}</h3>
-          <div
-            style={{
-              display: 'flex',
-              position: 'relative',
-              height: '20px',
-              border: '1px solid #ccc',
-              marginBottom: '10px',
-              width: '100%'
-            }}
-          >
-            {timeline[componentName].map((segment, index) => {
-              const totalDuration = now.getTime() - earliestEventStartedAt.getTime()
-              const startPercent =
-                ((segment.startTime.getTime() - earliestEventStartedAt.getTime()) / totalDuration) * 100
+          <TimelineBar>
+            <StartBufferTimelineSegment
+              firstSegmentStartTime={timeline[componentName][0].startTime}
+              bufferStartTime={bufferStart}
+              totalDuration={totalDuration}
+            />
+            {timeline[componentName].map((segment, index, allSegments) => {
+              const startPercent = ((segment.startTime.getTime() - bufferStart.getTime()) / totalDuration) * 100
               const durationPercent = ((segment.endTime.getTime() - segment.startTime.getTime()) / totalDuration) * 100
+              const styles = mapComponentStatusToStyleProps(segment.status)
+              const isLast = index === allSegments.length - 1
 
               return (
-                <div
+                <TimelineSegment
                   key={index}
-                  style={{
-                    backgroundColor: getStatusColor(segment.status),
-                    position: 'absolute',
-                    left: `${startPercent}%`,
-                    width: `${durationPercent}%`,
-                    height: '100%'
-                  }}
+                  title={`${segment.status}: ${segment.startTime.toISOString()} - ${segment.endTime.toISOString()}`}
+                  $left={startPercent}
+                  $width={durationPercent}
+                  $backgroundColor={styles.$backgroundColor}
+                  $borderColor={styles.$borderColor}
+                  $removeRightRadius={isLast}
                 />
               )
             })}
-          </div>
-        </div>
+            <EndBufferTimelineSegment
+              lastSegment={timeline[componentName][timeline[componentName].length - 1]}
+              bufferEndTime={bufferEnd}
+              totalDuration={totalDuration}
+            />
+            <CurrentTimeMarker $left={((now.getTime() - bufferStart.getTime()) / totalDuration) * 100} />
+          </TimelineBar>
+        </ComponentTimeline>
       ))}
-    </div>
+    </Root>
   )
 }
 
-const UptimeVisualization = ({ events }: { events: IStatusPageComponentEvent[] }) => {
+const StartBufferTimelineSegment = ({
+  bufferStartTime,
+  totalDuration,
+  firstSegmentStartTime
+}: {
+  totalDuration: number
+  firstSegmentStartTime: Date
+  bufferStartTime: Date
+}) => {
+  const durationPercent = ((firstSegmentStartTime.getTime() - bufferStartTime.getTime()) / totalDuration) * 100
   return (
-    <div>
-      <StatusTimeline events={events} />
-    </div>
+    <TimelineSegment
+      key="start"
+      title="Start buffer"
+      $left={0}
+      $width={durationPercent}
+      $backgroundColor="var(--color-green-100)"
+      $borderColor="var(--color-green-300)"
+    />
   )
 }
 
-export default UptimeVisualization
+const EndBufferTimelineSegment = ({
+  bufferEndTime,
+  totalDuration,
+  lastSegment
+}: {
+  totalDuration: number
+  bufferEndTime: Date
+  lastSegment: Segment
+}) => {
+  const durationPercent = ((bufferEndTime.getTime() - lastSegment.endTime.getTime()) / totalDuration) * 100
+  const styles = mapComponentStatusToStyleProps(lastSegment.status)
+  return (
+    <TimelineSegment
+      key="end"
+      title="End buffer"
+      $left={100 - durationPercent}
+      $width={durationPercent}
+      $backgroundColor={styles.$backgroundColor}
+      $borderColor={styles.$borderColor}
+      $removeLeftRadius={true}
+    />
+  )
+}
+
+export default StatusTimeline

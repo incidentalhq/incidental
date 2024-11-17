@@ -1,5 +1,6 @@
 import type { UniqueIdentifier } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
+import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
 
 import { ComponentStatus } from '@/types/enums'
 import { IStatusPage, ModelID } from '@/types/models'
@@ -316,4 +317,12 @@ export const mapComponentStatusToStyleProps = (status: ComponentStatus) => {
         $textColor: 'var(--color-red-900)'
       }
   }
+}
+
+// Calculate the time window with a buffer of 10% of the total time window or 2 minutes, whichever is greater
+export function calculateTimeWindowWithBuffer(start_date: Date, end_date: Date): [Date, Date] {
+  const buffer = Math.max(differenceInMinutes(end_date, start_date) / 10, 2) as number
+  start_date = subMinutes(start_date, buffer)
+  end_date = addMinutes(end_date, buffer)
+  return [start_date, end_date]
 }
