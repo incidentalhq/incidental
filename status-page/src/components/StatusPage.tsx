@@ -1,9 +1,12 @@
 "use client";
 
 import NoCurrentIncident from "@/components/NoCurrentIncident";
-import { IStatusPageResponse } from "@/lib/types";
 import styled from "styled-components";
-import { Button } from "@/components/Button";
+import ComponentUptime from "@/components/ComponentUptime";
+import { useState } from "react";
+import { subDays, startOfDay, endOfDay } from "date-fns";
+import { IStatusPageResponse } from "@/types/models";
+import CurrentIncidentsHero from "./CurrentIncidentsHero";
 
 const Root = styled.div`
   display: flex;
@@ -12,7 +15,6 @@ const Root = styled.div`
 
 const Content = styled.div`
   margin: 0 auto;
-  max-width: 700px;
   width: 100%;
 `;
 
@@ -25,23 +27,34 @@ const Section = styled.div`
 `;
 
 interface Props {
-  statusPage: IStatusPageResponse;
+  statusPageResponse: IStatusPageResponse;
 }
 
-export default function StatusPage({ statusPage }: Props) {
+export default function StatusPage({ statusPageResponse }: Props) {
+  const [today, setToday] = useState(new Date());
+  const thirtyDaysAgo = subDays(today, 30);
+
   return (
     <Root>
       <Content>
         <Section>
           <Header>
-            <h1>{statusPage.name}</h1>
-            <div>
-              <Button type="button">Subscribe</Button>
-            </div>
+            <h1>{statusPageResponse.statusPage.name}</h1>
           </Header>
         </Section>
         <Section>
-          {!statusPage.hasActiveIncident ? <NoCurrentIncident /> : null}
+          {!statusPageResponse.statusPage.hasActiveIncident ? (
+            <NoCurrentIncident />
+          ) : (
+            <CurrentIncidentsHero statusPageResponse={statusPageResponse} />
+          )}
+        </Section>
+        <Section>
+          <ComponentUptime
+            statusPageResponse={statusPageResponse}
+            start={startOfDay(thirtyDaysAgo)}
+            end={endOfDay(today)}
+          />
         </Section>
       </Content>
     </Root>

@@ -216,6 +216,7 @@ class StatusPageWithEventsSchema(BaseSchema):
     status_page: StatusPageSchema
     events: list[StatusPageComponentEventSchema]
     uptimes: dict[str, float]
+    incidents: list["StatusPageIncidentSchema"]
 
 
 class StatusPageComponentAffectedSchema(ModelSchema):
@@ -243,7 +244,9 @@ class StatusPageIncidentSchema(ModelSchema):
     creator: UserPublicSchema
     incident_updates: list[StatusPageIncidentUpdateSchema]
     status_page: ModelIdSchema
+    components_affected: list[StatusPageComponentAffectedSchema]
 
 
 IncidentTypeSchema.model_rebuild()
 StatusPageComponentGroupSchema.model_rebuild()
+StatusPageWithEventsSchema.model_rebuild()

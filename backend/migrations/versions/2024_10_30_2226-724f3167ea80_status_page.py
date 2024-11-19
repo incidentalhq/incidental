@@ -84,10 +84,7 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["creator_id"],
-            ["user.id"],
-        ),
+        sa.ForeignKeyConstraint(["creator_id"], ["user.id"], ondelete="cascade"),
         sa.ForeignKeyConstraint(["status_page_id"], ["status_page.id"], ondelete="cascade"),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -107,14 +104,8 @@ def upgrade() -> None:
         ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["status_page_component_id"],
-            ["status_page_component.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["status_page_incident_id"],
-            ["status_page_incident.id"],
-        ),
+        sa.ForeignKeyConstraint(["status_page_component_id"], ["status_page_component.id"], ondelete="cascade"),
+        sa.ForeignKeyConstraint(["status_page_incident_id"], ["status_page_incident.id"], ondelete="cascade"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -147,10 +138,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["status_page_component_id"],
             ["status_page_component.id"],
+            ondelete="cascade",
         ),
         sa.ForeignKeyConstraint(
             ["status_page_incident_id"],
             ["status_page_incident.id"],
+            ondelete="cascade",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -184,10 +177,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["creator_id"],
             ["user.id"],
+            ondelete="cascade",
         ),
         sa.ForeignKeyConstraint(
             ["status_page_incident_id"],
             ["status_page_incident.id"],
+            ondelete="cascade",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -214,10 +209,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["status_page_component_group_id"],
             ["status_page_component_group.id"],
+            ondelete="cascade",
         ),
         sa.ForeignKeyConstraint(
             ["status_page_component_id"],
             ["status_page_component.id"],
+            ondelete="cascade",
         ),
         sa.ForeignKeyConstraint(["status_page_id"], ["status_page.id"], ondelete="cascade"),
         sa.PrimaryKeyConstraint("id"),
@@ -240,10 +237,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["status_page_component_id"],
             ["status_page_component.id"],
+            ondelete="cascade",
         ),
         sa.ForeignKeyConstraint(
             ["status_page_incident_update_id"],
             ["status_page_incident_update.id"],
+            ondelete="cascade",
         ),
         sa.PrimaryKeyConstraint("id"),
     )

@@ -91,6 +91,7 @@ async def get_status_page_status(
 
     # Get all events for this status page
     events = status_page_repo.get_status_page_events(status_page=status_page, start_date=start_date, end_date=end_date)
+
     # Calculate downtime for each component
     downtime_by_component: dict[str, float] = collections.defaultdict(float)
 
@@ -106,10 +107,15 @@ async def get_status_page_status(
         uptime = 1 - downtime / (end_date - start_date).total_seconds()
         uptime_by_component[component_id] = uptime
 
+    # get active incidents for the status page
+    params = PaginationParamsSchema(page=1, size=100)
+    active_incidents = status_page_repo.get_incidents(status_page=status_page, pagination=params, is_active=True)
+
     response = StatusPageWithEventsSchema(
         status_page=StatusPageSchema.model_validate(status_page),
         events=[StatusPageComponentEventSchema.model_validate(event) for event in events],
         uptimes=uptime_by_component,
+        incidents=[StatusPageIncidentSchema.model_validate(incident) for incident in active_incidents],
     )
 
     return response

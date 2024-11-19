@@ -191,10 +191,10 @@ class StatusPageComponentAffected(Base, TimestampMixin):
     __prefix__ = "sp_com_aff"
 
     status_page_incident_id: Mapped[str] = mapped_column(
-        String, ForeignKey("status_page_incident.id"), nullable=False, index=True
+        String, ForeignKey("status_page_incident.id", ondelete="cascade"), nullable=False, index=True
     )
     status_page_component_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("status_page_component.id"), nullable=False, index=True
+        String(50), ForeignKey("status_page_component.id", ondelete="cascade"), nullable=False, index=True
     )
     status: Mapped[ComponentStatus] = mapped_column(Enum(ComponentStatus), nullable=False)
 
@@ -211,9 +211,11 @@ class StatusPageIncidentUpdate(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp_inc_upd"
 
     status_page_incident_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("status_page_incident.id"), nullable=False, index=True
+        String(50), ForeignKey("status_page_incident.id", ondelete="cascade"), nullable=False, index=True
     )
-    creator_id: Mapped[str] = mapped_column(String(50), ForeignKey("user.id"), nullable=False, index=True)
+    creator_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("user.id", ondelete="cascade"), nullable=False, index=True
+    )
     message: Mapped[str] = mapped_column(String, nullable=True)
     status: Mapped[StatusPageIncidentStatus] = mapped_column(Enum(StatusPageIncidentStatus), nullable=False)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -232,10 +234,10 @@ class StatusPageComponentUpdate(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp_com_upd"
 
     status_page_incident_update_id: Mapped[str] = mapped_column(
-        String, ForeignKey("status_page_incident_update.id"), nullable=False, index=True
+        String, ForeignKey("status_page_incident_update.id", ondelete="cascade"), nullable=False, index=True
     )
     status_page_component_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("status_page_component.id"), nullable=False, index=True
+        String(50), ForeignKey("status_page_component.id", ondelete="cascade"), nullable=False, index=True
     )
     status: Mapped[ComponentStatus] = mapped_column(Enum(ComponentStatus), nullable=False)
 
@@ -252,10 +254,10 @@ class StatusPageComponentEvent(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp_com_evt"
 
     status_page_incident_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("status_page_incident.id"), nullable=False, index=True
+        String(50), ForeignKey("status_page_incident.id", ondelete="cascade"), nullable=False, index=True
     )
     status_page_component_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("status_page_component.id"), nullable=False, index=True
+        String(50), ForeignKey("status_page_component.id", ondelete="cascade"), nullable=False, index=True
     )
     status: Mapped[ComponentStatus] = mapped_column(Enum(ComponentStatus), nullable=False)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

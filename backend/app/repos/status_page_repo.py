@@ -322,6 +322,10 @@ class StatusPageRepo(BaseRepo):
         self.session.flush()
 
         for component_id, status in create_in.affected_components.items():
+            # Skip operational components
+            if status == ComponentStatus.OPERATIONAL:
+                continue
+
             # Add affected components
             affected = StatusPageComponentAffected()
             affected.status_page_incident = incident
@@ -346,6 +350,9 @@ class StatusPageRepo(BaseRepo):
             event.started_at = datetime.now(tz=timezone.utc)
             self.session.add(event)
             self.session.flush()
+
+        if create_in.status != StatusPageIncidentStatus.RESOLVED:
+            status_page.has_active_incident = True
 
         return incident
 
@@ -414,6 +421,9 @@ class StatusPageRepo(BaseRepo):
         now = datetime.now(tz=timezone.utc)
         incident.status = create_in.status
 
+        if create_in.status == StatusPageIncidentStatus.RESOLVED:
+            incident.status_page.has_active_incident = False
+
         # Create incident update
         update = StatusPageIncidentUpdate()
         update.status_page_incident = incident
@@ -453,8 +463,13 @@ class StatusPageRepo(BaseRepo):
             # add event
             event = self.get_most_recent_component_not_ended_event(incident, component)
             if event:
+                # If the status is operational, end the current event
+                if status == ComponentStatus.OPERATIONAL:
+                    event.ended_at = now
+                    event.updated_at = now
+                    self.session.flush()
                 # If the status has changed, end the current event and create a new one
-                if event.status != status:
+                elif event.status != status:
                     event.ended_at = now
                     event.updated_at = now
                     self.session.flush()
@@ -472,13 +487,14 @@ class StatusPageRepo(BaseRepo):
                     self.session.flush()
             # If there is no event, create a new one
             else:
-                event = StatusPageComponentEvent()
-                event.status_page_component_id = component_id
-                event.status = status
-                event.status_page_incident = incident
-                event.started_at = now
-                self.session.add(event)
-                self.session.flush()
+                if status != ComponentStatus.OPERATIONAL:
+                    event = StatusPageComponentEvent()
+                    event.status_page_component_id = component_id
+                    event.status = status
+                    event.status_page_incident = incident
+                    event.started_at = now
+                    self.session.add(event)
+                    self.session.flush()
 
         return update
 
@@ -505,5 +521,6 @@ class StatusPageRepo(BaseRepo):
                 StatusPageComponentEvent.ended_at.is_(None),
             )
             .order_by(StatusPageComponentEvent.created_at.desc())
+            .limit(1)
         )
         return self.session.execute(stmt).scalar_one_or_none()
