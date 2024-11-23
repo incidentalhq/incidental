@@ -59,6 +59,14 @@ class StatusPageRepo(BaseRepo):
         stmt = select(StatusPage).where(StatusPage.custom_domain == domain, StatusPage.deleted_at.is_(None))
         return self.session.execute(stmt).scalar_one()
 
+    def get_by_domain_or_slug_or_raise(self, domain: str) -> StatusPage:
+        """Get status page by domain or slug"""
+        stmt = select(StatusPage).where(
+            or_(StatusPage.custom_domain == domain, StatusPage.slug == domain),
+            StatusPage.deleted_at.is_(None),
+        )
+        return self.session.execute(stmt).scalar_one()
+
     def get_group_by_id_or_raise(self, id: str) -> StatusPageComponentGroup:
         stmt = (
             select(StatusPageComponentGroup)
@@ -95,7 +103,7 @@ class StatusPageRepo(BaseRepo):
         model.organisation_id = organisation.id
         model.page_type = create_in.page_type
         model.slug = self._generate_slug(create_in.slug)
-        model.public_url = f"https://{model.slug}.{settings.STATUS_PAGE_DOMAIN}"
+        model.published_at = datetime.now(tz=timezone.utc)
 
         self.session.add(model)
         self.session.flush()
@@ -525,7 +533,6 @@ class StatusPageRepo(BaseRepo):
             if key == "slug":
                 if not self._check_slug_is_unique(value, status_page):
                     raise FormFieldValidationError("Slug is already in use", "slug")
-                status_page.public_url = f"https://{value}.{settings.STATUS_PAGE_DOMAIN}"
                 status_page.slug = value
             else:
                 setattr(status_page, key, value)

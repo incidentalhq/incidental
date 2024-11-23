@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Image from "next/image";
 
-import logo from "@/app/assets/mark_noborder.png";
+import logo from "@/app/icon.png";
 
 const Root = styled.div`
   display: flex;

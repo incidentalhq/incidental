@@ -19,6 +19,7 @@ export interface IStatusPage extends IModel {
   publicUrl: string;
   slug: string;
   statusPageItems: Array<IStatusPageItem>;
+  publishedAt: string;
 }
 
 export interface IStatusPageItem extends IModel {

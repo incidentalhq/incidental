@@ -8,10 +8,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import TooltipContent from "./TooltipContent";
 import { getComponentStatusStyle, getMostSevereEvent } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { startOfDay } from "date-fns";
 
-// Styled components for the uptime bar
 const Root = styled.div``;
-
 const UptimeBar = styled.div`
   display: flex;
   gap: 1px;
@@ -34,6 +33,7 @@ interface UptimeGraphProps {
   events: IStatusPageComponentEvent[];
   timeRange: { start: Date; end: Date }; // Start and end of the timeline (e.g., 30 days)
   intervals: number; // Number of intervals (e.g., 30 bars for 30 days)
+  beginAt: Date;
 }
 
 export interface UptimeSegment {
@@ -41,13 +41,14 @@ export interface UptimeSegment {
   end: Date;
   status: ComponentStatus;
   events: IStatusPageComponentEvent[];
-  mostSevereEvent: IStatusPageComponentEvent;
+  hasData: boolean;
 }
 
 const UptimeTimeline: React.FC<UptimeGraphProps> = ({
   events,
   timeRange,
   intervals,
+  beginAt,
 }) => {
   const pathName = usePathname();
   const { start, end } = timeRange;
@@ -73,12 +74,15 @@ const UptimeTimeline: React.FC<UptimeGraphProps> = ({
       // Get the status of the most severe event in the segment or default to OPERATIONAL
       const status = mostSevereEvent?.status || ComponentStatus.OPERATIONAL;
 
+      // Check if the segment has any data
+      const hasData = segmentEnd > startOfDay(beginAt);
+
       return {
         start: segmentStart,
         end: segmentEnd,
         status: status,
         events: segmentEvents,
-        mostSevereEvent,
+        hasData: hasData,
       };
     });
 
@@ -101,7 +105,9 @@ const UptimeTimeline: React.FC<UptimeGraphProps> = ({
             }`}
             key={index}
             $backgroundColor={
-              getComponentStatusStyle(segment.status).backgroundColor
+              !segment.hasData
+                ? "var(--color-gray-300)"
+                : getComponentStatusStyle(segment.status).backgroundColor
             }
           />
         ))}

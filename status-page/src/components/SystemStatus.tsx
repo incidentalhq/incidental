@@ -1,13 +1,14 @@
 import styled from "styled-components";
-import UptimeTimeline from "./UptimeTimeline";
 import type { IStatusPageResponse } from "@/types/models";
+import ComponentStatus from "./ComponentStatus";
 
 const Root = styled.div`
   border: 1px solid var(--color-slate-200);
   border-radius: var(--radius-md);
 `;
-const Name = styled.div`
-  font-weight: 500;
+const GroupName = styled.div`
+  font-weight: 600;
+  margin-bottom: 1rem;
 `;
 const Item = styled.div`
   padding: 1rem;
@@ -21,28 +22,12 @@ const Item = styled.div`
 const ItemGroup = styled.div`
   padding: 1rem;
 
-  > ${Name} {
-    font-weight: 500;
-    margin-bottom: 1rem;
-  }
-
   ${Item} {
     border-bottom: none;
     padding: 0;
   }
 `;
-const UptimeGraphHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-`;
-const UptimeGraphFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  color: var(--color-gray-500);
-  margin-top: 0.5rem;
-`;
-const ComponentsCount = styled.span`
+const Count = styled.span`
   color: var(--color-gray-500);
   font-size: 0.9rem;
   font-weight: 400;
@@ -62,69 +47,43 @@ const SystemStatus: React.FC<Props> = ({ statusPageResponse, start, end }) => {
           <div key={item.id}>
             {item.statusPageComponent && (
               <Item>
-                <UptimeGraphHeader>
-                  <Name>{item.statusPageComponent.name}</Name>
-                  <div>
-                    {(
-                      statusPageResponse.uptimes[item.statusPageComponent.id] *
-                      100
-                    ).toFixed(4)}
-                    %
-                  </div>
-                </UptimeGraphHeader>
-                <UptimeTimeline
+                <ComponentStatus
+                  beginAt={new Date(statusPageResponse.statusPage.publishedAt)}
+                  component={item.statusPageComponent}
+                  uptimes={statusPageResponse.uptimes}
                   events={statusPageResponse.events.filter(
                     (it) =>
                       it.statusPageComponent.id === item.statusPageComponent?.id
                   )}
-                  timeRange={{ start, end }}
-                  intervals={90}
+                  start={start}
+                  end={end}
                 />
-                <UptimeGraphFooter>
-                  <div>90 days ago</div>
-                  <div>Today</div>
-                </UptimeGraphFooter>
               </Item>
             )}
 
             {item.statusPageComponentGroup && (
               <ItemGroup>
-                <Name>
+                <GroupName>
                   <span>{item.statusPageComponentGroup.name}</span>
-                  <ComponentsCount>
-                    ({item.statusPageItems?.length})
-                  </ComponentsCount>
-                </Name>
+                  <Count>({item.statusPageItems?.length})</Count>
+                </GroupName>
                 {item.statusPageItems?.map((subItem) => (
                   <Item key={subItem.id}>
                     {subItem.statusPageComponent && (
-                      <>
-                        <UptimeGraphHeader>
-                          <Name>{subItem.statusPageComponent.name}</Name>
-                          <div>
-                            {(
-                              statusPageResponse.uptimes[
-                                subItem.statusPageComponent.id
-                              ] * 100
-                            ).toFixed(4)}
-                            %
-                          </div>
-                        </UptimeGraphHeader>
-
-                        <UptimeTimeline
-                          events={statusPageResponse.events.filter(
-                            (it) =>
-                              it.statusPageComponent.id ===
-                              subItem.statusPageComponent?.id
-                          )}
-                          timeRange={{ start, end }}
-                          intervals={90}
-                        />
-                        <UptimeGraphFooter>
-                          <div>90 days ago</div>
-                          <div>Today</div>
-                        </UptimeGraphFooter>
-                      </>
+                      <ComponentStatus
+                        beginAt={
+                          new Date(statusPageResponse.statusPage.publishedAt)
+                        }
+                        component={subItem.statusPageComponent}
+                        uptimes={statusPageResponse.uptimes}
+                        events={statusPageResponse.events.filter(
+                          (it) =>
+                            it.statusPageComponent.id ===
+                            subItem.statusPageComponent?.id
+                        )}
+                        start={start}
+                        end={end}
+                      />
                     )}
                   </Item>
                 ))}

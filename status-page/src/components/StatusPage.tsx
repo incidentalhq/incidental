@@ -41,7 +41,7 @@ interface Props {
 
 export default function StatusPage({ statusPageResponse }: Props) {
   const [today, setToday] = useState(new Date());
-  const thirtyDaysAgo = subDays(today, 90);
+  const ninetyDaysAgo = subDays(today, 90);
 
   const hasActiveIncident = statusPageResponse.incidents.some(
     (it) => it.status !== StatusPageIncidentStatus.RESOLVED
@@ -65,7 +65,7 @@ export default function StatusPage({ statusPageResponse }: Props) {
         <Section>
           <SystemStatus
             statusPageResponse={statusPageResponse}
-            start={startOfDay(thirtyDaysAgo)}
+            start={startOfDay(ninetyDaysAgo)}
             end={endOfDay(today)}
           />
         </Section>

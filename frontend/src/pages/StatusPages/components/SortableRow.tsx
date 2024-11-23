@@ -3,6 +3,7 @@ import { CSS } from '@dnd-kit/utilities'
 import styled from 'styled-components'
 
 import bars from '@/assets/icons/bars.svg'
+import folder from '@/assets/icons/folder.svg'
 import Icon from '@/components/Icon/Icon'
 
 type RootProps = {
@@ -29,6 +30,7 @@ const Handle = styled.div`
 
 interface Props extends React.PropsWithChildren {
   id: string | number
+  isGroup: boolean
 }
 
 const SortableRow: React.FC<Props> = (props) => {
@@ -46,7 +48,7 @@ const SortableRow: React.FC<Props> = (props) => {
   return (
     <Root ref={setNodeRef} style={style} {...attributes} $isDragging={isDragging} $isOver={isOver}>
       <Handle {...listeners} ref={setActivatorNodeRef}>
-        <Icon icon={bars} />
+        <Icon icon={props.isGroup ? folder : bars} />
       </Handle>
       <Main>{props.children}</Main>
     </Root>

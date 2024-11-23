@@ -46,9 +46,8 @@ const Pill = styled.div<{
   $color?: CSSProperties["color"];
   $backgroundColor?: CSSProperties["backgroundColor"];
 }>`
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  color: ${(props) => props.$color || "var(--color-slate-600)"};
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
   background: ${(props) => props.$backgroundColor};
 `;
 const StatusDate = styled.div`

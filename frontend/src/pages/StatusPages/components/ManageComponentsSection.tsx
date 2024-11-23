@@ -192,7 +192,6 @@ const ManageComponentsSection: React.FC<Props> = ({ statusPage }) => {
 
     if (projected && over) {
       const { depth, parentId } = projected
-      console.log(depth, parentId)
       const clonedItems: FlattenedItem[] = JSON.parse(JSON.stringify(flattenTree(items)))
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id)
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id)
@@ -293,7 +292,7 @@ const ManageComponentsSection: React.FC<Props> = ({ statusPage }) => {
               {flattenedItems.map((it) => (
                 <ListRow key={it.id}>
                   <IndentedDiv $depth={it.depth} $identWidth={indentationWidth}>
-                    <SortableRow id={it.id}>
+                    <SortableRow id={it.id} isGroup={it.data?.itemType === ItemType.GROUP}>
                       <FieldRow>
                         <ItemRow item={it} />
                         <Controls>

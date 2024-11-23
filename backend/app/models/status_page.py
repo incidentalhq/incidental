@@ -9,6 +9,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Uni
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
+from app.env import settings
 
 from .mixins import SoftDeleteMixin, TimestampMixin
 
@@ -55,10 +56,10 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     )
     name: Mapped[str] = mapped_column(UnicodeText, nullable=False)
     page_type: Mapped[StatusPageKind] = mapped_column(Enum(StatusPageKind), nullable=False)
-    custom_domain: Mapped[str | None] = mapped_column(String, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    public_url: Mapped[str] = mapped_column(String, nullable=False)
-    slug: Mapped[str] = mapped_column(String, nullable=False)
+    slug: Mapped[str] = mapped_column(String, nullable=False)  # subdomain
+    custom_domain: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_custom_domain_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # table properties
     __table_args__ = (UniqueConstraint("slug", name="ux_status_page_slug"),)
@@ -80,6 +81,15 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     status_page_component_groups: Mapped[list["StatusPageComponentGroup"]] = relationship(
         "StatusPageComponentGroup", back_populates="status_page"
     )
+
+    # calculated fields
+    @property
+    def public_url(self) -> str:
+        """Return the public URL for the status page"""
+        if self.custom_domain:
+            return f"https://{self.custom_domain}"
+        else:
+            return f"https://{self.slug}.{settings.STATUS_PAGE_DOMAIN}"
 
 
 class StatusPageComponent(Base, TimestampMixin, SoftDeleteMixin):

@@ -5,6 +5,7 @@ import Link from "next/link";
 import styled from "styled-components";
 
 import check from "@/app/assets/check.svg";
+import circleInfo from "@/app/assets/circle-info.svg";
 import {
   IRelatedStatusPageIncident,
   IStatusPageComponentEvent,
@@ -44,7 +45,7 @@ interface Props {
   currentPath: string;
 }
 
-const TooltipContent: React.FC<Props> = ({ segment, currentPath }) => {
+const TooltipContent: React.FC<Props> = ({ segment }) => {
   const incidentsToEvents = segment.events.reduce(
     (acc, event) => {
       if (acc[event.statusPageIncident.id]) {
@@ -69,6 +70,20 @@ const TooltipContent: React.FC<Props> = ({ segment, currentPath }) => {
     >
   );
 
+  if (!segment.hasData) {
+    return (
+      <Root>
+        <Date>{format(segment.start, "MMM d, yyyy")}</Date>
+        <Content>
+          <Status>
+            <Image src={circleInfo} width={16} alt="Operational checkmark" />
+            <div>No data available</div>
+          </Status>
+        </Content>
+      </Root>
+    );
+  }
+
   return (
     <Root>
       <Date>{format(segment.start, "MMM d, yyyy")}</Date>
@@ -86,11 +101,7 @@ const TooltipContent: React.FC<Props> = ({ segment, currentPath }) => {
               <ComponentStatusIcon
                 status={getMostSevereEvent(item.events).status}
               />{" "}
-              <Link
-                href={`${currentPath == "/" ? "" : currentPath}/incident/${
-                  item.incident.id
-                }`}
-              >
+              <Link href={`/incident/${item.incident.id}`}>
                 {item.incident.name}
               </Link>
             </Incident>

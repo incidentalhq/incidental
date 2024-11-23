@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { formatDistanceToNow } from "date-fns";
 import { formatIncidentStatusName, getComponentStatusStyle } from "@/lib/utils";
 import { ComponentStatus } from "@/types/enums";
+import Link from "next/link";
 
 const Root = styled.div`
   border: 1px solid var(--color-orange-200);
@@ -79,7 +80,9 @@ const CurrentIncidentsHero: React.FC<Props> = ({ statusPageResponse }) => {
           {statusPageResponse.incidents.map((incident) => (
             <IncidentWrapper key={incident.id}>
               <IncidentHeader>
-                <IncidentTitle>{incident.name}</IncidentTitle>
+                <IncidentTitle>
+                  <Link href={`/incident/${incident.id}`}>{incident.name}</Link>
+                </IncidentTitle>
                 <Ongoing>
                   Ongoing for{" "}
                   {formatDistanceToNow(new Date(incident.publishedAt))}

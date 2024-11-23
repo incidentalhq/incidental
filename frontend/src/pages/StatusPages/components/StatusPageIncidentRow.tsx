@@ -64,6 +64,8 @@ const ReportedDate = styled.div`
 `
 const Message = styled.div`
   flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `
 const AffectedComponents = styled.div`
   display: flex;

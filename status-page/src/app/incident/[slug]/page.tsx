@@ -17,7 +17,6 @@ export default async function IncidentPageRoute(props: {
 }) {
   const slug = (await props.params).slug;
   const incident = await getIncident(slug);
-  console.log(incident);
 
   return <IncidentPage incident={incident} />;
 }

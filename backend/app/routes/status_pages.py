@@ -74,19 +74,15 @@ async def status_pages_create(
 )
 async def get_status_page_status(
     db: DatabaseSession,
-    slug: str | None = Query(None),
-    domain: str | None = Query(None),
+    domain: str = Query(help="Domain of the status page"),
 ):
     """Public status page"""
     status_page_repo = StatusPageRepo(session=db)
 
-    if slug:
-        status_page = status_page_repo.get_by_slug_or_raise(slug=slug)
-
     if domain:
-        status_page = status_page_repo.get_by_domain_or_raise(domain=domain)
+        status_page = status_page_repo.get_by_domain_or_slug_or_raise(domain=domain)
 
-    if not slug and not domain:
+    if not domain:
         raise ValidationError("Either slug or domain must be provided")
 
     # Get events for the last 90 days
@@ -98,6 +94,10 @@ async def get_status_page_status(
 
     # Calculate downtime for each component
     downtime_by_component: dict[str, float] = collections.defaultdict(float)
+
+    # add default uptime for all components
+    for component in status_page.status_page_components:
+        downtime_by_component[component.id] = 0
 
     for event in events:
         event_downtime = (

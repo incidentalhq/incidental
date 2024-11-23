@@ -29,7 +29,7 @@ export async function generateMetadata() {
 export default async function Home() {
   const domain = await getDomain();
   if (!domain) {
-    return null;
+    return <p>Domain information not found.</p>;
   }
   try {
     const statusPage = await getStatusPage({ domain });
