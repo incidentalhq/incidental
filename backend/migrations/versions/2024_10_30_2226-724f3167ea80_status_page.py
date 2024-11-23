@@ -30,7 +30,6 @@ def upgrade() -> None:
         sa.Column("published_at", sa.DateTime(), nullable=True),
         sa.Column("public_url", sa.String(), nullable=False),
         sa.Column("slug", sa.String(), nullable=False),
-        sa.Column("has_active_incident", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),

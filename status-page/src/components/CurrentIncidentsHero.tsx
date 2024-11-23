@@ -2,7 +2,7 @@ import { IStatusPageResponse } from "@/types/models";
 import React from "react";
 import styled from "styled-components";
 import { formatDistanceToNow } from "date-fns";
-import { formatIncidentStatus, mapComponentStatusToColor } from "@/lib/utils";
+import { formatIncidentStatusName, getComponentStatusStyle } from "@/lib/utils";
 import { ComponentStatus } from "@/types/enums";
 
 const Root = styled.div`
@@ -47,7 +47,8 @@ const IncidentFooter = styled.div`
 `;
 const AffectedComponent = styled.div<{ $status: ComponentStatus }>`
   display: inline-block;
-  background-color: ${(props) => mapComponentStatusToColor(props.$status)};
+  background-color: ${(props) =>
+    getComponentStatusStyle(props.$status).backgroundColor};
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-md);
 `;
@@ -89,7 +90,7 @@ const CurrentIncidentsHero: React.FC<Props> = ({ statusPageResponse }) => {
               </IncidentMessage>
               <IncidentFooter>
                 <IncidentStatus>
-                  {formatIncidentStatus(incident.status)}
+                  {formatIncidentStatusName(incident.status)}
                 </IncidentStatus>
                 <AffectedComponentsWrapper>
                   {incident.incidentUpdates[0].componentUpdates.map(

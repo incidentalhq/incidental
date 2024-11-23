@@ -16,17 +16,21 @@ from app.schemas.actions import (
     PaginationParamsSchema,
     PatchStatusPageComponentSchema,
     PatchStatusPageGroupSchema,
+    PatchStatusPageSchema,
+    UpdateStatusPageCustomDomain,
     UpdateStatusPageItemsRankSchema,
 )
 from app.schemas.models import (
     StatusPageComponentEventSchema,
     StatusPageComponentGroupSchema,
     StatusPageComponentSchema,
+    StatusPageDomainStatusCheckResponse,
     StatusPageIncidentSchema,
     StatusPageSchema,
     StatusPageWithEventsSchema,
 )
 from app.schemas.resources import PaginatedResults
+from app.services.custom_domain import CustomDomainService
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -63,7 +67,7 @@ async def status_pages_create(
 
 
 @router.get(
-    "/status",
+    "/public-status",
     response_model=StatusPageWithEventsSchema,
     response_model_exclude_defaults=True,
     response_model_exclude_none=True,
@@ -121,6 +125,15 @@ async def get_status_page_status(
     return response
 
 
+@router.get("/public-incident/{incident_id}", response_model=StatusPageIncidentSchema)
+async def get_public_incident(incident_id: str, db: DatabaseSession):
+    """Get public incident"""
+    status_page_repo = StatusPageRepo(session=db)
+    incident = status_page_repo.get_incident_or_raise(id=incident_id)
+
+    return incident
+
+
 @router.get(
     "/{status_page_id}",
     response_model=StatusPageSchema,
@@ -134,6 +147,24 @@ async def get_status_page(status_page_id: str, user: CurrentUser, db: DatabaseSe
 
     if not user.belongs_to(status_page.organisation):
         raise NotPermittedError()
+
+    return status_page
+
+
+@router.patch("/{status_page_id}", response_model=StatusPageSchema)
+async def patch_status_page(
+    status_page_id: str, patch_in: PatchStatusPageSchema, user: CurrentUser, db: DatabaseSession
+):
+    """Update status page information"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    status_page_repo.patch_status_page(status_page=status_page, patch_in=patch_in)
+
+    db.commit()
 
     return status_page
 
@@ -332,3 +363,42 @@ async def status_page_get_incidents(
     response = PaginatedResults(items=incidents, total=len(incidents), page=pagination.page, size=pagination.size)
 
     return response
+
+
+@router.put("/{status_page_id}/domain", response_model=StatusPageSchema)
+async def update_status_page_domain(
+    status_page_id: str, update_in: UpdateStatusPageCustomDomain, user: CurrentUser, db: DatabaseSession
+):
+    """Update domain for status page"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    custom_domain_service = CustomDomainService()
+    custom_domain_service.handle_patch_status_page(status_page=status_page, patch_in=update_in)
+
+    db.commit()
+
+    return status_page
+
+
+@router.get("/{status_page_id}/domain-status", response_model=StatusPageDomainStatusCheckResponse)
+async def get_status_page_domain_status(status_page_id: str, user: CurrentUser, db: DatabaseSession):
+    """Update domain for status page"""
+    status_page_repo = StatusPageRepo(session=db)
+    status_page = status_page_repo.get_by_id_or_raise(id=status_page_id)
+
+    if not user.belongs_to(status_page.organisation):
+        raise NotPermittedError()
+
+    if not status_page.custom_domain:
+        raise ValidationError("No custom domain set for this status page")
+
+    custom_domain_service = CustomDomainService()
+    is_verified = custom_domain_service.check_domain_is_configured(domain=status_page.custom_domain)
+
+    db.commit()
+
+    return StatusPageDomainStatusCheckResponse(is_verified=is_verified)

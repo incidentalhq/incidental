@@ -14,6 +14,7 @@
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
+    "react-tooltip": "^5.28.0",
     "styled-components": "^6.1.13"
   },
   "devDependencies": {

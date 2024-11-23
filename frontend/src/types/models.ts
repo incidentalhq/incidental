@@ -198,6 +198,7 @@ export interface IStatusPage extends IModel {
   pageType: string
   publicUrl: string
   slug: string
+  customDomain: string | null
   statusPageItems: Array<IStatusPageItem>
   hasActiveIncident: boolean
 }
@@ -252,4 +253,8 @@ export interface IStatusPageComponentEvent extends IModel {
   status: ComponentStatus
   startedAt: string
   endedAt: string | null
+}
+
+export interface IStatusPageDomainStatusResponse {
+  isVerified: boolean
 }

@@ -1,13 +1,15 @@
-import { Form, Formik } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import React from 'react'
 import * as Yup from 'yup'
 
 import Button from '@/components/Button/Button'
 import Field from '@/components/Form/Field'
 import FieldWithSuffix from '@/components/Form/FieldWithSuffix'
+import { IStatusPage } from '@/types/models'
 
 interface Props {
-  onSubmit: (values: FormValues) => void
+  statusPage: IStatusPage
+  onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void
 }
 
 export interface FormValues {
@@ -20,10 +22,10 @@ const validationSchema = Yup.object({
   slug: Yup.string().required('Required')
 })
 
-const CreateStatusPageForm: React.FC<Props> = ({ onSubmit }) => {
+const BasicStatusPageSettingsForm: React.FC<Props> = ({ onSubmit, statusPage }) => {
   const initialValues = {
-    name: '',
-    slug: ''
+    name: statusPage.name,
+    slug: statusPage.slug
   }
 
   return (
@@ -32,7 +34,7 @@ const CreateStatusPageForm: React.FC<Props> = ({ onSubmit }) => {
         <Form className="space-y-2">
           <div>
             <label htmlFor="title">Name</label>
-            <Field type="text" id="name" name="name" placeholder="Name for your status page" />
+            <Field type="text" id="name" name="name" />
           </div>
           <div>
             <label htmlFor="slug">Url</label>
@@ -43,7 +45,7 @@ const CreateStatusPageForm: React.FC<Props> = ({ onSubmit }) => {
             />
           </div>
           <div>
-            <Button type="submit">Next</Button>
+            <Button type="submit">Save</Button>
           </div>
         </Form>
       </Formik>
@@ -51,4 +53,4 @@ const CreateStatusPageForm: React.FC<Props> = ({ onSubmit }) => {
   )
 }
 
-export default CreateStatusPageForm
+export default BasicStatusPageSettingsForm

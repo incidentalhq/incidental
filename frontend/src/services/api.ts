@@ -28,6 +28,7 @@ import {
   IStatusPageComponent,
   IStatusPageComponentEvent,
   IStatusPageComponentGroup,
+  IStatusPageDomainStatusResponse,
   IStatusPageIncident,
   ITimestamp,
   IUser,
@@ -575,4 +576,24 @@ export class ApiService {
     callApi<PaginatedResults<IStatusPageComponentEvent>>('GET', `/status-page-incidents/${incidentId}/events`, {
       user: this.user
     })
+
+  patchStatusPage(statusPageId: string, updateIn: Partial<IStatusPage>) {
+    return callApi<IStatusPage>('PATCH', `/status-pages/${statusPageId}`, {
+      user: this.user,
+      json: updateIn
+    })
+  }
+
+  updateStatusPageDomain(statusPageId: string, updateIn: Pick<IStatusPage, 'customDomain'>) {
+    return callApi<IStatusPage>('PUT', `/status-pages/${statusPageId}/domain`, {
+      user: this.user,
+      json: updateIn
+    })
+  }
+
+  getStatusPageDomainStatus(statusPageId: string) {
+    return callApi<IStatusPageDomainStatusResponse>('GET', `/status-pages/${statusPageId}/domain-status`, {
+      user: this.user
+    })
+  }
 }

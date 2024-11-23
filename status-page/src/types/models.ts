@@ -19,7 +19,6 @@ export interface IStatusPage extends IModel {
   publicUrl: string;
   slug: string;
   statusPageItems: Array<IStatusPageItem>;
-  hasActiveIncident: boolean;
 }
 
 export interface IStatusPageItem extends IModel {
@@ -41,7 +40,7 @@ export interface IStatusPageIncident extends IModel {
   name: string;
   status: StatusPageIncidentStatus;
   incidentUpdates: Array<IStatusPageIncidentUpdate>;
-  statusPage: IStatusPage;
+  statusPage: Pick<IStatusPage, "name" | "id">;
   creator: IPublicUser;
   componentsAffected: Array<IStatusPageComponentAffected>;
   publishedAt: string;
@@ -71,6 +70,7 @@ export interface IStatusPageComponentUpdate extends IModel {
 
 export interface IStatusPageComponentEvent extends IModel {
   statusPageComponent: IStatusPageComponent;
+  statusPageIncident: IRelatedStatusPageIncident;
   status: ComponentStatus;
   startedAt: string;
   endedAt: string | null;
@@ -80,4 +80,9 @@ export interface IStatusPageResponse {
   statusPage: IStatusPage;
   events: IStatusPageComponentEvent[];
   incidents: IStatusPageIncident[];
+  uptimes: Record<ModelID, number>;
+}
+
+export interface IRelatedStatusPageIncident extends IModel {
+  name: string;
 }

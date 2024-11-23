@@ -176,6 +176,9 @@ class OrganisationMemberSchema(ModelSchema):
     role: str
 
 
+# -- Status Page --
+
+
 class StatusPageComponentSchema(ModelSchema):
     name: str
 
@@ -200,13 +203,17 @@ class StatusPageSchema(ModelSchema):
     published_at: datetime | None
     public_url: str
     slug: str
-    has_active_incident: bool
 
     status_page_items: list[StatusPageItemSchema]
 
 
+class RelatedStatusPageIncidentSchema(ModelSchema):
+    name: str
+
+
 class StatusPageComponentEventSchema(ModelSchema):
     status_page_component: StatusPageComponentSchema
+    status_page_incident: RelatedStatusPageIncidentSchema
     status: ComponentStatus
     started_at: datetime
     ended_at: datetime | None
@@ -237,14 +244,22 @@ class StatusPageIncidentUpdateSchema(ModelSchema):
     component_updates: list[StatusPageComponentUpdateSchema]
 
 
+class RelatedStatePageSchema(ModelSchema):
+    name: str
+
+
 class StatusPageIncidentSchema(ModelSchema):
     name: str
     published_at: datetime
     status: StatusPageIncidentStatus
     creator: UserPublicSchema
     incident_updates: list[StatusPageIncidentUpdateSchema]
-    status_page: ModelIdSchema
+    status_page: RelatedStatePageSchema
     components_affected: list[StatusPageComponentAffectedSchema]
+
+
+class StatusPageDomainStatusCheckResponse(BaseSchema):
+    is_verified: bool
 
 
 IncidentTypeSchema.model_rebuild()

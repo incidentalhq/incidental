@@ -2,11 +2,12 @@
 
 import NoCurrentIncident from "@/components/NoCurrentIncident";
 import styled from "styled-components";
-import ComponentUptime from "@/components/ComponentUptime";
+import SystemStatus from "@/components/SystemStatus";
 import { useState } from "react";
 import { subDays, startOfDay, endOfDay } from "date-fns";
 import { IStatusPageResponse } from "@/types/models";
 import CurrentIncidentsHero from "./CurrentIncidentsHero";
+import { StatusPageIncidentStatus } from "@/types/enums";
 
 const Root = styled.div`
   display: flex;
@@ -21,6 +22,14 @@ const Content = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
+  border-bottom: 1px solid var(--color-slate-200);
+  padding-bottom: 1rem;
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+  }
 `;
 const Section = styled.div`
   margin: 1rem 0;
@@ -32,7 +41,11 @@ interface Props {
 
 export default function StatusPage({ statusPageResponse }: Props) {
   const [today, setToday] = useState(new Date());
-  const thirtyDaysAgo = subDays(today, 30);
+  const thirtyDaysAgo = subDays(today, 90);
+
+  const hasActiveIncident = statusPageResponse.incidents.some(
+    (it) => it.status !== StatusPageIncidentStatus.RESOLVED
+  );
 
   return (
     <Root>
@@ -43,14 +56,14 @@ export default function StatusPage({ statusPageResponse }: Props) {
           </Header>
         </Section>
         <Section>
-          {!statusPageResponse.statusPage.hasActiveIncident ? (
-            <NoCurrentIncident />
-          ) : (
+          {hasActiveIncident ? (
             <CurrentIncidentsHero statusPageResponse={statusPageResponse} />
+          ) : (
+            <NoCurrentIncident />
           )}
         </Section>
         <Section>
-          <ComponentUptime
+          <SystemStatus
             statusPageResponse={statusPageResponse}
             start={startOfDay(thirtyDaysAgo)}
             end={endOfDay(today)}

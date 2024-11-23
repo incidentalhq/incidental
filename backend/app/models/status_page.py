@@ -59,7 +59,6 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     public_url: Mapped[str] = mapped_column(String, nullable=False)
     slug: Mapped[str] = mapped_column(String, nullable=False)
-    has_active_incident: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # table properties
     __table_args__ = (UniqueConstraint("slug", name="ux_status_page_slug"),)

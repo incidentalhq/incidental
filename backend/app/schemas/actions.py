@@ -4,7 +4,8 @@ from typing import Annotated
 
 import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
+from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, UrlConstraints, field_validator
+from pydantic_core import Url
 
 from app.models import (
     ComponentStatus,
@@ -274,7 +275,7 @@ class CreateStatusPageSchema(BaseSchema):
     page_type: StatusPageKind
     name: str
     items: list[CreateStatusPageItemSchema] = []
-    slug: str | None = None
+    slug: str
 
 
 class PatchStatusPageGroupSchema(BaseSchema):
@@ -306,6 +307,20 @@ class CreateStatusPageIncidentUpdateSchema(BaseSchema):
     message: str
     status: StatusPageIncidentStatus
     affected_components: dict[str, ComponentStatus] = {}
+
+
+DomainName = Annotated[
+    str, StringConstraints(pattern=r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$")
+]
+
+
+class PatchStatusPageSchema(BaseSchema):
+    name: str | None = None
+    slug: str | None = None
+
+
+class UpdateStatusPageCustomDomain(BaseSchema):
+    custom_domain: DomainName | None = None
 
 
 CreateStatusPageGroupSchema.model_rebuild()

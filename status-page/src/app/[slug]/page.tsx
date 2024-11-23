@@ -1,35 +1,41 @@
 import StatusPage from "@/components/StatusPage";
-import { IStatusPageResponse } from "@/types/models";
-import { headers } from "next/headers";
+import { getStatusPage, PageNotFoundError } from "@/lib/api";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-async function getStatusPage(slug: string): Promise<IStatusPageResponse> {
-  const url = new URLSearchParams({ slug });
-  const statusPage = await fetch(
-    process.env.API_BASE_URL + `/status-pages/status?${url}`
-  );
-
-  return await statusPage.json();
-}
-
 export async function generateMetadata({ params }: Props) {
-  const statusPageResponse = await getStatusPage((await params).slug);
+  const slug = (await params).slug;
 
-  return {
-    title: statusPageResponse.statusPage.name,
-  };
+  try {
+    const statusPageResponse = await getStatusPage({ slug });
+    return {
+      title: statusPageResponse.statusPage.name,
+    };
+  } catch (error) {
+    if (error instanceof PageNotFoundError) {
+      return {
+        title: "Status Page Not Found",
+      };
+    }
+    return {
+      title: "Status Page",
+    };
+  }
 }
 
 export default async function Home(props: {
   params: Promise<{ slug: string }>;
 }) {
-  const header = await headers();
-  console.log(header.get("x-forwarded-host"));
   const slug = (await props.params).slug;
-  const statusPage = await getStatusPage(slug);
-
-  return <StatusPage statusPageResponse={statusPage} />;
+  try {
+    const statusPage = await getStatusPage({ slug });
+    return <StatusPage statusPageResponse={statusPage} />;
+  } catch (error) {
+    if (error instanceof PageNotFoundError) {
+      return <p>This domain does not seem to be setup</p>;
+    }
+    return <p>Something went wrong</p>;
+  }
 }

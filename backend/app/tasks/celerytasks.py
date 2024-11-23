@@ -101,3 +101,9 @@ def create_slack_message(params: CreateSlackMessageTaskParameters):
 def send_email_verification(params: SendVerificationEmailParameters):
     with session_factory() as session:
         SendVerificationEmailTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def check_custom_domains():
+    with session_factory() as session:
+        print("Checking custom domains")

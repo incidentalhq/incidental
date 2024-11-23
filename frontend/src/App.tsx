@@ -44,6 +44,8 @@ import SlackInstallComplete from '@/pages/Slack/Complete'
 import SlackInstall from '@/pages/Slack/Install'
 import ShowStatusPage from '@/pages/StatusPages/ShowStatusPage'
 import ShowStatusPageIncident from '@/pages/StatusPages/ShowStatusPageIncident'
+import StatusPageBasicSettings from '@/pages/StatusPages/StatusPageBasicSettings'
+import StatusPageDomainSettings from '@/pages/StatusPages/StatusPageDomainSettings'
 import StatusPageListIncidents from '@/pages/StatusPages/StatusPageListIncidents'
 import StatusPagesList from '@/pages/StatusPages/StatusPagesList'
 // route definitions
@@ -97,6 +99,11 @@ const App = () => {
                       <Route path={RoutePaths.STATUS_PAGE_SHOW} element={<ShowStatusPage />} />
                       <Route path={RoutePaths.STATUS_PAGE_ALL_INCIDENTS} element={<StatusPageListIncidents />} />
                       <Route path={RoutePaths.STATUS_PAGE_SHOW_INCIDENT} element={<ShowStatusPageIncident />} />
+                      <Route path={RoutePaths.STATUS_PAGE_SETTINGS_BASIC} element={<StatusPageBasicSettings />} />
+                      <Route
+                        path={RoutePaths.STATUS_PAGE_SETTINGS_CUSTOM_DOMAIN}
+                        element={<StatusPageDomainSettings />}
+                      />
                     </Route>
                     <Route element={<SettingsLayout />}>
                       <Route path={RoutePaths.SETTINGS_INDEX} element={<SettingsIndex />} />

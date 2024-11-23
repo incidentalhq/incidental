@@ -4,7 +4,7 @@ from typing import Sequence
 from sqlalchemy import distinct, func, or_, select
 
 from app.env import settings
-from app.exceptions import ValidationError
+from app.exceptions import FormFieldValidationError, ValidationError
 from app.models import (
     ComponentStatus,
     Organisation,
@@ -30,6 +30,7 @@ from app.schemas.actions import (
     PaginationParamsSchema,
     PatchStatusPageComponentSchema,
     PatchStatusPageGroupSchema,
+    PatchStatusPageSchema,
     UpdateStatusPageItemsRankSchema,
 )
 from app.schemas.resources import ComponentsCurrentStatusSchema, ComponentStatusSchema
@@ -93,8 +94,8 @@ class StatusPageRepo(BaseRepo):
         model.name = create_in.name
         model.organisation_id = organisation.id
         model.page_type = create_in.page_type
-        model.slug = self._generate_slug(create_in.name)
-        model.public_url = settings.STATUS_PAGE_URL + "/" + model.slug
+        model.slug = self._generate_slug(create_in.slug)
+        model.public_url = f"https://{model.slug}.{settings.STATUS_PAGE_DOMAIN}"
 
         self.session.add(model)
         self.session.flush()
@@ -351,9 +352,6 @@ class StatusPageRepo(BaseRepo):
             self.session.add(event)
             self.session.flush()
 
-        if create_in.status != StatusPageIncidentStatus.RESOLVED:
-            status_page.has_active_incident = True
-
         return incident
 
     def get_component_status(self, status_page: StatusPage):
@@ -420,9 +418,6 @@ class StatusPageRepo(BaseRepo):
         """Create new incident update"""
         now = datetime.now(tz=timezone.utc)
         incident.status = create_in.status
-
-        if create_in.status == StatusPageIncidentStatus.RESOLVED:
-            incident.status_page.has_active_incident = False
 
         # Create incident update
         update = StatusPageIncidentUpdate()
@@ -524,3 +519,20 @@ class StatusPageRepo(BaseRepo):
             .limit(1)
         )
         return self.session.execute(stmt).scalar_one_or_none()
+
+    def patch_status_page(self, status_page: StatusPage, patch_in: PatchStatusPageSchema):
+        for key, value in patch_in.model_dump(exclude_unset=True).items():
+            if key == "slug":
+                if not self._check_slug_is_unique(value, status_page):
+                    raise FormFieldValidationError("Slug is already in use", "slug")
+                status_page.public_url = f"https://{value}.{settings.STATUS_PAGE_DOMAIN}"
+                status_page.slug = value
+            else:
+                setattr(status_page, key, value)
+
+        self.session.flush()
+
+    def _check_slug_is_unique(self, slug: str, exclude_status_page: StatusPage) -> bool:
+        """Check if a slug is unique"""
+        stmt = select(StatusPage).where(StatusPage.slug == slug, StatusPage.id != exclude_status_page.id).limit(1)
+        return not self.session.execute(stmt).scalar_one_or_none()
