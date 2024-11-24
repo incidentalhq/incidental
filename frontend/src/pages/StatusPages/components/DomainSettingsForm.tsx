@@ -1,14 +1,21 @@
-import { Form, Formik } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import React from 'react'
+import styled from 'styled-components'
 import * as Yup from 'yup'
 
 import Button from '@/components/Button/Button'
 import Field from '@/components/Form/Field'
 import { IStatusPage } from '@/types/models'
 
+const Actions = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+`
+
 interface Props {
   statusPage: IStatusPage
-  onSubmit: (values: FormValues) => void
+  onSubmit: (values: FormValues, helpers: FormikHelpers<FormValues>) => void
   onDelete: () => void
 }
 
@@ -34,14 +41,14 @@ const DomainSettingsForm: React.FC<Props> = ({ onSubmit, statusPage, onDelete })
               <label htmlFor="customDomain">Custom domain</label>
               <Field type="text" id="customDomain" name="customDomain" />
             </div>
-            <div>
+            <Actions>
               <Button disabled={isSubmitting} type="submit">
                 Save
               </Button>{' '}
               <a href="#" onClick={onDelete}>
                 Delete domain
               </a>
-            </div>
+            </Actions>
           </Form>
         )}
       </Formik>

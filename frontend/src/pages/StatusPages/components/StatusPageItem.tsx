@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import greenCheckmark from '@/assets/icons/green-check.svg'
 import warningTriangle from '@/assets/icons/warning-triangle.svg'
 import Icon from '@/components/Icon/Icon'
+import { StatusPageIncidentStatus } from '@/types/enums'
 import { IStatusPage } from '@/types/models'
 
 interface Props {
@@ -28,6 +29,9 @@ const Status = styled.div`
   margin: 0;
   border: 1px solid var(--color-slate-100);
   padding: 0.25rem 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 `
 
 const PublicUrl = styled.div``
@@ -46,7 +50,6 @@ const StatusPageItem: React.FC<Props> = ({ statusPage, onClick }) => {
     },
     [onClick, statusPage]
   )
-
   return (
     <Root onClick={handleClick}>
       <Title>{statusPage.name}</Title>

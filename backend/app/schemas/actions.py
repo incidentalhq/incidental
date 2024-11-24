@@ -4,8 +4,7 @@ from typing import Annotated
 
 import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, UrlConstraints, field_validator
-from pydantic_core import Url
+from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
 from app.models import (
     ComponentStatus,
@@ -17,6 +16,7 @@ from app.models import (
 )
 
 from .base import BaseSchema
+from .custom_fields import DomainNameValidator
 from .models import ModelIdSchema
 
 
@@ -309,18 +309,13 @@ class CreateStatusPageIncidentUpdateSchema(BaseSchema):
     affected_components: dict[str, ComponentStatus] = {}
 
 
-DomainName = Annotated[
-    str, StringConstraints(pattern=r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$")
-]
-
-
 class PatchStatusPageSchema(BaseSchema):
     name: str | None = None
     slug: str | None = None
 
 
 class UpdateStatusPageCustomDomain(BaseSchema):
-    custom_domain: DomainName | None = None
+    custom_domain: DomainNameValidator | None = None
 
 
 CreateStatusPageGroupSchema.model_rebuild()

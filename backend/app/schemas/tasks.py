@@ -63,3 +63,6 @@ class CreateSlackMessageTaskParameters(BaseModel):
 
 class SendVerificationEmailParameters(BaseModel):
     user_id: str
+
+
+class VerifyCustomDomainParameters(BaseModel): ...

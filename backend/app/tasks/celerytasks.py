@@ -12,6 +12,7 @@ from app.schemas.tasks import (
     SendVerificationEmailParameters,
     SetChannelTopicParameters,
     SyncBookmarksTaskParameters,
+    VerifyCustomDomainParameters,
 )
 from app.tasks import (
     CreateAnnouncementTask,
@@ -26,6 +27,7 @@ from app.tasks import (
     SendVerificationEmailTask,
     SetChannelTopicTask,
     SyncBookmarksTask,
+    VerifyCustomDomainTask,
 )
 from app.worker import celery
 
@@ -106,4 +108,5 @@ def send_email_verification(params: SendVerificationEmailParameters):
 @celery.task
 def check_custom_domains():
     with session_factory() as session:
-        print("Checking custom domains")
+        params = VerifyCustomDomainParameters()
+        VerifyCustomDomainTask(session=session).execute(parameters=params)

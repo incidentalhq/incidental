@@ -203,6 +203,7 @@ class StatusPageSchema(ModelSchema):
     published_at: datetime | None
     public_url: str
     slug: str
+    has_active_incident: bool
 
     status_page_items: list[StatusPageItemSchema]
 

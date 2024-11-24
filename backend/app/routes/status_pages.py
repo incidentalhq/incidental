@@ -357,8 +357,6 @@ async def status_page_get_incidents(
     if not user.belongs_to(status_page.organisation):
         raise NotPermittedError()
 
-    print(is_active)
-
     incidents = status_page_repo.get_incidents(status_page=status_page, pagination=pagination, is_active=is_active)
     response = PaginatedResults(items=incidents, total=len(incidents), page=pagination.page, size=pagination.size)
 

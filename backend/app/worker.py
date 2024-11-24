@@ -50,7 +50,7 @@ celery.conf.update(
     beat_schedule={
         "check-custom-domains": {
             "task": "app.tasks.celerytasks.check_custom_domains",
-            "schedule": crontab(minute="*/1"),
+            "schedule": crontab(minute="*/30"),
         }
     },
     task_serializer="pydantic",

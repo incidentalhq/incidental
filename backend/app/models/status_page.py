@@ -91,6 +91,13 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
         else:
             return f"https://{self.slug}.{settings.STATUS_PAGE_DOMAIN}"
 
+    @property
+    def has_active_incident(self) -> bool:
+        """Return True if the status page has an active incident"""
+        return any(
+            incident for incident in self.status_page_incidents if incident.status != StatusPageIncidentStatus.RESOLVED
+        )
+
 
 class StatusPageComponent(Base, TimestampMixin, SoftDeleteMixin):
     __prefix__ = "sp_com"

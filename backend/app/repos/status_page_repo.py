@@ -3,7 +3,6 @@ from typing import Sequence
 
 from sqlalchemy import distinct, func, or_, select
 
-from app.env import settings
 from app.exceptions import FormFieldValidationError, ValidationError
 from app.models import (
     ComponentStatus,
@@ -543,3 +542,9 @@ class StatusPageRepo(BaseRepo):
         """Check if a slug is unique"""
         stmt = select(StatusPage).where(StatusPage.slug == slug, StatusPage.id != exclude_status_page.id).limit(1)
         return not self.session.execute(stmt).scalar_one_or_none()
+
+    def get_unverified_custom_domains(self) -> Sequence[StatusPage]:
+        stmt = select(StatusPage).where(
+            StatusPage.custom_domain.isnot(None), StatusPage.is_custom_domain_verified.is_(False)
+        )
+        return self.session.execute(stmt).scalars().all()

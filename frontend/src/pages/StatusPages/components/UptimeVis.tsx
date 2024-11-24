@@ -35,7 +35,7 @@ const Root = styled.div``
 const ComponentTimeline = styled.div`
   margin-bottom: 1rem;
 
-  h3 {
+  h4 {
     margin-bottom: 0.5rem;
   }
 `
@@ -48,13 +48,14 @@ const CurrentTimeMarker = styled.div<{ $left: number }>`
   position: absolute;
   height: 100%;
   width: 1px;
-  background-color: var(--color-slate-600);
+  background-color: var(--color-gray-400);
   left: ${(props) => props.$left}%;
 `
 interface Segment {
   status: ComponentStatus
   startTime: Date
   endTime: Date
+  hasEnded: boolean
 }
 
 const consolidateSegments = (segments: Segment[]) => {
@@ -75,7 +76,7 @@ const consolidateSegments = (segments: Segment[]) => {
 
 const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => {
   const [timeline, setTimeline] = useState<{
-    [key: string]: { status: ComponentStatus; startTime: Date; endTime: Date }[]
+    [key: string]: Segment[]
   }>({})
   const now = useMemo(() => new Date(), [])
   const earliestEventStartedAt = useMemo(
@@ -99,6 +100,7 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
         const { name } = event.statusPageComponent
         const startedAt = new Date(event.startedAt)
         const endedAt = event.endedAt ? new Date(event.endedAt) : now
+        const hasEnded = event.endedAt !== null
 
         if (!components[name]) components[name] = []
 
@@ -106,7 +108,8 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
           components[name].push({
             status: event.status,
             startTime: new Date(Math.max(startedAt.getTime(), earliestEventStartedAt.getTime())),
-            endTime: endedAt
+            endTime: endedAt,
+            hasEnded: hasEnded
           })
         }
       })
@@ -129,7 +132,7 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
     <Root>
       {Object.keys(timeline).map((componentName) => (
         <ComponentTimeline key={componentName}>
-          <h3>{componentName}</h3>
+          <h4>{componentName}</h4>
           <TimelineBar>
             <StartBufferTimelineSegment
               firstSegmentStartTime={timeline[componentName][0].startTime}
@@ -150,7 +153,7 @@ const StatusTimeline = ({ events }: { events: IStatusPageComponentEvent[] }) => 
                   $width={durationPercent}
                   $backgroundColor={styles.$backgroundColor}
                   $borderColor={styles.$borderColor}
-                  $removeRightRadius={isLast}
+                  $removeRightRadius={isLast && !segment.hasEnded}
                 />
               )
             })}
@@ -199,7 +202,8 @@ const EndBufferTimelineSegment = ({
   lastSegment: Segment
 }) => {
   const durationPercent = ((bufferEndTime.getTime() - lastSegment.endTime.getTime()) / totalDuration) * 100
-  const styles = mapComponentStatusToStyleProps(lastSegment.status)
+  const status = !lastSegment.hasEnded ? lastSegment.status : ComponentStatus.OPERATIONAL
+  const styles = mapComponentStatusToStyleProps(status)
   return (
     <TimelineSegment
       key="end"
@@ -208,7 +212,7 @@ const EndBufferTimelineSegment = ({
       $width={durationPercent}
       $backgroundColor={styles.$backgroundColor}
       $borderColor={styles.$borderColor}
-      $removeLeftRadius={true}
+      $removeLeftRadius={status === lastSegment.status}
     />
   )
 }
