@@ -4,7 +4,7 @@
 
 > Incidental is still in its early stage of development, so there may be some teething problems along the way. Please let us know of any suggestions, bugs, ideas, etc using Github issues. We'll use your feedback to improve
 >
-> ⚡ **If you'd like to get access to a hosted version of Incidental, there's a [waitlist here](https://tally.so/r/nrErBp)** ⚡
+> ⚡ **Sign up to the hosted version of Incidental here - https://incidental.dev/register** ⚡
 
 <br/>
 
@@ -28,6 +28,7 @@ We're building Incidental to be a best-in-class platform for managing your incid
 - ✅ **Custom Fields:** Add and track incident-specific data points
 - ✅ **Custom Incident Types:** Categorize incidents according to your operational model
 - ✅ **Custom Roles:** Define roles and responsibilities for your incident response team
+- ✅ **Status Pages:** Display the current status of your incidents to your stakeholders with customizable status pages
 - 🚧 **Custom Workflows:** (Coming Soon) Automate your incident response processes
 
 ## Quick start
