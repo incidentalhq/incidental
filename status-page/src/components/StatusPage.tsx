@@ -3,7 +3,7 @@
 import NoCurrentIncident from "@/components/NoCurrentIncident";
 import styled from "styled-components";
 import SystemStatus from "@/components/SystemStatus";
-import { useState } from "react";
+import { useMemo } from "react";
 import { subDays, startOfDay, endOfDay } from "date-fns";
 import { IStatusPageResponse } from "@/types/models";
 import CurrentIncidentsHero from "./CurrentIncidentsHero";
@@ -40,8 +40,8 @@ interface Props {
 }
 
 export default function StatusPage({ statusPageResponse }: Props) {
-  const [today, setToday] = useState(new Date());
-  const ninetyDaysAgo = subDays(today, 90);
+  const today = useMemo(() => new Date(), []);
+  const ninetyDaysAgo = useMemo(() => subDays(today, 90), [today]);
 
   const hasActiveIncident = statusPageResponse.incidents.some(
     (it) => it.status !== StatusPageIncidentStatus.RESOLVED

@@ -90,10 +90,10 @@ const StatusPageSidebar: React.FC<Props> = () => {
             <Icon icon={gear} fixedWidth={true} /> Settings
           </SubMenuTitle>
           <SubItems>
-            <MenuItem to={RoutePaths.STATUS_PAGE_SETTINGS_BASIC} pathParams={{ id: id }}>
+            <MenuItem to={RoutePaths.STATUS_PAGE_SETTINGS_BASIC} pathParams={{ id }}>
               Basic
             </MenuItem>
-            <MenuItem to={RoutePaths.STATUS_PAGE_SETTINGS_CUSTOM_DOMAIN} pathParams={{ id: id }}>
+            <MenuItem to={RoutePaths.STATUS_PAGE_SETTINGS_CUSTOM_DOMAIN} pathParams={{ id }}>
               Custom domain
             </MenuItem>
           </SubItems>
