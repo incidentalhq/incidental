@@ -6,6 +6,7 @@ import structlog
 from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession
+from app.env import settings
 from app.exceptions import NotPermittedError, ValidationError
 from app.repos import StatusPageRepo
 from app.schemas.actions import (
@@ -79,11 +80,13 @@ async def get_status_page_status(
     """Public status page"""
     status_page_repo = StatusPageRepo(session=db)
 
-    if domain:
+    # if it's on our subdomain, we can get it by slug
+    if domain.endswith(settings.STATUS_PAGE_DOMAIN):
+        slug = domain.split(".")[0]
+        status_page = status_page_repo.get_by_slug_or_raise(slug=slug)
+    # otherwise, we assume it's a custom domain
+    else:
         status_page = status_page_repo.get_by_domain_or_slug_or_raise(domain=domain)
-
-    if not domain:
-        raise ValidationError("Either slug or domain must be provided")
 
     # Get events for the last 90 days
     start_date = datetime.now(tz=timezone.utc) - timedelta(days=90)

@@ -17,6 +17,8 @@ jobs:
       IMAGE_NAME: incidental/frontend
       ECR_REPO: registry.digitalocean.com/incidental
       VITE_API_BASE_URL: https://api.incidental.dev
+      VITE_STATUS_PAGE_DOMAIN: statusbyincidental.com
+      VITE_STATUS_PAGE_CNAME: statuspage.incidental.dev
 
     runs-on: ubuntu-latest
 
