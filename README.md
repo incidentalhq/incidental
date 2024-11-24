@@ -4,7 +4,7 @@
 
 > Incidental is still in its early stage of development, so there may be some teething problems along the way. Please let us know of any suggestions, bugs, ideas, etc using Github issues. We'll use your feedback to improve
 >
-> ⚡ **Sign up to the hosted version of Incidental here - https://incidental.dev/register** ⚡
+> ⚡ **Sign up to the hosted version of Incidental here - https://incidental.dev** ⚡
 
 <br/>
 
