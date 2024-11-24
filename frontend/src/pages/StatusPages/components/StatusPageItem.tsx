@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import greenCheckmark from '@/assets/icons/green-check.svg'
 import warningTriangle from '@/assets/icons/warning-triangle.svg'
 import Icon from '@/components/Icon/Icon'
-import { StatusPageIncidentStatus } from '@/types/enums'
 import { IStatusPage } from '@/types/models'
 
 interface Props {
