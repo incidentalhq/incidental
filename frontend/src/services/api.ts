@@ -1,3 +1,4 @@
+import { CreateStatusPageIncident, CreateStatusPageIncidentUpdate, GetStatusPageIncidentsRequest } from '@/types/action'
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {
@@ -16,6 +17,12 @@ import {
   IOrganisationMember,
   IPublicUser,
   ISettings,
+  IStatusPage,
+  IStatusPageComponent,
+  IStatusPageComponentEvent,
+  IStatusPageComponentGroup,
+  IStatusPageDomainStatusResponse,
+  IStatusPageIncident,
   ITimestamp,
   IUser,
   IWorld,
@@ -469,4 +476,117 @@ export class ApiService {
       user: this.user,
       json: values
     })
+
+  searchStatusPages = () =>
+    callApi<PaginatedResults<IStatusPage>>('GET', `/status-pages/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+
+  getStatusPage = (id: ModelID) =>
+    callApi<IStatusPage>('GET', `/status-pages/${id}`, {
+      user: this.user
+    })
+
+  createStatusPage = (values: Partial<IStatusPage>) =>
+    callApi<IStatusPage>('POST', `/status-pages`, {
+      user: this.user,
+      json: values,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+
+  editStatusPageGroup = (statusPageId: string, groupId: string, values: Partial<IStatusPageComponentGroup>) =>
+    callApi<IStatusPageComponentGroup>('PATCH', `/status-pages/${statusPageId}/group/${groupId}`, {
+      user: this.user,
+      json: values
+    })
+
+  editStatusPageComponent = (statusPageId: string, componentId: string, values: Partial<IStatusPageComponent>) =>
+    callApi<IStatusPageComponent>('PATCH', `/status-pages/${statusPageId}/component/${componentId}`, {
+      user: this.user,
+      json: values
+    })
+
+  updateStatusPageComponentsRank = (statusPageId: string, values: Partial<IStatusPage>) =>
+    callApi<IStatusPage>('PUT', `/status-pages/${statusPageId}/components/rank`, {
+      user: this.user,
+      json: values
+    })
+
+  createStatusPageComponent = (statusPageId: string, values: Partial<IStatusPageComponent>) =>
+    callApi<IStatusPageComponent>('POST', `/status-pages/${statusPageId}/component`, {
+      user: this.user,
+      json: values
+    })
+
+  createStatusPageGroup = (statusPageId: string, values: Partial<IStatusPageComponentGroup>) =>
+    callApi<IStatusPageComponentGroup>('POST', `/status-pages/${statusPageId}/group`, {
+      user: this.user,
+      json: values
+    })
+
+  deleteStatusPageComponent = (statusPageId: string, componentId: string) =>
+    callApi('DELETE', `/status-pages/${statusPageId}/component/${componentId}`, {
+      user: this.user
+    })
+
+  deleteStatusPageGroup = (statusPageId: string, groupId: string) =>
+    callApi('DELETE', `/status-pages/${statusPageId}/group/${groupId}`, {
+      user: this.user
+    })
+
+  createStatusPageIncident = (statusPageId: string, values: CreateStatusPageIncident) =>
+    callApi('POST', `/status-pages/${statusPageId}/incidents`, {
+      user: this.user,
+      json: values
+    })
+
+  getStatusPageIncidents = (params: GetStatusPageIncidentsRequest) =>
+    callApi<PaginatedResults<IStatusPageIncident>>('GET', `/status-pages/${params.id}/incidents`, {
+      user: this.user,
+      params: {
+        ...(params.pagination || {}),
+        isActive: params.isActive
+      }
+    })
+
+  getStatusPageIncident = (incidentId: string) =>
+    callApi<IStatusPageIncident>('GET', `/status-page-incidents/${incidentId}`, {
+      user: this.user
+    })
+
+  createStatusPageIncidentUpdate = (incidentId: ModelID, values: CreateStatusPageIncidentUpdate) =>
+    callApi('POST', `/status-page-incidents/${incidentId}/updates`, {
+      user: this.user,
+      json: values
+    })
+
+  getStatusPageIncidentEvents = (incidentId: ModelID) =>
+    callApi<PaginatedResults<IStatusPageComponentEvent>>('GET', `/status-page-incidents/${incidentId}/events`, {
+      user: this.user
+    })
+
+  patchStatusPage(statusPageId: string, updateIn: Partial<IStatusPage>) {
+    return callApi<IStatusPage>('PATCH', `/status-pages/${statusPageId}`, {
+      user: this.user,
+      json: updateIn
+    })
+  }
+
+  updateStatusPageDomain(statusPageId: string, updateIn: Pick<IStatusPage, 'customDomain'>) {
+    return callApi<IStatusPage>('PUT', `/status-pages/${statusPageId}/domain`, {
+      user: this.user,
+      json: updateIn
+    })
+  }
+
+  getStatusPageDomainStatus(statusPageId: string) {
+    return callApi<IStatusPageDomainStatusResponse>('GET', `/status-pages/${statusPageId}/domain-status`, {
+      user: this.user
+    })
+  }
 }

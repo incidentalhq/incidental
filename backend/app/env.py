@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DATABASE_USER: str = ""
 
     FRONTEND_URL: str = ""
+    STATUS_PAGE_DOMAIN: str = ""
 
     # slack
     SLACK_APP_ID: str = ""
@@ -39,6 +40,10 @@ class Settings(BaseSettings):
     SENDGRID_API_KEY: str = ""
     SUPPORT_EMAIL: str = ""
     SUPPORT_EMAIL_NAME: str = ""
+
+    # vercel
+    VERCEL_TOKEN: str = ""
+    VERCEL_PROJECT_ID: str = ""
 
 
 settings = Settings()

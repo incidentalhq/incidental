@@ -6,9 +6,17 @@ import pytz
 from fastapi import Query
 from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
 
-from app.models import IncidentStatusCategoryEnum, InterfaceKind, RequirementTypeEnum
+from app.models import (
+    ComponentStatus,
+    IncidentStatusCategoryEnum,
+    InterfaceKind,
+    RequirementTypeEnum,
+    StatusPageIncidentStatus,
+    StatusPageKind,
+)
 
 from .base import BaseSchema
+from .custom_fields import DomainNameValidator
 from .models import ModelIdSchema
 
 
@@ -245,3 +253,70 @@ class CreateFormFieldSchema(BaseSchema):
     """Create new form field"""
 
     field: ModelIdSchema
+
+
+class CreateStatusPageComponentSchema(BaseSchema):
+    name: str
+
+
+class CreateStatusPageGroupSchema(BaseSchema):
+    name: str
+
+
+class CreateStatusPageItemSchema(BaseSchema):
+    component: CreateStatusPageComponentSchema | None = None
+    group: CreateStatusPageGroupSchema | None = None
+    items: list["CreateStatusPageItemSchema"] | None = None
+
+
+class CreateStatusPageSchema(BaseSchema):
+    """Create new status page"""
+
+    page_type: StatusPageKind
+    name: str
+    items: list[CreateStatusPageItemSchema] = []
+    slug: str
+
+
+class PatchStatusPageGroupSchema(BaseSchema):
+    name: str | None = None
+
+
+class PatchStatusPageComponentSchema(BaseSchema):
+    name: str | None = None
+    is_hidden: bool | None = None
+    is_uptime_shown: bool | None = None
+
+
+class UpdateStatusPageItemsRankSchema(BaseSchema):
+    id: str
+    rank: int
+    status_page_component_group: ModelIdSchema | None = None
+    status_page_component: ModelIdSchema | None = None
+    status_page_items: list["UpdateStatusPageItemsRankSchema"] | None = None
+
+
+class CreateStatusPageIncidentSchema(BaseSchema):
+    name: str
+    message: str
+    status: StatusPageIncidentStatus
+    affected_components: dict[str, ComponentStatus] = {}
+
+
+class CreateStatusPageIncidentUpdateSchema(BaseSchema):
+    message: str
+    status: StatusPageIncidentStatus
+    affected_components: dict[str, ComponentStatus] = {}
+
+
+class PatchStatusPageSchema(BaseSchema):
+    name: str | None = None
+    slug: str | None = None
+
+
+class UpdateStatusPageCustomDomain(BaseSchema):
+    custom_domain: DomainNameValidator | None = None
+
+
+CreateStatusPageGroupSchema.model_rebuild()
+UpdateStatusPageItemsRankSchema.model_rebuild()

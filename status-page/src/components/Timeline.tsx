@@ -1,8 +1,5 @@
-import styled from 'styled-components'
-
-import { IIncidentUpdate } from '@/types/models'
-
-import IncidentUpdate from './IncidentUpdate'
+import { ReactElement } from "react";
+import styled from "styled-components";
 
 const Root = styled.div`
   margin-top: 1rem;
@@ -24,7 +21,7 @@ const Root = styled.div`
       padding-bottom: 0;
     }
     &:before {
-      content: '';
+      content: "";
       width: 15px;
       height: 15px;
       background: white;
@@ -35,13 +32,21 @@ const Root = styled.div`
       top: 0px;
     }
   }
-`
+`;
 
-interface Props {
-  updates: Array<IIncidentUpdate>
+interface Props<T> {
+  updates: Array<T>;
+  render: (props: T) => ReactElement<T>;
 }
 
-const Timeline: React.FC<Props> = ({ updates }) => {
+interface Update {
+  id: string;
+}
+
+const Timeline = <T extends Update>({
+  updates,
+  render,
+}: Props<T>): ReactElement => {
   return (
     <Root>
       {updates.length == 0 ? (
@@ -49,14 +54,12 @@ const Timeline: React.FC<Props> = ({ updates }) => {
       ) : (
         <ul>
           {updates.map((item) => (
-            <li key={item.id}>
-              <IncidentUpdate key={item.id} incidentUpdate={item} />
-            </li>
+            <li key={item.id}>{render(item)}</li>
           ))}
         </ul>
       )}
     </Root>
-  )
-}
+  );
+};
 
-export default Timeline
+export default Timeline;

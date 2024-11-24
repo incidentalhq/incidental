@@ -42,6 +42,18 @@ services:
   redis:
     image: redis:7
 
+  beat:
+    image: incidental/backend:latest
+    depends_on:
+      - postgres
+    volumes:
+      - ".:/srv"
+    env_file:
+      - .env
+    environment:
+      - SERVICE=beat
+    command: celery -A app.worker beat --loglevel=INFO -s /var/run/celerybeat
+
 volumes:
   postgresdata:
     driver: local

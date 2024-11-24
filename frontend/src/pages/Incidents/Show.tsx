@@ -13,6 +13,7 @@ import ShareUpdateForm, { FormValues as ShareUpdateFormValues } from '@/componen
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
+import Timeline from '@/components/Timeline/Timeline'
 import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
@@ -30,7 +31,7 @@ import EditDescriptionForm, { FormValues } from './components/EditDescriptionFor
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import DisplayFieldValue from './components/Field/DisplayFieldValue'
 import FieldForm, { FormValues as FieldFormValues } from './components/Field/FieldForm'
-import Timeline from './components/IncidentUpdate/Timeline'
+import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
 import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
 import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
 
@@ -86,7 +87,6 @@ const RelatedFields = styled.div`
   flex-direction: column;
   gap: 1rem;
 `
-
 const InnerButtonContent = styled.div`
   display: flex;
   gap: 8px;
@@ -452,7 +452,10 @@ const ShowIncident = () => {
                 </ContentHeader>
                 <ContentSection>
                   {incidentUpdatesQuery.isSuccess ? (
-                    <Timeline updates={incidentUpdatesQuery.data.items} />
+                    <Timeline
+                      updates={incidentUpdatesQuery.data.items}
+                      render={(item) => <IncidentUpdate incidentUpdate={item} />}
+                    />
                   ) : (
                     <p>There was an issue </p>
                   )}

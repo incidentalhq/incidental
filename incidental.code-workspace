@@ -11,6 +11,10 @@
     {
       "name": "frontend",
       "path": "./frontend"
+    },
+    {
+      "name": "status-page",
+      "path": "./status-page"
     }
   ],
   "settings": {

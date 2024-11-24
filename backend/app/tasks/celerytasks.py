@@ -12,6 +12,7 @@ from app.schemas.tasks import (
     SendVerificationEmailParameters,
     SetChannelTopicParameters,
     SyncBookmarksTaskParameters,
+    VerifyCustomDomainParameters,
 )
 from app.tasks import (
     CreateAnnouncementTask,
@@ -26,6 +27,7 @@ from app.tasks import (
     SendVerificationEmailTask,
     SetChannelTopicTask,
     SyncBookmarksTask,
+    VerifyCustomDomainTask,
 )
 from app.worker import celery
 
@@ -101,3 +103,10 @@ def create_slack_message(params: CreateSlackMessageTaskParameters):
 def send_email_verification(params: SendVerificationEmailParameters):
     with session_factory() as session:
         SendVerificationEmailTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def check_custom_domains():
+    with session_factory() as session:
+        params = VerifyCustomDomainParameters()
+        VerifyCustomDomainTask(session=session).execute(parameters=params)

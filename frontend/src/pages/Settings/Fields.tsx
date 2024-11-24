@@ -154,7 +154,7 @@ const SettingsFields = () => {
               {v.kind === FieldKind.USER_DEFINED ? (
                 <Pill>Custom</Pill>
               ) : (
-                <Pill $color="var(--color-gray-50)">System</Pill>
+                <Pill $backgroundColor="var(--color-gray-50)">System</Pill>
               )}
             </>
           )

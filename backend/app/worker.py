@@ -1,6 +1,7 @@
 import json
 
 from celery import Celery
+from celery.schedules import crontab
 from kombu.serialization import register
 from pydantic import BaseModel
 
@@ -46,6 +47,12 @@ register(
 celery = Celery(__name__)
 
 celery.conf.update(
+    beat_schedule={
+        "check-custom-domains": {
+            "task": "app.tasks.celerytasks.check_custom_domains",
+            "schedule": crontab(minute="*/30"),
+        }
+    },
     task_serializer="pydantic",
     result_serializer="pydantic",
     event_serializer="pydantic",

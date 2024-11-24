@@ -18,6 +18,7 @@ if typing.TYPE_CHECKING:
     from .lifecycle import Lifecycle
     from .settings import Settings
     from .slack_message import SlackMessage
+    from .status_page import StatusPage
     from .timestamp import Timestamp
     from .user import User
 
@@ -53,6 +54,7 @@ class Organisation(Base, TimestampMixin):
     timestamps: Mapped[list["Timestamp"]] = relationship("Timestamp", back_populates="organisation")
     incident_types: Mapped[list["IncidentType"]] = relationship("IncidentType", back_populates="organisation")
     lifecycles: Mapped[list["Lifecycle"]] = relationship("Lifecycle", back_populates="organisation")
+    status_pages: Mapped[list["StatusPage"]] = relationship("StatusPage", back_populates="organisation")
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"

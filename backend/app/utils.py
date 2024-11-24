@@ -54,3 +54,14 @@ def generate_password(length: int = 16) -> str:
     alphabet = string.ascii_letters + string.digits
     password = "".join(secrets.choice(alphabet) for i in range(length))
     return password
+
+
+def generate_slug(name: str) -> str:
+    slug = name.lower().strip()
+
+    # Replace spaces with underscores
+    slug = re.sub(r"\s+", "-", slug)
+
+    # Remove special characters
+    slug = re.sub(r"[^a-zA-Z0-9-]", "", slug)
+    return slug

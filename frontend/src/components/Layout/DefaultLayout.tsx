@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 
-import SideBar from '@/components/Sidebar/Sidebar'
+import DefaultSideBar from '@/components/Sidebar/DefaultSidebar'
 import useAuth from '@/hooks/useAuth'
 
 const Container = styled.div`
@@ -32,7 +32,7 @@ const DefaultLayout = () => {
   return (
     <Container>
       <LeftColumn>
-        <SideBar user={user} />
+        <DefaultSideBar user={user} />
       </LeftColumn>
       <RightColumn>
         <Outlet />

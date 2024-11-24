@@ -40,7 +40,7 @@ const getIncidentInitialStatus = (name: string, statusList: Array<IIncidentStatu
   const triage = statusList.find((it) => it.category === IncidentStatusCategory.TRIAGE)
   const active = statusList.find((it) => it.category == IncidentStatusCategory.ACTIVE)
   if (!triage || !active) {
-    console.log('Could not find triage or active categories')
+    console.error('Could not find triage or active categories')
     return
   }
   const options = [

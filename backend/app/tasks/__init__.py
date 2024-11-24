@@ -11,3 +11,4 @@ from .send_verification_email import SendVerificationEmailTask
 from .set_channel_topic import SetChannelTopicTask
 from .slash_command import HandleSlashCommandTask
 from .sync_bookmarks import SyncBookmarksTask
+from .verify_custom_domain import VerifyCustomDomainTask

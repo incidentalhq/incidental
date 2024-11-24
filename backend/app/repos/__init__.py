@@ -8,5 +8,6 @@ from .organisation_repo import OrganisationRepo
 from .severity_repo import SeverityRepo
 from .slack_bookmark import SlackBookmarkRepo
 from .slack_message import SlackMessageRepo
+from .status_page_repo import StatusPageRepo
 from .timestamp_repo import TimestampRepo
 from .user_repo import UserRepo

@@ -3,6 +3,7 @@ from typing import Sequence
 
 from pydantic import EmailStr
 
+from app.models.status_page import ComponentStatus, StatusPageIncidentStatus, StatusPageKind
 from app.schemas.base import BaseSchema
 
 
@@ -175,4 +176,93 @@ class OrganisationMemberSchema(ModelSchema):
     role: str
 
 
+# -- Status Page --
+
+
+class StatusPageComponentSchema(ModelSchema):
+    name: str
+
+
+class StatusPageComponentGroupSchema(ModelSchema):
+    name: str
+
+
+class StatusPageItemSchema(ModelSchema):
+    rank: int
+
+    status_page_component: StatusPageComponentSchema | None = None
+    status_page_component_group: StatusPageComponentGroupSchema | None = None
+    status_page_items: list["StatusPageItemSchema"] = []
+
+
+class StatusPageSchema(ModelSchema):
+    organisation_id: str
+    name: str
+    page_type: StatusPageKind
+    custom_domain: str | None
+    published_at: datetime | None
+    public_url: str
+    slug: str
+    has_active_incident: bool
+
+    status_page_items: list[StatusPageItemSchema]
+
+
+class RelatedStatusPageIncidentSchema(ModelSchema):
+    name: str
+
+
+class StatusPageComponentEventSchema(ModelSchema):
+    status_page_component: StatusPageComponentSchema
+    status_page_incident: RelatedStatusPageIncidentSchema
+    status: ComponentStatus
+    started_at: datetime
+    ended_at: datetime | None
+
+
+class StatusPageWithEventsSchema(BaseSchema):
+    status_page: StatusPageSchema
+    events: list[StatusPageComponentEventSchema]
+    uptimes: dict[str, float]
+    incidents: list["StatusPageIncidentSchema"]
+
+
+class StatusPageComponentAffectedSchema(ModelSchema):
+    status_page_component: StatusPageComponentSchema
+    status: ComponentStatus
+
+
+class StatusPageComponentUpdateSchema(ModelSchema):
+    status_page_component: StatusPageComponentSchema
+    status: ComponentStatus
+
+
+class StatusPageIncidentUpdateSchema(ModelSchema):
+    message: str
+    published_at: datetime
+    creator: UserPublicSchema
+    status: StatusPageIncidentStatus
+    component_updates: list[StatusPageComponentUpdateSchema]
+
+
+class RelatedStatePageSchema(ModelSchema):
+    name: str
+
+
+class StatusPageIncidentSchema(ModelSchema):
+    name: str
+    published_at: datetime
+    status: StatusPageIncidentStatus
+    creator: UserPublicSchema
+    incident_updates: list[StatusPageIncidentUpdateSchema]
+    status_page: RelatedStatePageSchema
+    components_affected: list[StatusPageComponentAffectedSchema]
+
+
+class StatusPageDomainStatusCheckResponse(BaseSchema):
+    is_verified: bool
+
+
 IncidentTypeSchema.model_rebuild()
+StatusPageComponentGroupSchema.model_rebuild()
+StatusPageWithEventsSchema.model_rebuild()

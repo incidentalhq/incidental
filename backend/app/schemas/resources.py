@@ -3,14 +3,9 @@ from typing import Any, Generic, Sequence, TypeVar
 
 from pydantic import ConfigDict
 
-from app.models import Organisation, User
+from app.models import ComponentStatus, Organisation, User
 from app.schemas.base import BaseSchema
-from app.schemas.models import (
-    FormSchema,
-    IncidentRoleSchema,
-    OrganisationSchema,
-    UserSchema,
-)
+from app.schemas.models import FormSchema, IncidentRoleSchema, OrganisationSchema, StatusPageComponentSchema, UserSchema
 
 DataT = TypeVar("DataT")
 
@@ -58,3 +53,12 @@ class Credentials(BaseSchema):
     token_type: str
     id_token: str | None = None  # openid
     original_data: dict[str, Any]
+
+
+class ComponentStatusSchema(BaseSchema):
+    component: StatusPageComponentSchema
+    status: ComponentStatus
+
+
+class ComponentsCurrentStatusSchema(BaseSchema):
+    components: list[ComponentStatusSchema]
