@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
@@ -51,6 +51,50 @@ const SettingsTimestamps = () => {
     queryFn: () => apiService.getTimestamps()
   })
 
+  const handleDelete = useCallback(
+    async (timestamp: ITimestamp) => {
+      try {
+        await apiService.deleteTimestamp(timestamp)
+        timestampsQuery.refetch()
+        toast('Timestamp has been archived', { type: 'warning' })
+      } catch (e) {
+        if (e instanceof APIError) {
+          toast(e.detail, { type: 'error' })
+        } else {
+          toast('There was a problem archiving your custom timestamp')
+        }
+      }
+    },
+    [apiService, timestampsQuery]
+  )
+
+  const handleAddTimestamp = useCallback(
+    async (values: TimestampFormValues) => {
+      try {
+        await apiService.createTimestamp(values)
+        timestampsQuery.refetch()
+        toast('New timestamp added', { type: 'success' })
+        closeModal()
+      } catch (e) {
+        let message = 'There was an error adding the timestamp'
+        if (e instanceof APIError) {
+          message = e.detail
+        }
+        toast(message, { type: 'error' })
+      }
+    },
+    [apiService, timestampsQuery, closeModal]
+  )
+
+  const handleOpenCreateModal = useCallback(() => {
+    setModal(
+      <ModalContainer>
+        <h2>Create new custom timestamp</h2>
+        <TimestampForm onSubmit={handleAddTimestamp} />
+      </ModalContainer>
+    )
+  }, [handleAddTimestamp, setModal])
+
   const columns = useMemo(
     () =>
       [
@@ -94,46 +138,8 @@ const SettingsTimestamps = () => {
           }
         }
       ] as ColumnProperty<ITimestamp>[],
-    []
+    [handleDelete]
   )
-
-  const handleDelete = async (timestamp: ITimestamp) => {
-    try {
-      await apiService.deleteTimestamp(timestamp)
-      timestampsQuery.refetch()
-      toast('Timestamp has been archived', { type: 'warning' })
-    } catch (e) {
-      if (e instanceof APIError) {
-        toast(e.detail, { type: 'error' })
-      } else {
-        toast('There was a problem archiving your custom timestamp')
-      }
-    }
-  }
-
-  const handleAddTimestamp = async (values: TimestampFormValues) => {
-    try {
-      await apiService.createTimestamp(values)
-      timestampsQuery.refetch()
-      toast('New timestamp added', { type: 'success' })
-      closeModal()
-    } catch (e) {
-      let message = 'There was an error adding the timestamp'
-      if (e instanceof APIError) {
-        message = e.detail
-      }
-      toast(message, { type: 'error' })
-    }
-  }
-
-  const handleOpenCreateModal = () => {
-    setModal(
-      <ModalContainer>
-        <h2>Create new custom timestamp</h2>
-        <TimestampForm onSubmit={handleAddTimestamp} />
-      </ModalContainer>
-    )
-  }
 
   return (
     <>

@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 
-import SettingsSidebar from '@/components/Sidebar/SettingsSidebar'
 import useAuth from '@/hooks/useAuth'
 
 import StatusPageSidebar from '../Sidebar/StatusPageSidebar'

@@ -2,7 +2,7 @@ import type { UniqueIdentifier } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
 
-import { ComponentStatus } from '@/types/enums'
+import { ComponentStatus, StatusPageIncidentStatus } from '@/types/enums'
 import { IStatusPage, IStatusPageComponentEvent, ModelID } from '@/types/models'
 
 import { type FlattenedItem, ItemType, Segment, type TreeItem, type TreeItems } from './types'
@@ -283,7 +283,7 @@ export const fromServerSideItems = (statusPage: IStatusPage) => {
   return items
 }
 
-export const statusToTitleCase = (status: string) => {
+export const statusToTitleCase = (status: ComponentStatus | StatusPageIncidentStatus) => {
   return status
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -327,6 +327,7 @@ export function calculateTimeWindowWithBuffer(start_date: Date, end_date: Date):
   return [start_date, end_date]
 }
 
+// Group events by component
 export const groupEventsByComponent = (events: IStatusPageComponentEvent[], now: Date) => {
   return events.reduce(
     (acc, event) => {

@@ -40,7 +40,7 @@ interface Props {
 }
 
 const StatusPageIncidentUpdateRow: React.FC<Props> = ({ statusPageIncidentUpdate }) => {
-  const date = format(statusPageIncidentUpdate.createdAt, 'd MMM')
+  const date = format(statusPageIncidentUpdate.createdAt, 'd MMM, HH:mm')
 
   return (
     <Root>

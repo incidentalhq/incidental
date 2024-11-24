@@ -1,11 +1,4 @@
-import { is } from 'date-fns/locale'
-
-import {
-  CreateStatusPageIncident,
-  CreateStatusPageIncidentUpdate,
-  GetStatusPageIncidentsRequest,
-  PaginationParams
-} from '@/types/action'
+import { CreateStatusPageIncident, CreateStatusPageIncidentUpdate, GetStatusPageIncidentsRequest } from '@/types/action'
 import { PaginatedResults } from '@/types/core'
 import { IncidentStatusCategory } from '@/types/enums'
 import {

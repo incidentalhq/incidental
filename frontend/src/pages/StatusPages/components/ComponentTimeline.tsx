@@ -1,15 +1,16 @@
 import * as d3 from 'd3'
+import { format } from 'date-fns'
 import { useMemo } from 'react'
+import { Tooltip } from 'react-tooltip'
 import styled from 'styled-components'
 
 import { Segment } from '../types'
-import { mapComponentStatusToStyleProps } from '../utils'
+import { mapComponentStatusToStyleProps, statusToTitleCase } from '../utils'
 
 interface SegmentProps {
   $left: number
   $width: number
   $backgroundColor: string
-  $borderColor: string
   $removeRightRadius?: boolean
   $removeLeftRadius?: boolean
 }
@@ -19,7 +20,7 @@ const TimelineSegment = styled.div<SegmentProps>`
   background-color: ${(props) => props.$backgroundColor};
   left: ${(props) => props.$left}%;
   width: ${(props) => props.$width}%;
-  border: 1px solid #fff;
+  border-right: 1px solid #fff;
 `
 const Root = styled.div`
   margin-bottom: 1rem;
@@ -37,7 +38,7 @@ const CurrentTimeMarker = styled.div<{ $left: number }>`
   position: absolute;
   height: 100%;
   width: 1px;
-  background-color: var(--color-gray-400);
+  background-color: var(--color-gray-900);
   left: ${(props) => props.$left}%;
 `
 
@@ -55,13 +56,17 @@ const ComponentTimeline: React.FC<Props> = ({ componentName, segments, x }) => {
       <TimelineBar>
         {segments.map((segment, index) => (
           <TimelineSegment
+            data-tooltip-id="tooltip"
+            data-tooltip-content={
+              format(segment.startTime, 'HH:mm, MMM d, yyyy') + ' - ' + statusToTitleCase(segment.status)
+            }
             key={index}
             $left={x(segment.startTime)}
             $width={x(segment.endTime) - x(segment.startTime)}
-            $backgroundColor={mapComponentStatusToStyleProps(segment.status).$backgroundColor}
-            $borderColor={mapComponentStatusToStyleProps(segment.status).$borderColor}
+            $backgroundColor={mapComponentStatusToStyleProps(segment.status).$borderColor}
           />
         ))}
+        <Tooltip id="tooltip" place="top" />
         <CurrentTimeMarker $left={x(now)} />
       </TimelineBar>
     </Root>

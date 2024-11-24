@@ -103,7 +103,7 @@ export default function IncidentPage({ incident }: Props) {
                 <StatusUpdateHeader>
                   <Status>{formatIncidentStatusName(prop.status)}</Status>
                   <StatusDate>
-                    {format(prop.createdAt, "MMM dd YYY")} at{" "}
+                    {format(prop.createdAt, "MMM dd yyy")} at{" "}
                     {format(prop.createdAt, "hh:mm a")}
                   </StatusDate>
                 </StatusUpdateHeader>
