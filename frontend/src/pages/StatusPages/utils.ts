@@ -3,9 +3,9 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
 
 import { ComponentStatus } from '@/types/enums'
-import { IStatusPage, ModelID } from '@/types/models'
+import { IStatusPage, IStatusPageComponentEvent, ModelID } from '@/types/models'
 
-import { type FlattenedItem, ItemType, type TreeItem, type TreeItems } from './types'
+import { type FlattenedItem, ItemType, Segment, type TreeItem, type TreeItems } from './types'
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth)
@@ -325,4 +325,22 @@ export function calculateTimeWindowWithBuffer(start_date: Date, end_date: Date):
   start_date = subMinutes(start_date, buffer)
   end_date = addMinutes(end_date, buffer)
   return [start_date, end_date]
+}
+
+export const groupEventsByComponent = (events: IStatusPageComponentEvent[], now: Date) => {
+  return events.reduce(
+    (acc, event) => {
+      if (!acc[event.statusPageComponent.name]) {
+        acc[event.statusPageComponent.name] = []
+      }
+      acc[event.statusPageComponent.name].push({
+        status: event.status,
+        startTime: new Date(event.startedAt),
+        endTime: event.endedAt ? new Date(event.endedAt) : now,
+        hasEnded: !!event.endedAt
+      })
+      return acc
+    },
+    {} as { [key: string]: Segment[] }
+  )
 }

@@ -1,6 +1,7 @@
 import { UniqueIdentifier } from '@dnd-kit/core'
 import { MutableRefObject } from 'react'
 
+import { ComponentStatus } from '@/types/enums'
 import { ModelID } from '@/types/models'
 
 export enum ItemType {
@@ -39,3 +40,10 @@ export type SensorContext = MutableRefObject<{
   items: FlattenedItem[]
   offset: number
 }>
+
+export interface Segment {
+  status: ComponentStatus
+  startTime: Date
+  endTime: Date
+  hasEnded: boolean
+}

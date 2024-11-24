@@ -11,7 +11,7 @@ import useApiService from '@/hooks/useApi'
 import { ComponentStatus } from '@/types/enums'
 import { ModelID } from '@/types/models'
 
-import ComponentStatusTimeline from './components/ComponentStatusTimeline'
+import ComponentsUptimeSection from './components/ComponentsUptimeSection'
 import StatusPageIncidentUpdateRow from './components/IncidentUpdateRow'
 
 import CreateStatusPageIncidentUpdateModal from './CreateStatusPageIncidentUpdateModal'
@@ -133,7 +133,7 @@ const ShowStatusPageIncident = () => {
                   <h3>Uptime</h3>
                 </ContentHeader>
                 <ContentSection>
-                  {getIncidentEvents.data && <ComponentStatusTimeline events={getIncidentEvents.data.items} />}
+                  {getIncidentEvents.data && <ComponentsUptimeSection events={getIncidentEvents.data.items} />}
                 </ContentSection>
               </ContentMain>
               <ContentSidebar>
