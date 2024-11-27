@@ -67,7 +67,8 @@ const StatusPagesList = () => {
             <SectionHeader>Public status pages</SectionHeader>
             {isFetched && statusPages?.items.length === 0 && <Empty message="No status pages found" />}
             <BlocksContainer>
-              {statusPages && statusPages.items.map((it) => <StatusPageItem statusPage={it} onClick={onClick} />)}
+              {statusPages &&
+                statusPages.items.map((it) => <StatusPageItem key={it.id} statusPage={it} onClick={onClick} />)}
             </BlocksContainer>
           </ContentMain>
         </Content>
