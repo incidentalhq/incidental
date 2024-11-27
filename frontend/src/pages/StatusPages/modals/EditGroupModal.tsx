@@ -4,19 +4,22 @@ import Dialog from '@/components/Dialog/Dialog'
 import useApiService from '@/hooks/useApi'
 import { IStatusPage } from '@/types/models'
 
-import GroupForm, { FormValues } from './components/GroupForm'
+import GroupForm, { FormValues } from '../components/GroupForm'
+
+import { GroupValue } from '../types'
 
 interface Props {
   onClose: () => void
+  group: GroupValue
   statusPage: IStatusPage
 }
 
-const CreateStatusPageGroupModal: React.FC<Props> = ({ onClose, statusPage }) => {
+const EditGroupModal: React.FC<Props> = ({ onClose, group, statusPage }) => {
   const { apiService } = useApiService()
   const queryClient = useQueryClient()
 
-  const mutation = useMutation({
-    mutationFn: (value: FormValues) => apiService.createStatusPageGroup(statusPage.id, value),
+  const createStatusPageMutation = useMutation({
+    mutationFn: (value: FormValues) => apiService.editStatusPageGroup(statusPage.id, group.id, value),
     onSuccess: () => {
       onClose()
       queryClient.invalidateQueries({ queryKey: ['get-status-page', statusPage.id] })
@@ -24,16 +27,16 @@ const CreateStatusPageGroupModal: React.FC<Props> = ({ onClose, statusPage }) =>
   })
 
   const handleSubmit = (values: FormValues) => {
-    mutation.mutateAsync({
+    createStatusPageMutation.mutateAsync({
       ...values
     })
   }
 
   return (
-    <Dialog onClose={onClose} title="Create group">
-      <GroupForm onSubmit={handleSubmit} />
+    <Dialog onClose={onClose} title="Edit group">
+      <GroupForm onSubmit={handleSubmit} group={group} />
     </Dialog>
   )
 }
 
-export default CreateStatusPageGroupModal
+export default EditGroupModal

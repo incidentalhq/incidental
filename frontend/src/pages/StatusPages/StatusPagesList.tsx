@@ -14,7 +14,7 @@ import { IStatusPage } from '@/types/models'
 
 import StatusPageItem from './components/StatusPageItem'
 
-import CreateStatusPageModal from './CreateStatusPageModal'
+import CreateStatusPageModal from './modals/CreateStatusPageModal'
 
 const SectionHeader = styled.h3`
   margin-bottom: 1rem;

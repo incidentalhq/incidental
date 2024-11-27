@@ -14,7 +14,7 @@ import { ModelID } from '@/types/models'
 import ComponentsUptimeSection from './components/ComponentsUptimeSection'
 import StatusPageIncidentUpdateRow from './components/IncidentUpdateRow'
 
-import CreateStatusPageIncidentUpdateModal from './CreateStatusPageIncidentUpdateModal'
+import CreateStatusPageIncidentUpdateModal from './modals/CreateStatusPageIncidentUpdateModal'
 import { mapComponentStatusToStyleProps, statusToTitleCase } from './utils'
 
 type UrlParams = {

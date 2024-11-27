@@ -4,22 +4,19 @@ import Dialog from '@/components/Dialog/Dialog'
 import useApiService from '@/hooks/useApi'
 import { IStatusPage } from '@/types/models'
 
-import ComponentForm, { FormValues } from './components/ComponentForm'
-
-import { ComponentValue } from './types'
+import ComponentForm, { FormValues } from '../components/ComponentForm'
 
 interface Props {
   onClose: () => void
-  component: ComponentValue
   statusPage: IStatusPage
 }
 
-const EditComponentModal: React.FC<Props> = ({ onClose, component, statusPage }) => {
+const CreateComponentModal: React.FC<Props> = ({ onClose, statusPage }) => {
   const { apiService } = useApiService()
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (value: FormValues) => apiService.editStatusPageComponent(statusPage.id, component.id, value),
+    mutationFn: (value: FormValues) => apiService.createStatusPageComponent(statusPage.id, value),
     onSuccess: () => {
       onClose()
       queryClient.invalidateQueries({ queryKey: ['get-status-page', statusPage.id] })
@@ -33,10 +30,10 @@ const EditComponentModal: React.FC<Props> = ({ onClose, component, statusPage })
   }
 
   return (
-    <Dialog onClose={onClose} title="Edit component">
-      <ComponentForm onSubmit={handleSubmit} component={component} />
+    <Dialog onClose={onClose} title="Create component">
+      <ComponentForm onSubmit={handleSubmit} />
     </Dialog>
   )
 }
 
-export default EditComponentModal
+export default CreateComponentModal

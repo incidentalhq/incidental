@@ -7,7 +7,7 @@ import { RoutePaths } from '@/routes'
 import { StatusPageKind } from '@/types/enums'
 import { IStatusPage } from '@/types/models'
 
-import CreateStatusPageForm, { FormValues as CreateStatusPageValues } from './components/CreateStatusPageForm'
+import CreateStatusPageForm, { FormValues as CreateStatusPageValues } from '../components/CreateStatusPageForm'
 
 interface Props {
   onClose: () => void
