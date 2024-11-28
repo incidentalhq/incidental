@@ -25,8 +25,12 @@ const Title = styled.div`
 `;
 const IncidentWrapper = styled.div`
   padding: 1rem;
-  background-color: var(--color-slate-100);
+  background-color: var(--color-gray-50);
   border-radius: var(--radius-lg);
+
+  &:hover {
+    background-color: var(--color-gray-100);
+  }
 `;
 const IncidentHeader = styled.div`
   margin-bottom: 0.5rem;
@@ -48,8 +52,8 @@ const IncidentFooter = styled.div`
 `;
 const AffectedComponent = styled.div<{ $status: ComponentStatus }>`
   display: inline-block;
-  background-color: ${(props) =>
-    getComponentStatusStyle(props.$status).backgroundColor};
+  background-color: var(--color-slate-200);
+  color: var(--color-slate-800);
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-md);
 `;
@@ -62,6 +66,7 @@ const IncidentStatus = styled.div`
 const AffectedComponentsWrapper = styled.div`
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 `;
 
 interface Props {
@@ -96,6 +101,7 @@ const CurrentIncidentsHero: React.FC<Props> = ({ statusPageResponse }) => {
                   {formatIncidentStatusName(incident.status)}
                 </IncidentStatus>
                 <AffectedComponentsWrapper>
+                  <span>Affected Components:</span>
                   {incident.incidentUpdates[0].componentUpdates.map(
                     (component) => (
                       <AffectedComponent

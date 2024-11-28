@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -139,19 +139,16 @@ const ShowStatusPageIncident = () => {
               <ContentSidebar>
                 <FieldsHeader>Current status</FieldsHeader>
                 <RelatedFields>
-                  {getIncidentQuery.data?.incidentUpdates
-                    .at(0)
-                    ?.componentUpdates.filter((it) => it.status !== ComponentStatus.OPERATIONAL)
-                    .map((component) => (
-                      <Field key={component.id}>
-                        <FieldName>{component.statusPageComponent.name}</FieldName>
-                        <FieldValue>
-                          <Pill {...mapComponentStatusToStyleProps(component.status)}>
-                            {statusToTitleCase(component.status)}
-                          </Pill>
-                        </FieldValue>
-                      </Field>
-                    ))}
+                  {getIncidentQuery.data?.incidentUpdates.at(0)?.componentUpdates.map((component) => (
+                    <Field key={component.id}>
+                      <FieldName>{component.statusPageComponent.name}</FieldName>
+                      <FieldValue>
+                        <Pill {...mapComponentStatusToStyleProps(component.status)}>
+                          {statusToTitleCase(component.status)}
+                        </Pill>
+                      </FieldValue>
+                    </Field>
+                  ))}
                 </RelatedFields>
               </ContentSidebar>
             </>
