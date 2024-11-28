@@ -2,7 +2,7 @@ import { IStatusPageResponse } from "@/types/models";
 import React from "react";
 import styled from "styled-components";
 import { formatDistanceToNow } from "date-fns";
-import { formatIncidentStatusName, getComponentStatusStyle } from "@/lib/utils";
+import { formatIncidentStatusName } from "@/lib/utils";
 import { ComponentStatus } from "@/types/enums";
 import Link from "next/link";
 

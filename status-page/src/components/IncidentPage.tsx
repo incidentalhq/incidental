@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { IStatusPageIncident } from "@/types/models";
 import Timeline from "./Timeline";
-import { format, formatDistanceToNow, formatDistance } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { formatIncidentStatusName } from "@/lib/utils";
 import { CSSProperties } from "react";
