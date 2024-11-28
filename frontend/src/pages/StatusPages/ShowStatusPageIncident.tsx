@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -8,7 +8,6 @@ import Loading from '@/components/Loading/Loading'
 import { Box, Content, ContentMain, Header, Pill, Title } from '@/components/Theme/Styles'
 import Timeline from '@/components/Timeline/Timeline'
 import useApiService from '@/hooks/useApi'
-import { ComponentStatus } from '@/types/enums'
 import { ModelID } from '@/types/models'
 
 import ComponentsUptimeSection from './components/ComponentsUptimeSection'
