@@ -50,8 +50,6 @@ services:
       - ".:/srv"
     env_file:
       - .env
-    environment:
-      - SERVICE=beat
     command: celery -A app.worker beat --loglevel=INFO -s /var/run/celerybeat
 
 volumes:

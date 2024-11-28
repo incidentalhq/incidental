@@ -8,13 +8,12 @@ import Loading from '@/components/Loading/Loading'
 import { Box, Content, ContentMain, Header, Pill, Title } from '@/components/Theme/Styles'
 import Timeline from '@/components/Timeline/Timeline'
 import useApiService from '@/hooks/useApi'
-import { ComponentStatus } from '@/types/enums'
 import { ModelID } from '@/types/models'
 
 import ComponentsUptimeSection from './components/ComponentsUptimeSection'
 import StatusPageIncidentUpdateRow from './components/IncidentUpdateRow'
 
-import CreateStatusPageIncidentUpdateModal from './CreateStatusPageIncidentUpdateModal'
+import CreateStatusPageIncidentUpdateModal from './modals/CreateStatusPageIncidentUpdateModal'
 import { mapComponentStatusToStyleProps, statusToTitleCase } from './utils'
 
 type UrlParams = {
@@ -139,19 +138,16 @@ const ShowStatusPageIncident = () => {
               <ContentSidebar>
                 <FieldsHeader>Current status</FieldsHeader>
                 <RelatedFields>
-                  {getIncidentQuery.data?.incidentUpdates
-                    .at(0)
-                    ?.componentUpdates.filter((it) => it.status !== ComponentStatus.OPERATIONAL)
-                    .map((component) => (
-                      <Field key={component.id}>
-                        <FieldName>{component.statusPageComponent.name}</FieldName>
-                        <FieldValue>
-                          <Pill {...mapComponentStatusToStyleProps(component.status)}>
-                            {statusToTitleCase(component.status)}
-                          </Pill>
-                        </FieldValue>
-                      </Field>
-                    ))}
+                  {getIncidentQuery.data?.incidentUpdates.at(0)?.componentUpdates.map((component) => (
+                    <Field key={component.id}>
+                      <FieldName>{component.statusPageComponent.name}</FieldName>
+                      <FieldValue>
+                        <Pill {...mapComponentStatusToStyleProps(component.status)}>
+                          {statusToTitleCase(component.status)}
+                        </Pill>
+                      </FieldValue>
+                    </Field>
+                  ))}
                 </RelatedFields>
               </ContentSidebar>
             </>

@@ -3,9 +3,11 @@
 import styled from "styled-components";
 import { IStatusPageIncident } from "@/types/models";
 import Timeline from "./Timeline";
-import { format } from "date-fns";
-import { formatIncidentStatusName, getComponentStatusStyle } from "@/lib/utils";
+import { format, formatDistanceToNow } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { formatIncidentStatusName } from "@/lib/utils";
 import { CSSProperties } from "react";
+import { StatusPageIncidentStatus } from "@/types/enums";
 
 const Root = styled.div`
   display: flex;
@@ -36,6 +38,7 @@ const StatusUpdate = styled.div`
   border: 1px solid var(--color-slate-200);
   border-radius: var(--radius-md);
   padding: 1rem;
+  background: white;
 `;
 const StatusUpdateHeader = styled.div`
   display: flex;
@@ -61,12 +64,42 @@ const AffectedComponents = styled.div`
   gap: 0.5rem;
   align-items: center;
 `;
+const IncidentTime = styled.div`
+  color: var(--color-slate-500);
+`;
+const IncidentName = styled.h2`
+  font-weight: 800;
+`;
+const UpdatesSection = styled.div`
+  background: var(--color-gray-100);
+`;
+const MainContent = styled.div`
+  margin-top: 1rem;
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-md);
+
+  ${Section} {
+    padding: 1rem;
+  }
+`;
 
 interface Props {
   incident: IStatusPageIncident;
 }
 
 export default function IncidentPage({ incident }: Props) {
+  const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const formattedDate = format(
+    toZonedTime(incident.createdAt, localTimeZone),
+    "MMM dd yyy hh:mm a OOOO"
+  );
+  const onGoingFor = formatDistanceToNow(
+    toZonedTime(incident.createdAt, localTimeZone),
+    {
+      addSuffix: true,
+    }
+  );
+
   return (
     <Root>
       <Content>
@@ -75,43 +108,51 @@ export default function IncidentPage({ incident }: Props) {
             <h1>{incident.statusPage.name}</h1>
           </Header>
         </Section>
-        <Section>
-          <h2>{incident.name}</h2>
-        </Section>
-        <Section>
-          <AffectedComponents>
-            <div>Affected components</div>
-            {incident.componentsAffected.map((component) => (
-              <Pill
-                key={component.id}
-                $color={getComponentStatusStyle(component.status).color}
-                $backgroundColor={
-                  getComponentStatusStyle(component.status).backgroundColor
-                }
-              >
-                {component.statusPageComponent.name}
-              </Pill>
-            ))}
-          </AffectedComponents>
-        </Section>
-        <Section>
-          <h2>Updates</h2>
-          <Timeline
-            updates={incident.incidentUpdates}
-            render={(prop) => (
-              <StatusUpdate key={prop.id}>
-                <StatusUpdateHeader>
-                  <Status>{formatIncidentStatusName(prop.status)}</Status>
-                  <StatusDate>
-                    {format(prop.createdAt, "MMM dd yyy")} at{" "}
-                    {format(prop.createdAt, "hh:mm a")}
-                  </StatusDate>
-                </StatusUpdateHeader>
-                <p>{prop.message}</p>
-              </StatusUpdate>
-            )}
-          />
-        </Section>
+        <MainContent>
+          <Section>
+            <IncidentName>{incident.name}</IncidentName>
+            <IncidentTime>
+              {formattedDate}.{" "}
+              {incident.status !== StatusPageIncidentStatus.RESOLVED
+                ? `Ongoing for ${onGoingFor}`
+                : ""}{" "}
+            </IncidentTime>
+          </Section>
+          <Section>
+            <AffectedComponents>
+              <div>Affected components</div>
+              {incident.componentsAffected.map((component) => (
+                <Pill
+                  key={component.id}
+                  $backgroundColor="var(--color-slate-100)"
+                  $color="var(--color-slate-800)"
+                >
+                  {component.statusPageComponent.name}
+                </Pill>
+              ))}
+            </AffectedComponents>
+          </Section>
+          <UpdatesSection>
+            <Section>
+              <h2>Updates</h2>
+              <Timeline
+                updates={incident.incidentUpdates}
+                render={(prop) => (
+                  <StatusUpdate key={prop.id}>
+                    <StatusUpdateHeader>
+                      <Status>{formatIncidentStatusName(prop.status)}</Status>
+                      <StatusDate>
+                        {format(prop.createdAt, "MMM dd yyy")} at{" "}
+                        {format(prop.createdAt, "hh:mm a")}
+                      </StatusDate>
+                    </StatusUpdateHeader>
+                    <p>{prop.message}</p>
+                  </StatusUpdate>
+                )}
+              />
+            </Section>
+          </UpdatesSection>
+        </MainContent>
       </Content>
     </Root>
   );

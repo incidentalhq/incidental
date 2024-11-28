@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import arrowUpRight from '@/assets/icons/arrow-up-right.svg'
 import Button from '@/components/Button/Button'
+import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -12,7 +14,7 @@ import { ModelID } from '@/types/models'
 import ManageComponentsSection from './components/ManageComponentsSection'
 import StatusPageIncidentRow from './components/StatusPageIncidentRow'
 
-import CreateIncidentModal from './CreateIncidentModal'
+import CreateIncidentModal from './modals/CreateIncidentModal'
 
 type UrlParams = {
   id: ModelID
@@ -75,7 +77,11 @@ const ShowStatusPage = () => {
                   <h3>{statusPage?.name}</h3>
                 </ContentHeader>
                 <ContentSection>
-                  <div>{statusPage.publicUrl}</div>
+                  <div>
+                    <a href={statusPage.publicUrl} target="_blank">
+                      {statusPage.publicUrl} <Icon icon={arrowUpRight} />
+                    </a>
+                  </div>
                 </ContentSection>
                 <ContentSection>
                   <h3>Active Incidents</h3>

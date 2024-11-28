@@ -26,10 +26,10 @@ import useApiService from '@/hooks/useApi'
 import { APIError } from '@/services/transport'
 import { IStatusPage, ModelID } from '@/types/models'
 
-import CreateComponentModal from '../CreateComponentModal'
-import CreateStatusPageGroupModal from '../CreateGroupModal'
-import EditComponentModal from '../EditComponentModal'
-import EditGroupModal from '../EditGroupModal'
+import CreateComponentModal from '../modals/CreateComponentModal'
+import CreateStatusPageGroupModal from '../modals/CreateGroupModal'
+import EditComponentModal from '../modals/EditComponentModal'
+import EditGroupModal from '../modals/EditGroupModal'
 import { FlattenedItem, ItemType, SensorContext, TreeItem, TreeItems } from '../types'
 import {
   buildTree,

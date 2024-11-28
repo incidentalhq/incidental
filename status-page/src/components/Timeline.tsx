@@ -14,7 +14,7 @@ const Root = styled.div`
 
   li {
     padding-bottom: 1.5rem;
-    border-left: 1px solid #abaaed;
+    border-left: 1px solid var(--color-slate-200);
     position: relative;
     &:last-child {
       border: 0px;
@@ -25,7 +25,7 @@ const Root = styled.div`
       width: 15px;
       height: 15px;
       background: white;
-      border: 1px solid #4e5ed3;
+      border: 1px solid var(--color-slate-200);
       border-radius: 50%;
       position: absolute;
       left: -7.5px;

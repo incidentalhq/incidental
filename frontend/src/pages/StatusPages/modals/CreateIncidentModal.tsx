@@ -5,7 +5,7 @@ import useApiService from '@/hooks/useApi'
 import { CreateStatusPageIncident } from '@/types/action'
 import { IStatusPage, ModelID } from '@/types/models'
 
-import CreateStatusPageIncidentForm, { FormValues } from './components/CreateStatusPageIncidentForm'
+import CreateStatusPageIncidentForm, { FormValues } from '../components/CreateStatusPageIncidentForm'
 
 interface Props {
   statusPage: IStatusPage
