@@ -16,9 +16,7 @@
 
 Incidental is an open-source incident management platform designed to streamline your incident response process. It provides a centralized hub for declaring, managing, and resolving incidents efficiently within your organization.
 
-<img src="./assets/screenshot.png" />
-
-## Features
+## 🚀 Features
 
 We're building Incidental to be a best-in-class platform for managing your incidents. Here's what we offer:
 
@@ -31,7 +29,7 @@ We're building Incidental to be a best-in-class platform for managing your incid
 - ✅ **Status Pages:** Display the current status of your incidents to your stakeholders with customizable status pages
 - 🚧 **Custom Workflows:** (Coming Soon) Automate your incident response processes
 
-## Quick start
+## 🛠️ Quick start
 
 This guide will help you set up Incidental for local development.
 
@@ -79,12 +77,12 @@ This guide will help you set up Incidental for local development.
 
    - Go to http://localhost:3000 and create a new account
 
-# Resources
+## 📖 Resources
 
 - [Website](https://incidental.dev)
 - If you have any questions, you can email [hello@incidental.dev](mailto:hello@incidental.dev)
 
-## Contributing
+## ❤️ Contributing
 
 We welcome contributions to Incidental! Here's how you can help:
 
@@ -95,11 +93,13 @@ We welcome contributions to Incidental! Here's how you can help:
 5. Push to the branch (`git push origin feature/AmazingFeature`)
 6. Open a Pull Request
 
-## Roadmap
+## 📸 Screenshots
 
-- [ ] Implement custom workflows
-- [ ] Add integration with popular monitoring tools
-- [ ] Enhance reporting and analytics features
+Dashboard + slack integration
+<img src="./assets/dashboard.png" />
+
+Public status pages
+<img src="./assets/status-page.png" />
 
 ## License
 
