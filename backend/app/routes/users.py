@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.deps import CurrentOrganisation, CurrentUser, DatabaseSession, EventsService
 from app.exceptions import ErrorCodes, FormFieldValidationError, ValidationError
-from app.repos import OrganisationRepo, UserRepo
+from app.repos import InviteRepo, OrganisationRepo, UserRepo
 from app.schemas.actions import AuthUserSchema, CreateUserSchema, SendVerificationEmailSchema, VerifyEmailSchema
 from app.schemas.models import OrganisationMemberSchema, UserSchema
 from app.schemas.resources import PaginatedResults
@@ -20,24 +20,28 @@ def user_register(create_in: CreateUserSchema, session: DatabaseSession, events:
     """Create a new user account"""
     user_repo = UserRepo(session=session)
     organisation_repo = OrganisationRepo(session=session)
+    invite_repo = InviteRepo(session=session)
     identity_service = IdentityService(
         user_repo,
         organisation_repo,
+        invite_repo,
     )
 
-    user = identity_service.create_account(create_in=create_in)
+    create_account_result = identity_service.create_account(create_in=create_in)
     onboarding_service = create_onboarding_service(session=session)
-    onboarding_service.setup_organisation(organisation=user.organisations[0])
+
+    if create_account_result.is_new_organisation:
+        onboarding_service.setup_organisation(organisation=create_account_result.user.organisations[0])
 
     events.queue_job(
         SendVerificationEmailParameters(
-            user_id=user.id,
+            user_id=create_account_result.user.id,
         )
     )
 
     session.commit()
 
-    return user
+    return create_account_result.user
 
 
 @router.post("/auth", response_model=UserSchema)

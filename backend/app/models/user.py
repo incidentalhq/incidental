@@ -44,6 +44,8 @@ class User(Base, TimestampMixin):
     incidents_created = relationship("Incident", back_populates="creator")
     status_page_incidents_created = relationship("StatusPageIncident", back_populates="creator")
     status_page_incident_updates_created = relationship("StatusPageIncidentUpdate", back_populates="creator")
+    received_invites = relationship("Invite", back_populates="invitee", foreign_keys="Invite.invitee_id")
+    sent_invites = relationship("Invite", back_populates="inviter", foreign_keys="Invite.inviter_id")
 
     # user specific settings
     def _set_settings(self, value):

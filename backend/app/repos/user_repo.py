@@ -32,7 +32,6 @@ class UserRepo(BaseRepo):
 
     def get_user_by_auth_token(self, token: str) -> User | None:
         user = self.session.query(User).filter(User.auth_token == token).first()
-
         return user
 
     def create_user(self, create_in: CreateUserSchema | CreateUserViaSlackSchema) -> User:
@@ -71,3 +70,20 @@ class UserRepo(BaseRepo):
         )
 
         return self.session.scalars(stmt).all()
+
+    def get_organisation_member_by_email_address(
+        self, organisation: Organisation, email_address: str
+    ) -> OrganisationMember | None:
+        """Get a member of an organisation by email address"""
+        stmt = (
+            select(OrganisationMember)
+            .join(User)
+            .where(
+                OrganisationMember.organisation_id == organisation.id,
+                User.is_active.is_(True),
+                User.is_email_verified.is_(True),
+                User.email_address == email_address.lower(),
+            )
+        )
+
+        return self.session.scalar(stmt)

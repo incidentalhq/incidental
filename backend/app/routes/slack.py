@@ -16,11 +16,10 @@ from app.schemas.slack import (
     SlackUrlVerificationHandshakeSchema,
 )
 from app.schemas.tasks import HandleSlashCommandTaskParameters
-from app.services.factories import create_incident_service, create_onboarding_service
+from app.services.factories import create_incident_service, create_onboarding_service, create_slack_user_service
 from app.services.oauth_connector import OAuthConnectorService
 from app.services.slack.events import SlackEventsService
 from app.services.slack.interaction import SlackInteractionService
-from app.services.slack.user import SlackUserService
 
 logger = structlog.get_logger(logger_name=__name__)
 
@@ -92,10 +91,7 @@ async def slack_openid_complete(result: OAuth2AuthorizationResultSchema, session
     connector = _create_openid_connector()
     credentials = connector.complete(code=result.code)
 
-    user_repo = UserRepo(session=session)
-    organisation_repo = OrganisationRepo(session=session)
-
-    slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
+    slack_user_service = create_slack_user_service(session=session)
     create_result = slack_user_service.complete_slack_login(token=credentials.access_token)
 
     onboarding_service = create_onboarding_service(session=session)
@@ -115,11 +111,8 @@ async def slack_oauth_complete(
     connector = _create_oauth_connector()
     token = connector.complete(code=result.code)
 
-    user_repo = UserRepo(session=session)
-    organisation_repo = OrganisationRepo(session=session)
     onboarding_service = create_onboarding_service(session=session)
-
-    slack_user_service = SlackUserService(user_repo=user_repo, organisation_repo=organisation_repo)
+    slack_user_service = create_slack_user_service(session=session)
     creation_result = slack_user_service.complete_slack_app_install(user=user, credentials=token)
 
     if creation_result.is_new_organisation:
@@ -149,10 +142,7 @@ async def slack_events(slack_event: SlackEventSchema, session: Session = Depends
             logger.warning("Organisation not found", slack_team_id=slack_event.team_id)
             return
 
-        slack_user_service = SlackUserService(
-            user_repo=user_repo,
-            organisation_repo=organisation_repo,
-        )
+        slack_user_service = create_slack_user_service(session=session)
 
         slack_events_service = SlackEventsService(
             organisation=organisation,
@@ -191,7 +181,6 @@ def slack_interaction(
     organisation_repo = OrganisationRepo(session=session)
     form_repo = FormRepo(session=session)
     incident_repo = IncidentRepo(session=session)
-    user_repo = UserRepo(session=session)
     severity_repo = SeverityRepo(session=session)
 
     organisation = organisation_repo.get_by_slack_team_id(interaction.payload["team"]["id"])
@@ -200,10 +189,7 @@ def slack_interaction(
         return Response(status_code=status.HTTP_200_OK)
 
     incident_service = create_incident_service(session=session, organisation=organisation, events=events)
-    slack_user_service = SlackUserService(
-        user_repo=user_repo,
-        organisation_repo=organisation_repo,
-    )
+    slack_user_service = create_slack_user_service(session=session)
     user = slack_user_service.get_or_create_user_from_slack_id(
         slack_id=interaction.payload["user"]["id"], organisation=organisation
     )

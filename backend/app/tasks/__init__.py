@@ -7,6 +7,7 @@ from .incident_declared import IncidentDeclaredTask
 from .incident_status_updated import IncidentStatusUpdatedTask
 from .invite_user_to_channel import InviteUserToChannelTask
 from .join_channel import JoinChannelTask
+from .send_invite import SendInviteEmailTask
 from .send_verification_email import SendVerificationEmailTask
 from .set_channel_topic import SetChannelTopicTask
 from .slash_command import HandleSlashCommandTask

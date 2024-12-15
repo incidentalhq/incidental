@@ -6,6 +6,7 @@ from app.repos import (
     FieldRepo,
     FormRepo,
     IncidentRepo,
+    InviteRepo,
     LifecycleRepo,
     OrganisationRepo,
     SeverityRepo,
@@ -41,7 +42,16 @@ def create_incident_service(
 
 
 def create_slack_user_service(session: Session) -> SlackUserService:
-    return SlackUserService(user_repo=UserRepo(session=session), organisation_repo=OrganisationRepo(session=session))
+    user_repo = UserRepo(session=session)
+    organisation_repo = OrganisationRepo(session=session)
+    invite_repo = InviteRepo(session=session)
+
+    slack_user_service = SlackUserService(
+        user_repo=user_repo,
+        organisation_repo=organisation_repo,
+        invite_repo=invite_repo,
+    )
+    return slack_user_service
 
 
 def create_onboarding_service(session: Session) -> OnboardingService:

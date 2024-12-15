@@ -3,6 +3,7 @@ from .announcement_repo import AnnouncementRepo
 from .field_repo import FieldRepo
 from .form_repo import FormRepo
 from .incident_repo import IncidentRepo
+from .invite_repo import InviteRepo
 from .lifecycle_repo import LifecycleRepo
 from .organisation_repo import OrganisationRepo
 from .severity_repo import SeverityRepo

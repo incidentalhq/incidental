@@ -11,6 +11,7 @@ import {
   IIncidentStatus,
   IIncidentType,
   IIncidentUpdate,
+  IInvite,
   ILifecycle,
   ILoggedInUser,
   IOrganisation,
@@ -586,6 +587,31 @@ export class ApiService {
 
   getStatusPageDomainStatus(statusPageId: string) {
     return callApi<IStatusPageDomainStatusResponse>('GET', `/status-pages/${statusPageId}/domain-status`, {
+      user: this.user
+    })
+  }
+
+  getOrganisationInvites = () => {
+    return callApi<PaginatedResults<IInvite>>('GET', `/invites/search`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      }
+    })
+  }
+
+  createInvite = (values: Omit<IInvite, 'id' | 'createdAt' | 'role'>) => {
+    return callApi<IInvite>('POST', `/invites`, {
+      user: this.user,
+      headers: {
+        [ORGANISATION_HEADER_KEY]: this.organisation
+      },
+      json: values
+    })
+  }
+
+  deleteInvite = (id: ModelID) => {
+    return callApi('DELETE', `/invites/${id}`, {
       user: this.user
     })
   }

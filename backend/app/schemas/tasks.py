@@ -65,4 +65,8 @@ class SendVerificationEmailParameters(BaseModel):
     user_id: str
 
 
+class SendInviteTaskParameters(BaseModel):
+    invite_id: str
+
+
 class VerifyCustomDomainParameters(BaseModel): ...

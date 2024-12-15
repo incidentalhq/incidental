@@ -1,21 +1,28 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns/format'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import envelope from '@/assets/icons/envelope.svg'
+import trash from '@/assets/icons/trash.svg'
+import Button from '@/components/Button/Button'
+import ConfirmDelete from '@/components/Button/ConfirmDelete'
+import Icon from '@/components/Icon/Icon'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { IOrganisationMember } from '@/types/models'
+import { IInvite, IOrganisationMember, ModelID } from '@/types/models'
+
+import CreateInviteModal from './CreateInviteModal'
 
 const Intro = styled.div`
   padding: 1rem;
 `
-const Name = styled.div`
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+const Name = styled.div``
+const InvitedName = styled.div`
+  font-style: italic;
+  color: var(--color-gray-500);
 `
 const Controls = styled.div`
   display: flex;
@@ -28,7 +35,14 @@ const Controls = styled.div`
   }
 `
 
+type InviteOrMember = {
+  type: 'invite' | 'member'
+  invite?: IInvite
+  member?: IOrganisationMember
+}
+
 const SettingsMembers = () => {
+  const [showCreateInviteModal, setShowCreateInviteModal] = useState(false)
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
 
@@ -37,45 +51,127 @@ const SettingsMembers = () => {
     queryFn: () => apiService.getOrganisationMembers()
   })
 
-  const columns = useMemo(
+  const invitesQuery = useQuery({
+    queryKey: [organisation?.id, 'invites'],
+    queryFn: () => apiService.getOrganisationInvites()
+  })
+
+  const deleteInviteMutation = useMutation({
+    mutationFn: (id: ModelID) => apiService.deleteInvite(id),
+    onSuccess: () => {
+      invitesQuery.refetch()
+    }
+  })
+
+  const memberColumns = useMemo(
     () =>
       [
         {
           name: 'Name',
-          render: (v) => <Name>{v.user.name}</Name>
+          render: (v) => {
+            if (v.invite) {
+              return (
+                <InvitedName>
+                  User has been invited <Icon icon={envelope} />{' '}
+                </InvitedName>
+              )
+            }
+            if (v.member) {
+              return <Name>{v.member.user.name}</Name>
+            }
+          }
         },
         {
           name: 'Email',
-          render: (v) => v.user.emailAddress
+          render: (v) => (v.invite ? v.invite.emailAddress : v.member?.user.emailAddress)
         },
         {
           name: 'Role',
-          render: (v) => v.role
+          render: (v) => (v.invite ? v.invite.role : v.member?.role)
+        },
+        {
+          name: 'Status',
+          render: (v) => {
+            if (v.invite) {
+              return 'Invited'
+            }
+            if (v.member) {
+              return 'Active'
+            }
+          }
         },
         {
           name: 'Created',
-          render: (v) => format(v.createdAt, 'do MMMM yyyy')
+          render: (v) => {
+            if (v.invite) {
+              return format(new Date(v.invite.createdAt), 'dd/MM/yyyy')
+            }
+            if (v.member) {
+              return format(new Date(v.member.createdAt), 'dd/MM/yyyy')
+            }
+          }
         },
         {
           name: '',
-          render: () => <Controls></Controls>
+          render: (v) => (
+            <Controls>
+              {v.invite && (
+                <ConfirmDelete
+                  title="Delete user"
+                  message="Are you sure you want to delete this user?"
+                  onConfirm={() => v.invite && deleteInviteMutation.mutate(v.invite.id)}
+                >
+                  <Icon icon={trash} />
+                </ConfirmDelete>
+              )}
+            </Controls>
+          )
         }
-      ] as ColumnProperty<IOrganisationMember>[],
+      ] as ColumnProperty<InviteOrMember>[],
     []
   )
 
+  const invitesAndUsers = useMemo(() => {
+    if (invitesQuery.isSuccess && usersQuery.isSuccess) {
+      return [
+        ...usersQuery.data.items.map((it) => ({
+          type: 'member',
+          member: it
+        })),
+        ...invitesQuery.data.items.map((it) => ({
+          type: 'invite',
+          invite: it
+        }))
+      ] as InviteOrMember[]
+    }
+
+    return []
+  }, [invitesQuery.isSuccess, invitesQuery.data, usersQuery.isSuccess, usersQuery.data])
+
   return (
     <>
+      {showCreateInviteModal ? (
+        <CreateInviteModal organisation={organisation!} onClose={() => setShowCreateInviteModal(false)} />
+      ) : null}
       <Box>
         <Header>
           <Title>Manage users</Title>
+          <div>
+            <Button onClick={() => setShowCreateInviteModal(true)}>Invite user</Button>
+          </div>
         </Header>
         <Content>
           <ContentMain $padding={false}>
             <Intro>
               <p>Shown below are the members of your organisation</p>
             </Intro>
-            {usersQuery.isSuccess ? <Table data={usersQuery.data.items} rowKey={'id'} columns={columns} /> : null}
+            {usersQuery.isSuccess ? (
+              <Table
+                data={invitesAndUsers}
+                rowKey={(it) => (it.invite ? it.invite.id : it.member ? it.member.id : '-1')}
+                columns={memberColumns}
+              />
+            ) : null}
           </ContentMain>
         </Content>
       </Box>

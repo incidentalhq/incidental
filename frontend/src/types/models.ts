@@ -258,3 +258,8 @@ export interface IStatusPageComponentEvent extends IModel {
 export interface IStatusPageDomainStatusResponse {
   isVerified: boolean
 }
+
+export interface IInvite extends IModel {
+  emailAddress: string
+  role: MemberRole
+}

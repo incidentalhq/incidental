@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import ForeignKey, String, UnicodeText, UniqueConstraint
+from sqlalchemy import Enum, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from app.db import Base
@@ -21,7 +21,7 @@ class OrganisationMember(Base, TimestampMixin):
     organisation_id: Mapped[str] = mapped_column(
         String(50), ForeignKey("organisation.id", ondelete="cascade"), nullable=False, index=True
     )
-    role: Mapped[str] = mapped_column(UnicodeText, nullable=False)
+    role: Mapped[MemberRole] = mapped_column(Enum(MemberRole, native_enum=False), nullable=False)
 
     # relationships
     user = relationship("User", viewonly=True, uselist=False)
