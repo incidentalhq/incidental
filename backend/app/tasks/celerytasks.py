@@ -9,6 +9,7 @@ from app.schemas.tasks import (
     IncidentStatusUpdatedTaskParameters,
     InviteUserToChannelParams,
     JoinChannelTaskParameters,
+    SendInviteTaskParameters,
     SendVerificationEmailParameters,
     SetChannelTopicParameters,
     SyncBookmarksTaskParameters,
@@ -24,6 +25,7 @@ from app.tasks import (
     IncidentStatusUpdatedTask,
     InviteUserToChannelTask,
     JoinChannelTask,
+    SendInviteEmailTask,
     SendVerificationEmailTask,
     SetChannelTopicTask,
     SyncBookmarksTask,
@@ -110,3 +112,9 @@ def check_custom_domains():
     with session_factory() as session:
         params = VerifyCustomDomainParameters()
         VerifyCustomDomainTask(session=session).execute(parameters=params)
+
+
+@celery.task
+def send_invite(params: SendInviteTaskParameters):
+    with session_factory() as session:
+        SendInviteEmailTask(session=session).execute(parameters=params)

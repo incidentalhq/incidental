@@ -4,7 +4,7 @@ import structlog
 from slack_sdk import WebClient
 
 from app.models import MemberRole, Organisation, OrganisationTypes, User
-from app.repos import OrganisationRepo, UserRepo
+from app.repos import InviteRepo, OrganisationRepo, UserRepo
 from app.schemas.actions import CreateUserViaSlackSchema
 from app.schemas.resources import CreationResult, Credentials, OrganisationCreationResult
 from app.utils import generate_password
@@ -17,9 +17,10 @@ class UserIsABotError(Exception):
 
 
 class SlackUserService:
-    def __init__(self, user_repo: UserRepo, organisation_repo: OrganisationRepo):
+    def __init__(self, user_repo: UserRepo, organisation_repo: OrganisationRepo, invite_repo: InviteRepo):
         self.user_repo = user_repo
         self.organisation_repo = organisation_repo
+        self.invite_repo = invite_repo
 
     def get_or_create_user_from_slack_id(self, slack_id: str, organisation: Organisation) -> User:
         """Get or create new user from slack user"""
@@ -97,6 +98,13 @@ class SlackUserService:
         else:
             if not user.is_email_verified:
                 user.is_email_verified = True
+
+        # if user's email address has been invited to any organisations, add them to those organisations
+        invites = self.invite_repo.get_all_pending_invites_by_email_address(email_address=user.email_address)
+        if len(invites):
+            for invite in invites:
+                self.organisation_repo.add_member_if_not_exists(user, invite.organisation, role=invite.role)
+                self.invite_repo.use_invite(invite, user)
 
         team_id = response.data.get(team_id_key, "")
         team_name = response.data.get(team_name_key, "")

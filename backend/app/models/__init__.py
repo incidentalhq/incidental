@@ -12,6 +12,7 @@ from .incident_status import IncidentStatus, IncidentStatusCategoryEnum
 from .incident_type import IncidentType
 from .incident_type_field import IncidentTypeField
 from .incident_update import IncidentUpdate
+from .invite import Invite
 from .lifecycle import Lifecycle
 from .organisation import Organisation, OrganisationTypes
 from .organisation_member import MemberRole, OrganisationMember

@@ -10,6 +10,7 @@ from app.models import (
     ComponentStatus,
     IncidentStatusCategoryEnum,
     InterfaceKind,
+    MemberRole,
     RequirementTypeEnum,
     StatusPageIncidentStatus,
     StatusPageKind,
@@ -316,6 +317,11 @@ class PatchStatusPageSchema(BaseSchema):
 
 class UpdateStatusPageCustomDomain(BaseSchema):
     custom_domain: DomainNameValidator | None = None
+
+
+class CreateInviteSchema(BaseSchema):
+    email_address: EmailStr
+    role: MemberRole = MemberRole.MEMBER
 
 
 CreateStatusPageGroupSchema.model_rebuild()

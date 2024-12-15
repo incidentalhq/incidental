@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
     from .incident_role import IncidentRole
     from .incident_severity import IncidentSeverity
     from .incident_type import IncidentType
+    from .invite import Invite
     from .lifecycle import Lifecycle
     from .settings import Settings
     from .slack_message import SlackMessage
@@ -55,6 +56,7 @@ class Organisation(Base, TimestampMixin):
     incident_types: Mapped[list["IncidentType"]] = relationship("IncidentType", back_populates="organisation")
     lifecycles: Mapped[list["Lifecycle"]] = relationship("Lifecycle", back_populates="organisation")
     status_pages: Mapped[list["StatusPage"]] = relationship("StatusPage", back_populates="organisation")
+    invites: Mapped[list["Invite"]] = relationship("Invite", back_populates="organisation")
 
     def __repr__(self):
         return f"<Organisation id={self.id} name={self.name}>"

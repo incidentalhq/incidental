@@ -263,6 +263,11 @@ class StatusPageDomainStatusCheckResponse(BaseSchema):
     is_verified: bool
 
 
+class InviteSchema(ModelSchema):
+    email_address: str
+    role: str
+
+
 IncidentTypeSchema.model_rebuild()
 StatusPageComponentGroupSchema.model_rebuild()
 StatusPageWithEventsSchema.model_rebuild()
