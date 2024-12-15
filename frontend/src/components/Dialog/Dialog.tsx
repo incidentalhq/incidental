@@ -19,15 +19,30 @@ const Root = styled.div`
   z-index: 999;
 `
 
-const Wrapper = styled.div`
+type WrapperProps = {
+  $size?: Sizes
+}
+const Wrapper = styled.div<WrapperProps>`
   box-shadow:
     0 4px 20px 4px rgba(0, 20, 60, 0.1),
     0 4px 80px -8px rgba(0, 20, 60, 0.2);
   z-index: 9999;
   background-color: #fff;
-  max-width: 1200px;
   border-radius: 1rem;
   margin-top: 10vh;
+
+  max-width: ${({ $size }) => {
+    switch ($size) {
+      case 'sm':
+        return '400px'
+      case 'md':
+        return '600px'
+      case 'lg':
+        return '800px'
+      default:
+        return '800px'
+    }
+  }};
 
   @media screen and (max-width: 600px) {
     box-shadow: none;
@@ -42,12 +57,15 @@ const DialogContent = styled.div`
   padding: 1rem;
 `
 
+type Sizes = 'sm' | 'md' | 'lg'
+
 interface Props {
   title: string
+  size?: Sizes
   onClose: () => void
 }
 
-const Dialog: React.FC<PropsWithChildren<Props>> = ({ onClose, children, title }) => {
+const Dialog: React.FC<PropsWithChildren<Props>> = ({ onClose, children, title, size }) => {
   const ref = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -69,7 +87,7 @@ const Dialog: React.FC<PropsWithChildren<Props>> = ({ onClose, children, title }
           ease: [0, 0.71, 0.2, 1.01]
         }}
       >
-        <Wrapper ref={ref}>
+        <Wrapper ref={ref} $size={size}>
           <DialogHeader onClose={onClose} title={title} />
           <DialogContent>{children}</DialogContent>
         </Wrapper>

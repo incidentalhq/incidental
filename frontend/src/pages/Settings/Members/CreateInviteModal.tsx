@@ -41,7 +41,12 @@ const CreateInviteModal: React.FC<Props> = ({ onClose, organisation }) => {
   }
 
   return (
-    <Dialog onClose={onClose} title="Invite user to organisation">
+    <Dialog onClose={onClose} title="Invite user to organisation" size="md">
+      <p>
+        Send an invite to a member of your team, when they sign up using the email address below, they'll be added to
+        your organisation.
+      </p>
+      <br />
       <CreateInviteForm onSubmit={handleSubmit} />
     </Dialog>
   )

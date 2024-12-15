@@ -33,7 +33,7 @@ import SettingsFields from '@/pages/Settings/Fields'
 import SettingsFormsEdit from '@/pages/Settings/Forms/Edit'
 import SettingsForms from '@/pages/Settings/Forms/Index'
 import SettingsIndex from '@/pages/Settings/Index'
-import SettingsMembers from '@/pages/Settings/Members'
+import SettingsMembersIndex from '@/pages/Settings/Members/Index'
 import SettingsRoles from '@/pages/Settings/Roles'
 import SettingsSeverity from '@/pages/Settings/Severity'
 import SettingsSlack from '@/pages/Settings/Slack'
@@ -116,7 +116,7 @@ const App = () => {
                       <Route path={RoutePaths.SETTINGS_FORMS_INDEX} element={<SettingsForms />} />
                       <Route path={RoutePaths.SETTINGS_FORMS_EDIT} element={<SettingsFormsEdit />} />
                       <Route path={RoutePaths.SETTINGS_STATUSES} element={<SettingsStatuses />} />
-                      <Route path={RoutePaths.SETTINGS_USERS} element={<SettingsMembers />} />
+                      <Route path={RoutePaths.SETTINGS_USERS} element={<SettingsMembersIndex />} />
                     </Route>
                   </Route>
                   <Route path="*" element={<PageNotFound />} />

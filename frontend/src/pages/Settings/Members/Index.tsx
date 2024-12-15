@@ -3,8 +3,9 @@ import { format } from 'date-fns/format'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import envelope from '@/assets/icons/envelope.svg'
+import paperPlane from '@/assets/icons/paper-plane.svg'
 import trash from '@/assets/icons/trash.svg'
+import userPlus from '@/assets/icons/user-plus.svg'
 import Button from '@/components/Button/Button'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
@@ -41,7 +42,7 @@ type InviteOrMember = {
   member?: IOrganisationMember
 }
 
-const SettingsMembers = () => {
+const SettingsMembersIndex = () => {
   const [showCreateInviteModal, setShowCreateInviteModal] = useState(false)
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
@@ -72,7 +73,7 @@ const SettingsMembers = () => {
             if (v.invite) {
               return (
                 <InvitedName>
-                  User has been invited <Icon icon={envelope} />{' '}
+                  <Icon icon={paperPlane} /> Invite sent to user
                 </InvitedName>
               )
             }
@@ -101,13 +102,14 @@ const SettingsMembers = () => {
           }
         },
         {
-          name: 'Created',
+          name: 'Joined',
           render: (v) => {
+            const dateFormat = 'dd MMM yyyy'
             if (v.invite) {
-              return format(new Date(v.invite.createdAt), 'dd/MM/yyyy')
+              return format(new Date(v.invite.createdAt), dateFormat)
             }
             if (v.member) {
-              return format(new Date(v.member.createdAt), 'dd/MM/yyyy')
+              return format(new Date(v.member.createdAt), dateFormat)
             }
           }
         },
@@ -116,21 +118,24 @@ const SettingsMembers = () => {
           render: (v) => (
             <Controls>
               {v.invite && (
-                <ConfirmDelete
-                  title="Delete user"
-                  message="Are you sure you want to delete this user?"
-                  onConfirm={() => v.invite && deleteInviteMutation.mutate(v.invite.id)}
-                >
-                  <Icon icon={trash} />
-                </ConfirmDelete>
+                <div>
+                  <ConfirmDelete
+                    title="Delete user"
+                    message="Are you sure you want to delete this user?"
+                    onConfirm={() => v.invite && deleteInviteMutation.mutate(v.invite.id)}
+                  >
+                    <Icon icon={trash} />
+                  </ConfirmDelete>
+                </div>
               )}
             </Controls>
           )
         }
       ] as ColumnProperty<InviteOrMember>[],
-    []
+    [deleteInviteMutation]
   )
 
+  // Combine invites and users into a single array
   const invitesAndUsers = useMemo(() => {
     if (invitesQuery.isSuccess && usersQuery.isSuccess) {
       return [
@@ -157,7 +162,9 @@ const SettingsMembers = () => {
         <Header>
           <Title>Manage users</Title>
           <div>
-            <Button onClick={() => setShowCreateInviteModal(true)}>Invite user</Button>
+            <Button onClick={() => setShowCreateInviteModal(true)}>
+              <Icon icon={userPlus} /> Invite user
+            </Button>
           </div>
         </Header>
         <Content>
@@ -179,4 +186,4 @@ const SettingsMembers = () => {
   )
 }
 
-export default SettingsMembers
+export default SettingsMembersIndex
