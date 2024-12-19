@@ -27,10 +27,10 @@ import ChangeSeverityForm, {
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import DisplayFieldValue from './components/Field/DisplayFieldValue'
-import FieldForm, { FormValues as FieldFormValues } from './components/Field/FieldForm'
 import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
 import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
 
+import EditCustomFieldModal from './modals/EditCustomFieldModal'
 import ShareUpdateModal from './modals/ShareUpdateModal'
 import UpdateIncidentStatusModal from './modals/UpdateIncidentStatusModal'
 import UpdateIncidentTimestampsModal from './modals/UpdateIncidentTimestampsModal'
@@ -126,6 +126,7 @@ const ShowIncident = () => {
   const [showShareUpdateModal, setShowShareUpdateModal] = useState(false)
   const [showUpdateIncidentStatusModal, setShowUpdateIncidentStatusModal] = useState(false)
   const [showUpdateTimestampsModal, setShowUpdateTimestampsModal] = useState(false)
+  const [showEditFieldValueModal, setShowEditFieldValueModal] = useState<[IField, IIncidentFieldValue | null]>()
 
   // Incident severities
   const severitiesQuery = useQuery({
@@ -250,57 +251,6 @@ const ShowIncident = () => {
     }
   }
 
-  const handleSetFieldValue = useCallback(
-    async (field: IField, values: FieldFormValues) => {
-      if (!incidentQuery.data) {
-        console.error('Incident has not been fetched yet')
-        return
-      }
-      try {
-        const normalized = [
-          {
-            field: {
-              id: field.id
-            },
-            value: values[field.id]
-          }
-        ]
-        await apiService.patchIncidentFieldValues(incidentQuery.data, normalized)
-        fieldValuesQuery.refetch()
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          toast(e.message, { type: 'error' })
-        }
-        console.error(e)
-      }
-    },
-    [incidentQuery, apiService, closeModal, fieldValuesQuery]
-  )
-
-  const createShowEditCustomFieldHandler = useCallback(
-    (field: IField, value: IIncidentFieldValue | null) => {
-      return (evt?: MouseEvent<HTMLButtonElement>) => {
-        evt?.preventDefault()
-        if (!incidentQuery.data) {
-          return
-        }
-        setModal(
-          <ModalContainer>
-            <h2>{field.label}</h2>
-            <FieldForm
-              onSubmit={(values) => handleSetFieldValue(field, values)}
-              incident={incidentQuery.data}
-              field={field}
-              value={value}
-            />
-          </ModalContainer>
-        )
-      }
-    },
-    [setModal, incidentQuery.data, handleSetFieldValue]
-  )
-
   const slackUrl = useMemo(
     () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
     [organisation, incidentQuery.data?.slackChannelId]
@@ -327,6 +277,15 @@ const ShowIncident = () => {
           onClose={() => setShowUpdateTimestampsModal(false)}
         />
       )}
+      {showEditFieldValueModal && (
+        <EditCustomFieldModal
+          onClose={() => setShowEditFieldValueModal(undefined)}
+          incident={incidentQuery.data!}
+          field={showEditFieldValueModal[0]}
+          value={showEditFieldValueModal[1]}
+        />
+      )}
+
       <Box>
         {incidentQuery.isLoading && <Loading />}
         {incidentQuery.isSuccess ? (
@@ -467,17 +426,14 @@ const ShowIncident = () => {
                                   <DisplayFieldValue
                                     field={row.field}
                                     incidentFieldValue={row.value}
-                                    onClick={() => createShowEditCustomFieldHandler(row.field, row.value)()}
+                                    onClick={() => setShowEditFieldValueModal([row.field, row.value])}
                                   />
                                 ) : (
                                   'Set value'
                                 )}
                               </InnerButtonContent>
                             ) : (
-                              <FlatButton
-                                type="button"
-                                onClick={createShowEditCustomFieldHandler(row.field, row.value)}
-                              >
+                              <FlatButton type="button" onClick={() => setShowEditFieldValueModal([row.field, null])}>
                                 <InnerButtonContent>Set value</InnerButtonContent>
                               </FlatButton>
                             )}
