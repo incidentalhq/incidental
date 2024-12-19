@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { MouseEvent, useCallback, useMemo } from 'react'
+import { MouseEvent, useCallback, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
@@ -9,7 +9,6 @@ import slack from '@/assets/icons/slack.svg'
 import wrench from '@/assets/icons/wrench.svg'
 import Button from '@/components/Button/Button'
 import Icon from '@/components/Icon/Icon'
-import ShareUpdateForm, { FormValues as ShareUpdateFormValues } from '@/components/Incident/ShareUpdateForm'
 import Loading from '@/components/Loading/Loading'
 import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
@@ -18,22 +17,23 @@ import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
-import { FormType, IncidentRoleKind } from '@/types/enums'
+import { IncidentRoleKind } from '@/types/enums'
 import { IField, IIncidentFieldValue, IIncidentRole } from '@/types/models'
 import { rankSorter } from '@/utils/sort'
-import { getLocalTimeZone } from '@/utils/time'
 
 import ChangeSeverityForm, {
   FormValues as ChangeSeverityFormValues
 } from './components/ChangeSeverityForm/ChangeSeverityForm'
-import ChangeStatusForm, { FormValues as ChangeStatusFormValues } from './components/ChangeStatusForm/ChangeStatusForm'
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import DisplayFieldValue from './components/Field/DisplayFieldValue'
 import FieldForm, { FormValues as FieldFormValues } from './components/Field/FieldForm'
 import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
 import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
-import EditTimestampsForm, { FormValues as TimestampFormValues } from './components/Timestamps/EditTimestampsForm'
+
+import ShareUpdateModal from './modals/ShareUpdateModal'
+import UpdateIncidentStatusModal from './modals/UpdateIncidentStatusModal'
+import UpdateIncidentTimestampsModal from './modals/UpdateIncidentTimestampsModal'
 
 const Description = styled.div`
   margin-bottom: 2rem;
@@ -122,7 +122,10 @@ const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
   const { setModal, closeModal } = useModal()
-  const { organisation, forms } = useGlobal()
+  const { organisation } = useGlobal()
+  const [showShareUpdateModal, setShowShareUpdateModal] = useState(false)
+  const [showUpdateIncidentStatusModal, setShowUpdateIncidentStatusModal] = useState(false)
+  const [showUpdateTimestampsModal, setShowUpdateTimestampsModal] = useState(false)
 
   // Incident severities
   const severitiesQuery = useQuery({
@@ -172,18 +175,6 @@ const ShowIncident = () => {
     [id, apiService, incidentQuery]
   )
 
-  // Change the status of this incident
-  const handleChangeStatus = async (values: ChangeStatusFormValues) => {
-    await apiService.patchIncident(id, {
-      incidentStatus: {
-        id: values.status
-      }
-    })
-    incidentQuery.refetch()
-    incidentUpdatesQuery.refetch()
-    closeModal()
-  }
-
   const handleChangeSeverity = async (values: ChangeSeverityFormValues) => {
     await apiService.patchIncident(id, {
       incidentSeverity: {
@@ -206,21 +197,6 @@ const ShowIncident = () => {
       }
       console.error(e)
     }
-  }
-
-  // Show modal when edit status is clicked
-  const handleEditStatus = (evt: MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    if (!incidentQuery.data) {
-      return
-    }
-    setModal(
-      <ModalContainer>
-        <h2>Change status</h2>
-        <p>Update the status of your incident</p>
-        <ChangeStatusForm incident={incidentQuery.data} onSubmit={handleChangeStatus} />
-      </ModalContainer>
-    )
   }
 
   const handleEditSeverity = (evt: MouseEvent<HTMLButtonElement>) => {
@@ -249,54 +225,6 @@ const ShowIncident = () => {
       incidentQuery.refetch()
     },
     [apiService, id, incidentQuery]
-  )
-
-  const handleUpdateTimestampValues = useCallback(
-    async (values: TimestampFormValues) => {
-      try {
-        const normalizedValues = Object.keys(values).reduce(
-          (prev, key) => {
-            const value = values[key as keyof TimestampFormValues]
-            if (value === '') {
-              prev[key] = null
-            } else {
-              prev[key] = value
-            }
-            return prev
-          },
-          {} as Record<string, string | null>
-        )
-        await apiService.patchTimestampValues(incidentQuery.data!, normalizedValues, getLocalTimeZone())
-        toast('Timestamps updated', { type: 'success' })
-        incidentQuery.refetch()
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          toast(e.detail, { type: 'error' })
-        } else {
-          toast('There was a problem updating timestamps', { type: 'error' })
-        }
-      }
-    },
-    [apiService, incidentQuery, closeModal]
-  )
-
-  const handleShowEditTimestampsModal = useCallback(
-    (evt: MouseEvent<HTMLButtonElement>) => {
-      evt.preventDefault()
-      setModal(
-        <ModalContainer>
-          <h2>Set timestamps</h2>
-          <p>Customise timestamps</p>
-          <p>
-            Timestamps are shown in your local timezone: <b>{getLocalTimeZone()}</b>
-          </p>
-          <br />
-          <EditTimestampsForm incident={incidentQuery.data!} onSubmit={handleUpdateTimestampValues} />
-        </ModalContainer>
-      )
-    },
-    [incidentQuery.data, setModal, handleUpdateTimestampValues]
   )
 
   const createShowAssignRoleFormHandler = (role: IIncidentRole) => {
@@ -373,52 +301,6 @@ const ShowIncident = () => {
     [setModal, incidentQuery.data, handleSetFieldValue]
   )
 
-  // Show share update modal
-  const handleShowShareUpdateForm = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-
-    if (!incidentQuery.data || !fieldValuesQuery.data) {
-      return
-    }
-
-    const updateIncidentForm = forms.find((it) => it.type == FormType.UPDATE_INCIDENT)
-    if (!updateIncidentForm) {
-      console.error('Could not find update incident form')
-      return
-    }
-
-    setModal(
-      <ModalContainer>
-        <h2>Share update</h2>
-        <ShareUpdateForm
-          form={updateIncidentForm}
-          onSubmit={handleShareUpdate}
-          incident={incidentQuery.data}
-          fieldValues={fieldValuesQuery.data.items}
-        />
-      </ModalContainer>
-    )
-  }
-
-  const handleShareUpdate = useCallback(
-    async (values: ShareUpdateFormValues) => {
-      if (!incidentQuery.data) {
-        return
-      }
-      try {
-        await apiService.createIncidentUpdate(incidentQuery.data.id, values)
-        incidentUpdatesQuery.refetch()
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          toast(e.detail, { type: 'error' })
-        }
-        console.error(e)
-      }
-    },
-    [incidentQuery, apiService, incidentUpdatesQuery, closeModal]
-  )
-
   const slackUrl = useMemo(
     () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
     [organisation, incidentQuery.data?.slackChannelId]
@@ -426,6 +308,25 @@ const ShowIncident = () => {
 
   return (
     <>
+      {showShareUpdateModal && (
+        <ShareUpdateModal
+          onClose={() => setShowShareUpdateModal(false)}
+          fieldValues={fieldValuesQuery.data?.items || []}
+          incident={incidentQuery.data!}
+        />
+      )}
+      {showUpdateIncidentStatusModal && (
+        <UpdateIncidentStatusModal
+          onClose={() => setShowUpdateIncidentStatusModal(false)}
+          incident={incidentQuery.data!}
+        />
+      )}
+      {showUpdateTimestampsModal && (
+        <UpdateIncidentTimestampsModal
+          incident={incidentQuery.data!}
+          onClose={() => setShowUpdateTimestampsModal(false)}
+        />
+      )}
       <Box>
         {incidentQuery.isLoading && <Loading />}
         {incidentQuery.isSuccess ? (
@@ -448,7 +349,7 @@ const ShowIncident = () => {
 
                 <ContentHeader>
                   <h3>Updates</h3>
-                  <Button onClick={handleShowShareUpdateForm}>Share update</Button>
+                  <Button onClick={() => setShowShareUpdateModal(true)}>Share update</Button>
                 </ContentHeader>
                 <ContentSection>
                   {incidentUpdatesQuery.isSuccess ? (
@@ -475,7 +376,7 @@ const ShowIncident = () => {
                   <Field>
                     <FieldName>Status</FieldName>
                     <FieldValue>
-                      <FlatButton type="button" onClick={handleEditStatus}>
+                      <FlatButton type="button" onClick={() => setShowUpdateIncidentStatusModal(true)}>
                         {incidentQuery.data.incidentStatus.name}
                       </FlatButton>
                     </FieldValue>
@@ -534,7 +435,7 @@ const ShowIncident = () => {
                 <FieldsHeader>
                   <div>Timestamps</div>
                   <div>
-                    <FlatButton type="button" onClick={handleShowEditTimestampsModal}>
+                    <FlatButton type="button" onClick={() => setShowUpdateTimestampsModal(true)}>
                       <Icon icon={wrench} />
                     </FlatButton>
                   </div>

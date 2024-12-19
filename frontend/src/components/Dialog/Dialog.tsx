@@ -44,6 +44,19 @@ const Wrapper = styled.div<WrapperProps>`
     }
   }};
 
+  min-width: ${({ $size }) => {
+    switch ($size) {
+      case 'sm':
+        return '200px'
+      case 'md':
+        return '400px'
+      case 'lg':
+        return '600px'
+      default:
+        return '600px'
+    }
+  }};
+
   @media screen and (max-width: 600px) {
     box-shadow: none;
     width: 100%;
