@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { MouseEvent, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
 import slack from '@/assets/icons/slack.svg'
@@ -10,26 +9,22 @@ import wrench from '@/assets/icons/wrench.svg'
 import Button from '@/components/Button/Button'
 import Icon from '@/components/Icon/Icon'
 import Loading from '@/components/Loading/Loading'
-import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import Timeline from '@/components/Timeline/Timeline'
 import MiniAvatar from '@/components/User/MiniAvatar'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { APIError } from '@/services/transport'
 import { IncidentRoleKind } from '@/types/enums'
 import { IField, IIncidentFieldValue, IIncidentRole } from '@/types/models'
 import { rankSorter } from '@/utils/sort'
 
-import ChangeSeverityForm, {
-  FormValues as ChangeSeverityFormValues
-} from './components/ChangeSeverityForm/ChangeSeverityForm'
 import EditDescriptionForm, { FormValues } from './components/EditDescriptionForm/EditDescriptionForm'
 import EditTitleForm, { FormValues as ChangeNameFormValues } from './components/EditTitleForm/EditTitleForm'
 import DisplayFieldValue from './components/Field/DisplayFieldValue'
 import IncidentUpdate from './components/IncidentUpdate/IncidentUpdate'
-import RoleForm, { FormValues as RoleFormValues } from './components/RoleForm/RoleForm'
 
+import AssignRoleModal from './modals/AssignRoleModal'
+import ChangeSeverityModal from './modals/ChangeSeverityModal'
 import EditCustomFieldModal from './modals/EditCustomFieldModal'
 import ShareUpdateModal from './modals/ShareUpdateModal'
 import UpdateIncidentStatusModal from './modals/UpdateIncidentStatusModal'
@@ -51,11 +46,6 @@ const FieldName = styled.div`
 const FieldValue = styled.div`
   display: flex;
   gap: 8px;
-`
-const ModalContainer = styled.div`
-  padding: 1rem;
-  min-width: 400px;
-  max-width: 400px;
 `
 const FlatButton = styled.button`
   border: none;
@@ -121,12 +111,13 @@ type UrlParams = {
 const ShowIncident = () => {
   const { apiService } = useApiService()
   const { id } = useParams<UrlParams>() as UrlParams
-  const { setModal, closeModal } = useModal()
   const { organisation } = useGlobal()
   const [showShareUpdateModal, setShowShareUpdateModal] = useState(false)
   const [showUpdateIncidentStatusModal, setShowUpdateIncidentStatusModal] = useState(false)
   const [showUpdateTimestampsModal, setShowUpdateTimestampsModal] = useState(false)
   const [showEditFieldValueModal, setShowEditFieldValueModal] = useState<[IField, IIncidentFieldValue | null]>()
+  const [showSetRoleModal, setShowSetRoleModal] = useState<IIncidentRole>()
+  const [showChangeSeverityModal, setShowChangeSeverityModal] = useState(false)
 
   // Incident severities
   const severitiesQuery = useQuery({
@@ -176,48 +167,6 @@ const ShowIncident = () => {
     [id, apiService, incidentQuery]
   )
 
-  const handleChangeSeverity = async (values: ChangeSeverityFormValues) => {
-    await apiService.patchIncident(id, {
-      incidentSeverity: {
-        id: values.severity
-      }
-    })
-    incidentQuery.refetch()
-    incidentUpdatesQuery.refetch()
-    closeModal()
-  }
-
-  const handleSetRole = async (values: RoleFormValues, role: IIncidentRole) => {
-    try {
-      await apiService.setUserRole(incidentQuery.data!, values.user, role)
-      await incidentQuery.refetch()
-      closeModal()
-    } catch (e) {
-      if (e instanceof APIError) {
-        toast(e.detail, { type: 'error' })
-      }
-      console.error(e)
-    }
-  }
-
-  const handleEditSeverity = (evt: MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    if (!incidentQuery.data || !severitiesQuery.isSuccess) {
-      return
-    }
-    setModal(
-      <ModalContainer>
-        <h2>Change severity</h2>
-        <p>Change the severity of the incident below</p>
-        <ChangeSeverityForm
-          severityList={severitiesQuery.data.items}
-          incident={incidentQuery.data}
-          onSubmit={handleChangeSeverity}
-        />
-      </ModalContainer>
-    )
-  }
-
   const handleChangeName = useCallback(
     async (values: ChangeNameFormValues) => {
       await apiService.patchIncident(id, {
@@ -227,29 +176,6 @@ const ShowIncident = () => {
     },
     [apiService, id, incidentQuery]
   )
-
-  const createShowAssignRoleFormHandler = (role: IIncidentRole) => {
-    return async (evt: MouseEvent<HTMLButtonElement>) => {
-      evt.preventDefault()
-      if (!incidentQuery.data) {
-        console.error('Incident has not been loaded yet')
-        return
-      }
-      setModal(
-        <ModalContainer>
-          <h2>Assign role</h2>
-          {usersQuery.isSuccess && incidentQuery.data ? (
-            <RoleForm
-              users={usersQuery.data.items.map((it) => it.user)}
-              incident={incidentQuery.data}
-              role={role}
-              onSubmit={(values) => handleSetRole(values, role)}
-            />
-          ) : null}
-        </ModalContainer>
-      )
-    }
-  }
 
   const slackUrl = useMemo(
     () => `slack://channel?team=${organisation?.slackTeamId}&id=${incidentQuery.data?.slackChannelId}`,
@@ -283,6 +209,21 @@ const ShowIncident = () => {
           incident={incidentQuery.data!}
           field={showEditFieldValueModal[0]}
           value={showEditFieldValueModal[1]}
+        />
+      )}
+      {showSetRoleModal && (
+        <AssignRoleModal
+          onClose={() => setShowSetRoleModal(undefined)}
+          incident={incidentQuery.data!}
+          role={showSetRoleModal}
+          members={usersQuery.data!.items}
+        />
+      )}
+      {showChangeSeverityModal && (
+        <ChangeSeverityModal
+          onClose={() => setShowChangeSeverityModal(false)}
+          incident={incidentQuery.data!}
+          severityList={severitiesQuery.data!.items}
         />
       )}
 
@@ -343,7 +284,7 @@ const ShowIncident = () => {
                   <Field>
                     <FieldName>Severity</FieldName>
                     <FieldValue>
-                      <FlatButton type="button" onClick={handleEditSeverity}>
+                      <FlatButton type="button" onClick={() => setShowChangeSeverityModal(true)}>
                         {incidentQuery.data.incidentSeverity.name}
                       </FlatButton>
                     </FieldValue>
@@ -373,7 +314,7 @@ const ShowIncident = () => {
                                   <MiniAvatar user={assignment.user} /> {assignment.user.name}
                                 </PaddedValue>
                               ) : (
-                                <FlatButton type="button" onClick={createShowAssignRoleFormHandler(role)}>
+                                <FlatButton type="button" onClick={() => setShowSetRoleModal(role)}>
                                   <InnerButtonContent>
                                     <MiniAvatar user={assignment.user} /> {assignment.user.name}
                                   </InnerButtonContent>
@@ -381,7 +322,7 @@ const ShowIncident = () => {
                               )}
                             </>
                           ) : (
-                            <FlatButton type="button" onClick={createShowAssignRoleFormHandler(role)}>
+                            <FlatButton type="button" onClick={() => setShowSetRoleModal(role)}>
                               Set role
                             </FlatButton>
                           )}
