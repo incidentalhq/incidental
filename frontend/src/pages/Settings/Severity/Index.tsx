@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
 import trash from '@/assets/icons/trash.svg'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
-import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Content, ContentMain, Header, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -14,7 +13,8 @@ import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
 import { IIncidentSeverity } from '@/types/models'
 
-import SeverityForm, { FormValues as SeverityFormValues } from './components/SeverityForm'
+import CreateSeverityModal from './CreateSeverityModal'
+import EditSeverityModal from './EditSeverityModal'
 
 const Intro = styled.div`
   padding: 1rem;
@@ -32,15 +32,12 @@ const Controls = styled.div`
 const Actions = styled.div`
   padding: 1rem;
 `
-const ModalContainer = styled.div`
-  padding: 1rem;
-  min-width: 600px;
-`
 
 const SettingsSeverity = () => {
   const { organisation } = useGlobal()
-  const { setModal, closeModal } = useModal()
   const { apiService } = useApiService()
+  const [showEditSeverityModal, setShowEditSeverityModal] = useState<IIncidentSeverity>()
+  const [showCreateSeverityModal, setShowCreateSeverityModal] = useState(false)
 
   const severitiesQuery = useQuery({
     queryKey: ['severities', organisation!.id],
@@ -61,55 +58,6 @@ const SettingsSeverity = () => {
     [severitiesQuery, apiService]
   )
 
-  const handleAddSeverity = useCallback(
-    async (values: SeverityFormValues) => {
-      try {
-        await apiService.createSeverity(values)
-        severitiesQuery.refetch()
-        closeModal()
-        toast('New severity added', { type: 'success' })
-      } catch (e) {
-        console.error(e)
-      }
-    },
-    [apiService, severitiesQuery, closeModal]
-  )
-
-  const handlePatchSeverity = useCallback(
-    async (severity: IIncidentSeverity, values: SeverityFormValues) => {
-      try {
-        await apiService.patchSeverity(severity, values)
-        severitiesQuery.refetch()
-        closeModal()
-        toast('Severity updated', { type: 'success' })
-      } catch (e) {
-        console.error(e)
-      }
-    },
-    [apiService, severitiesQuery, closeModal]
-  )
-
-  const handleOpenCreateModal = useCallback(() => {
-    setModal(
-      <ModalContainer>
-        <h2>Create new severity</h2>
-        <SeverityForm onSubmit={handleAddSeverity} />
-      </ModalContainer>
-    )
-  }, [handleAddSeverity, setModal])
-
-  const handleOpenEditModal = useCallback(
-    (severity: IIncidentSeverity) => {
-      setModal(
-        <ModalContainer>
-          <h2>Edit severity</h2>
-          <SeverityForm severity={severity} onSubmit={(values) => handlePatchSeverity(severity, values)} />
-        </ModalContainer>
-      )
-    },
-    [handlePatchSeverity, setModal]
-  )
-
   const columns = useMemo(
     () =>
       [
@@ -126,7 +74,7 @@ const SettingsSeverity = () => {
           render: (v) => (
             <Controls>
               <div>
-                <StyledButton onClick={() => handleOpenEditModal(v)}>Edit</StyledButton>
+                <StyledButton onClick={() => setShowEditSeverityModal(v)}>Edit</StyledButton>
                 <ConfirmDelete
                   onConfirm={() => handleDelete(v)}
                   message="Are you sure you want to delete this severity?"
@@ -138,11 +86,15 @@ const SettingsSeverity = () => {
           )
         }
       ] as ColumnProperty<IIncidentSeverity>[],
-    [handleDelete, handleOpenEditModal]
+    [handleDelete]
   )
 
   return (
     <>
+      {showEditSeverityModal && (
+        <EditSeverityModal onClose={() => setShowEditSeverityModal(undefined)} severity={showEditSeverityModal} />
+      )}
+      {showCreateSeverityModal && <CreateSeverityModal onClose={() => setShowCreateSeverityModal(false)} />}
       <Box>
         <Header>
           <Title>Manage Severities</Title>
@@ -154,7 +106,7 @@ const SettingsSeverity = () => {
             </Intro>
             <Table data={severitiesQuery.data?.items ?? []} rowKey={'id'} columns={columns} />
             <Actions>
-              <StyledButton $primary={true} onClick={handleOpenCreateModal}>
+              <StyledButton $primary={true} onClick={() => setShowCreateSeverityModal(true)}>
                 Add severity
               </StyledButton>
             </Actions>

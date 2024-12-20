@@ -1,19 +1,17 @@
+import { useState } from 'react'
 import styled from 'styled-components'
 
-import { useModal } from '../Modal/useModal'
+import Dialog from '@/components/Dialog/Dialog'
+
 import { StyledButton } from '../Theme/Styles'
 import Button, { ButtonProps } from './Button'
 
-const Modal = styled.div`
-  padding: 1rem;
-`
-const MessageEl = styled.div`
+const ConfirmMessage = styled.div`
   margin-bottom: 1rem;
 `
-const ControlsEl = styled.div`
-  > a {
-    margin-left: 0.5rem;
-  }
+const Actions = styled.div`
+  display: flex;
+  gap: 1rem;
 `
 
 interface Props extends ButtonProps {
@@ -21,39 +19,46 @@ interface Props extends ButtonProps {
   message?: string
 }
 
-const ConfirmDelete: React.FC<Props> = ({ onConfirm, children, message, ...props }) => {
-  const { setModal, closeModal } = useModal()
-
+// Modal for confirming delete
+const ConfirmDeleteModal = ({
+  onClose,
+  onConfirm,
+  message
+}: {
+  onClose: () => void
+  onConfirm: () => void
+  message?: string
+}) => {
   const handleConfirm = (evt: React.SyntheticEvent<HTMLButtonElement>) => {
     evt.preventDefault()
-    closeModal()
     onConfirm()
   }
 
-  const handleClickCancel = (evt: React.SyntheticEvent<HTMLAnchorElement>) => {
-    evt.preventDefault()
-    closeModal()
-  }
+  return (
+    <Dialog onClose={onClose} title="Confirm Delete" size="sm">
+      <ConfirmMessage>{message ? message : 'Are you sure you want to delete this?'}</ConfirmMessage>
+      <Actions>
+        <StyledButton $danger={true} onClick={handleConfirm}>
+          Delete
+        </StyledButton>
+        <StyledButton onClick={onClose}>Cancel</StyledButton>
+      </Actions>
+    </Dialog>
+  )
+}
 
-  const onClick = (evt: React.SyntheticEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    setModal(
-      <Modal>
-        <MessageEl>{message ? message : 'Are you sure you want to delete this?'}</MessageEl>
-        <ControlsEl>
-          <StyledButton onClick={handleConfirm}>Yes</StyledButton>
-          <a href="#cancel" onClick={handleClickCancel}>
-            Cancel
-          </a>
-        </ControlsEl>
-      </Modal>
-    )
-  }
+const ConfirmDelete: React.FC<Props> = ({ onConfirm, children, message, ...props }) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   return (
-    <Button $danger={true} onClick={onClick} {...props}>
-      {children}
-    </Button>
+    <>
+      {showConfirmModal && (
+        <ConfirmDeleteModal onConfirm={onConfirm} onClose={() => setShowConfirmModal(false)} message={message} />
+      )}
+      <Button $danger={true} onClick={() => setShowConfirmModal(true)} {...props}>
+        {children}
+      </Button>
+    </>
   )
 }
 

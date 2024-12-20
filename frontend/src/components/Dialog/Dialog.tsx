@@ -3,7 +3,8 @@ import React, { PropsWithChildren, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import styled from 'styled-components'
 
-import { useOnClickOutside } from '../Modal/useModal'
+import useOnClickOutside from '@/hooks/useOnClickOutside'
+
 import DialogHeader from './Header'
 
 const Root = styled.div`
@@ -41,6 +42,19 @@ const Wrapper = styled.div<WrapperProps>`
         return '800px'
       default:
         return '800px'
+    }
+  }};
+
+  min-width: ${({ $size }) => {
+    switch ($size) {
+      case 'sm':
+        return '200px'
+      case 'md':
+        return '400px'
+      case 'lg':
+        return '600px'
+      default:
+        return '600px'
     }
   }};
 

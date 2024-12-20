@@ -1,12 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
 import trash from '@/assets/icons/trash.svg'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
-import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import { StyledButton } from '@/components/Theme/Styles'
@@ -14,7 +13,7 @@ import useApiService from '@/hooks/useApi'
 import { APIError } from '@/services/transport'
 import { ITimestamp } from '@/types/models'
 
-import TimestampForm, { FormValues as TimestampFormValues } from './components/TimestampForm'
+import CreateTimestampModal from './CreateTimestampModal'
 
 const Intro = styled.div`
   padding: 1rem;
@@ -34,66 +33,36 @@ const FirstOrLast = styled.div`
   padding: 2px 5px;
   border-radius: var(--radius-md);
 `
-const ModalContainer = styled.div`
-  padding: 1rem;
-  min-width: 600px;
-`
+
 const Actions = styled.div`
   padding: 1rem;
 `
 
 const SettingsTimestamps = () => {
   const { apiService } = useApiService()
-  const { setModal, closeModal } = useModal()
+  const [showCreateTimestampModal, setShowCreateTimestampModal] = useState(false)
 
   const timestampsQuery = useQuery({
     queryKey: ['timestamps'],
     queryFn: () => apiService.getTimestamps()
   })
 
-  const handleDelete = useCallback(
-    async (timestamp: ITimestamp) => {
-      try {
-        await apiService.deleteTimestamp(timestamp)
-        timestampsQuery.refetch()
-        toast('Timestamp has been archived', { type: 'warning' })
-      } catch (e) {
-        if (e instanceof APIError) {
-          toast(e.detail, { type: 'error' })
-        } else {
-          toast('There was a problem archiving your custom timestamp')
-        }
+  const deleteTimestampMutation = useMutation({
+    mutationFn: (timestamp: ITimestamp) => apiService.deleteTimestamp(timestamp),
+    onSuccess: async () => {
+      timestampsQuery.refetch()
+    },
+    onError: (e) => {
+      if (e instanceof APIError) {
+        toast(e.detail, { type: 'error' })
+      } else {
+        toast('There was a problem archiving your custom timestamp')
       }
     },
-    [apiService, timestampsQuery]
-  )
-
-  const handleAddTimestamp = useCallback(
-    async (values: TimestampFormValues) => {
-      try {
-        await apiService.createTimestamp(values)
-        timestampsQuery.refetch()
-        toast('New timestamp added', { type: 'success' })
-        closeModal()
-      } catch (e) {
-        let message = 'There was an error adding the timestamp'
-        if (e instanceof APIError) {
-          message = e.detail
-        }
-        toast(message, { type: 'error' })
-      }
-    },
-    [apiService, timestampsQuery, closeModal]
-  )
-
-  const handleOpenCreateModal = useCallback(() => {
-    setModal(
-      <ModalContainer>
-        <h2>Create new custom timestamp</h2>
-        <TimestampForm onSubmit={handleAddTimestamp} />
-      </ModalContainer>
-    )
-  }, [handleAddTimestamp, setModal])
+    onSettled: () => {
+      toast('Timestamp has been archived', { type: 'warning' })
+    }
+  })
 
   const columns = useMemo(
     () =>
@@ -127,7 +96,7 @@ const SettingsTimestamps = () => {
               <div>
                 {v.canDelete && (
                   <ConfirmDelete
-                    onConfirm={() => handleDelete(v)}
+                    onConfirm={() => deleteTimestampMutation.mutateAsync(v)}
                     message="Are you sure you want to delete this timestamp?"
                   >
                     <Icon icon={trash} />
@@ -138,11 +107,12 @@ const SettingsTimestamps = () => {
           }
         }
       ] as ColumnProperty<ITimestamp>[],
-    [handleDelete]
+    [deleteTimestampMutation]
   )
 
   return (
     <>
+      {showCreateTimestampModal && <CreateTimestampModal onClose={() => setShowCreateTimestampModal(false)} />}
       <Box>
         <Header>
           <Title>Manage Timestamps</Title>
@@ -158,7 +128,7 @@ const SettingsTimestamps = () => {
               <p>No timestamps have been configured.</p>
             )}
             <Actions>
-              <StyledButton $primary={true} onClick={handleOpenCreateModal}>
+              <StyledButton $primary={true} onClick={() => setShowCreateTimestampModal(true)}>
                 Add custom timestamp
               </StyledButton>
             </Actions>

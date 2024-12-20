@@ -3,7 +3,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 
-import ModalProvider from '@/components/Modal/ModalProvider'
 import { ApiServiceProvider } from '@/hooks/useApi'
 import { AuthProvider } from '@/hooks/useAuth'
 import { GlobalProvider } from '@/hooks/useGlobal'
@@ -23,9 +22,7 @@ export const withAllTheProviders = (component: React.ReactElement) => {
         <BrowserRouter>
           <GlobalProvider>
             <ApiServiceProvider>
-              <AuthProvider>
-                <ModalProvider>{component}</ModalProvider>
-              </AuthProvider>
+              <AuthProvider>{component}</AuthProvider>
             </ApiServiceProvider>
           </GlobalProvider>
         </BrowserRouter>

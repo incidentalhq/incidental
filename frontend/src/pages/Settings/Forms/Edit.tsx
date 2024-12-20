@@ -10,7 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { Form, Formik, FormikHelpers } from 'formik'
+import { Form, Formik } from 'formik'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -21,18 +21,16 @@ import Button from '@/components/Button/Button'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
 import FormField from '@/components/Incident/FormField'
-import { useModal } from '@/components/Modal/useModal'
 import { Box, Content, ContentMain, Header, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
 import useGlobal from '@/hooks/useGlobal'
-import { APIError } from '@/services/transport'
 import { FieldInterfaceKind, FieldKind } from '@/types/enums'
 import { IFormField, IIncidentType, ModelID } from '@/types/models'
-import { apiErrorsToFormikErrors } from '@/utils/form'
 
-import AddFormFieldForm, { FormValues as CreateFormFieldValues } from './components/AddFormFieldForm'
-import FormFieldSettingsForm, { FormValues as FormFieldSettingsFormValue } from './components/FormFieldSettingsForm'
 import SortableFormFieldRow from './components/SortableFormFieldRow'
+
+import AddFormFieldModal from './AddFormFieldModal'
+import EditFormFieldModal from './EditFormFieldModal'
 
 const FieldRow = styled.div`
   display: flex;
@@ -55,10 +53,6 @@ const Controls = styled.div`
 const ListContainer = styled.div`
   display: grid;
   grid-template-columns: 1;
-`
-const ModalContainer = styled.div`
-  padding: 1rem;
-  width: 400px;
 `
 const FormActions = styled.div`
   padding: 1rem 20px;
@@ -91,7 +85,8 @@ const SettingsFormsEdit = () => {
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
   const { id } = useParams<UrlParams>() as UrlParams
-  const { setModal, closeModal } = useModal()
+  const [showEditFormFieldModal, setShowEditFormFieldModal] = useState<IFormField>()
+  const [showCreateFormFieldModal, setShowCreateFormFieldModal] = useState(false)
 
   // https://github.com/clauderic/dnd-kit/issues/921
   const [localOrdering, setLocalOrdering] = useState<Array<UniqueIdentifier>>([])
@@ -143,19 +138,6 @@ const SettingsFormsEdit = () => {
         rank: index
       }))
       return apiService.patchFormFieldValues(id!, patch)
-    }
-  })
-
-  const updateFormFieldMutation = useMutation({
-    mutationFn: (value: Pick<IFormField, 'id'> & Partial<IFormField>) => apiService.patchFormField(value.id, value),
-    onSuccess: () => formFieldsQuery.refetch()
-  })
-
-  const createFormFieldMutation = useMutation({
-    mutationFn: (value: CreateFormFieldValues) => apiService.createFormField(id, value),
-    onSuccess: async () => {
-      await formFieldsQuery.refetch()
-      setLocalOrderingInitialized(false)
     }
   })
 
@@ -222,49 +204,6 @@ const SettingsFormsEdit = () => {
 
   const dummySubmit = useCallback(() => {}, [])
 
-  const createFormFieldUpdateHandler = (formField: IFormField) => {
-    return async (values: Partial<IFormField>, helpers: FormikHelpers<FormFieldSettingsFormValue>) => {
-      const newValues = {
-        id: formField.id,
-        ...values
-      }
-      try {
-        await updateFormFieldMutation.mutateAsync(newValues)
-        toast('Form field updated', { type: 'success' })
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          helpers.setErrors(apiErrorsToFormikErrors(e))
-          toast(e.message, { type: 'error' })
-        }
-        console.error(e)
-      }
-    }
-  }
-
-  const createEditHandler = (formField: IFormField) => {
-    return (evt: React.MouseEvent<HTMLButtonElement>) => {
-      evt.preventDefault()
-
-      if (!incidentStatusQuery.isSuccess || !severitiesQuery.isSuccess || !incidentTypesQuery.isSuccess) {
-        return
-      }
-
-      setModal(
-        <ModalContainer>
-          <h2>Update form field</h2>
-          <FormFieldSettingsForm
-            formField={formField}
-            onSubmit={createFormFieldUpdateHandler(formField)}
-            statusList={incidentStatusQuery.data.items}
-            severityList={severitiesQuery.data.items}
-            incidentTypes={incidentTypesQuery.data.items}
-          />
-        </ModalContainer>
-      )
-    }
-  }
-
   const createDeleteHandler = (formField: IFormField) => {
     return async () => {
       try {
@@ -274,32 +213,6 @@ const SettingsFormsEdit = () => {
         toast('Error trying to delete this form field', { type: 'error' })
       }
     }
-  }
-
-  const handleCreateFieldForm = async (
-    values: CreateFormFieldValues,
-    helpers: FormikHelpers<CreateFormFieldValues>
-  ) => {
-    try {
-      await createFormFieldMutation.mutateAsync(values)
-      closeModal()
-    } catch (e) {
-      if (e instanceof APIError) {
-        helpers.setErrors(apiErrorsToFormikErrors(e))
-      }
-    }
-  }
-
-  const handleShowAddFieldFormModal = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-
-    setModal(
-      <ModalContainer>
-        <h2>Add a new field to this form</h2>
-        <p>Use the dropdown to add a new field </p>
-        <AddFormFieldForm onSubmit={handleCreateFieldForm} fields={availableFields} />
-      </ModalContainer>
-    )
   }
 
   const isReady =
@@ -312,11 +225,28 @@ const SettingsFormsEdit = () => {
   const sortedFields = useMemo(
     () =>
       localOrdering.map((it) => formFieldsQuery.data?.items.find((f) => f.id === it)).filter((it) => it !== undefined),
-    [localOrdering, formFieldsQuery]
+    [localOrdering, formFieldsQuery.data?.items]
   )
 
   return (
     <>
+      {showEditFormFieldModal && (
+        <EditFormFieldModal
+          onClose={() => setShowEditFormFieldModal(undefined)}
+          formField={showEditFormFieldModal}
+          statusList={incidentStatusQuery.data?.items || []}
+          severityList={severitiesQuery.data?.items || []}
+          incidentTypes={incidentTypesQuery.data?.items || []}
+        />
+      )}
+      {showCreateFormFieldModal && (
+        <AddFormFieldModal
+          onClose={() => setShowCreateFormFieldModal(false)}
+          formId={id}
+          availableFields={availableFields}
+          onSuccess={() => setLocalOrderingInitialized(false)}
+        />
+      )}
       <Box>
         <Header>
           <Title>{formQuery.data?.name}</Title>
@@ -351,7 +281,7 @@ const SettingsFormsEdit = () => {
                                   />
                                 </Field>
                                 <Controls>
-                                  <Button type="button" onClick={createEditHandler(it)}>
+                                  <Button type="button" onClick={() => setShowEditFormFieldModal(it)}>
                                     Edit
                                   </Button>
                                   <ConfirmDelete
@@ -370,7 +300,7 @@ const SettingsFormsEdit = () => {
                     </DndContext>
                     <FormActions>
                       {availableFields.length > 0 ? (
-                        <Button $primary type="button" onClick={handleShowAddFieldFormModal}>
+                        <Button $primary type="button" onClick={() => setShowCreateFormFieldModal(true)}>
                           Add field
                         </Button>
                       ) : null}
