@@ -3,7 +3,8 @@ import React, { PropsWithChildren, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import styled from 'styled-components'
 
-import { useOnClickOutside } from '../Modal/useModal'
+import useOnClickOutside from '@/hooks/useOnClickOutside'
+
 import DialogHeader from './Header'
 
 const Root = styled.div`
