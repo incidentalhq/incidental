@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FormikHelpers } from 'formik'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
@@ -8,7 +7,6 @@ import trash from '@/assets/icons/trash.svg'
 import Button from '@/components/Button/Button'
 import ConfirmDelete from '@/components/Button/ConfirmDelete'
 import Icon from '@/components/Icon/Icon'
-import { useModal } from '@/components/Modal/useModal'
 import Table, { ColumnProperty } from '@/components/Table/Table'
 import { Box, Content, ContentMain, Header, Pill, StyledButton, Title } from '@/components/Theme/Styles'
 import useApiService from '@/hooks/useApi'
@@ -16,9 +14,9 @@ import useGlobal from '@/hooks/useGlobal'
 import { APIError } from '@/services/transport'
 import { FieldInterfaceKind, FieldKind } from '@/types/enums'
 import { IField } from '@/types/models'
-import { apiErrorsToFormikErrors } from '@/utils/form'
 
-import FieldForm, { FormValues as FieldFormValues } from './components/Field/FieldForm'
+import CreateFieldModal from './CreateFieldModal'
+import EditFieldModal from './EditFieldModal'
 
 const Intro = styled.div`
   padding: 1rem;
@@ -36,10 +34,6 @@ const Controls = styled.div`
 const Actions = styled.div`
   padding: 1rem;
 `
-const ModalContainer = styled.div`
-  padding: 1rem;
-  min-width: 600px;
-`
 
 const humanizedFieldInterfaceKind = (kind: FieldInterfaceKind) => {
   switch (kind) {
@@ -55,12 +49,13 @@ const humanizedFieldInterfaceKind = (kind: FieldInterfaceKind) => {
 }
 
 const SettingsFields = () => {
-  const { setModal, closeModal } = useModal()
   const { apiService } = useApiService()
   const { organisation } = useGlobal()
+  const [showEditFieldModal, setShowEditFieldModal] = useState<IField>()
+  const [showCreateFieldModel, setShowCreateFieldModel] = useState(false)
 
   const fieldsQuery = useQuery({
-    queryKey: [organisation?.id, 'fields'],
+    queryKey: ['fields', organisation?.id],
     queryFn: () => apiService.getFields()
   })
 
@@ -77,59 +72,6 @@ const SettingsFields = () => {
       }
     },
     [apiService, fieldsQuery]
-  )
-
-  const handleCreate = useCallback(
-    async (values: unknown) => {
-      try {
-        await apiService.createField(values)
-        fieldsQuery.refetch()
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          toast(e.detail, { type: 'error' })
-        }
-        console.error(e)
-      }
-    },
-    [apiService, fieldsQuery, closeModal]
-  )
-
-  const handlePatch = useCallback(
-    async (field: IField, values: Partial<IField>, helpers: FormikHelpers<FieldFormValues>) => {
-      try {
-        await apiService.patchField(field, values)
-        fieldsQuery.refetch()
-        closeModal()
-      } catch (e) {
-        if (e instanceof APIError) {
-          helpers.setErrors(apiErrorsToFormikErrors(e))
-        }
-        console.error(e)
-      }
-    },
-    [apiService, fieldsQuery, closeModal]
-  )
-
-  const handleOpenCreateModal = useCallback(() => {
-    setModal(
-      <ModalContainer>
-        <h2>Create new custom field</h2>
-        <FieldForm onSubmit={handleCreate} />
-      </ModalContainer>
-    )
-  }, [handleCreate, setModal])
-
-  const handleOpenEditModal = useCallback(
-    (field: IField) => {
-      setModal(
-        <ModalContainer>
-          <h2>Edit field</h2>
-          <FieldForm field={field} onSubmit={(values, helpers) => handlePatch(field, values, helpers)} />
-        </ModalContainer>
-      )
-    },
-    [handlePatch, setModal]
   )
 
   const columns = useMemo(
@@ -167,7 +109,7 @@ const SettingsFields = () => {
                 <Button
                   whyDisabledText="This field cannot be edited"
                   disabled={!v.isEditable}
-                  onClick={() => handleOpenEditModal(v)}
+                  onClick={() => setShowEditFieldModal(v)}
                 >
                   Edit
                 </Button>
@@ -184,13 +126,17 @@ const SettingsFields = () => {
           )
         }
       ] as ColumnProperty<IField>[],
-    [handleDelete, handleOpenEditModal]
+    [handleDelete, setShowEditFieldModal]
   )
 
-  const fieldsSorted = useMemo(() => fieldsQuery.data?.items.sort((a, _) => (a.isSystem ? -1 : 1)), [fieldsQuery])
+  const fieldsSorted = useMemo(() => fieldsQuery.data?.items.sort((a) => (a.isSystem ? -1 : 1)), [fieldsQuery])
 
   return (
     <>
+      {showEditFieldModal && (
+        <EditFieldModal field={showEditFieldModal} onClose={() => setShowEditFieldModal(undefined)} />
+      )}
+      {showCreateFieldModel && <CreateFieldModal onClose={() => setShowCreateFieldModel(false)} />}
       <Box>
         <Header>
           <Title>Manage Fields</Title>
@@ -202,7 +148,7 @@ const SettingsFields = () => {
             </Intro>
             {fieldsQuery.isSuccess ? <Table data={fieldsSorted ?? []} rowKey={'id'} columns={columns} /> : null}
             <Actions>
-              <StyledButton $primary={true} onClick={handleOpenCreateModal}>
+              <StyledButton $primary={true} onClick={() => setShowCreateFieldModel(true)}>
                 Add field
               </StyledButton>
             </Actions>
