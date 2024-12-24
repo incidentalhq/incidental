@@ -18,4 +18,4 @@ class VerifyCustomDomainTask(BaseTask["VerifyCustomDomainParameters"]):
             if is_verified:
                 status_page.is_custom_domain_verified = True
 
-        self.session.flush()
+        self.session.commit()
