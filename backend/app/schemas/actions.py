@@ -1,10 +1,10 @@
 import re
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 import pytz
 from fastapi import Query
-from pydantic import ConfigDict, EmailStr, RootModel, StringConstraints, field_validator
+from pydantic import ConfigDict, EmailStr, HttpUrl, RootModel, StringConstraints, field_validator, model_validator
 
 from app.models import (
     ComponentStatus,
@@ -313,6 +313,26 @@ class CreateStatusPageIncidentUpdateSchema(BaseSchema):
 class PatchStatusPageSchema(BaseSchema):
     name: str | None = None
     slug: str | None = None
+    support_url: HttpUrl | None = None
+    privacy_policy_url: HttpUrl | None = None
+    terms_of_service_url: HttpUrl | None = None
+    support_label: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_empty_urls_to_none(cls, values: Any):
+        """Convert empty strings to None for url"""
+        if not values:
+            return values
+
+        if not isinstance(values, dict):
+            return values
+
+        for key in ["supportUrl", "privacyPolicyUrl", "termsOfServiceUrl"]:
+            if values.get(key) == "":
+                values[key] = None
+
+        return values
 
 
 class UpdateStatusPageCustomDomain(BaseSchema):

@@ -20,6 +20,10 @@ export interface IStatusPage extends IModel {
   slug: string;
   statusPageItems: Array<IStatusPageItem>;
   publishedAt: string;
+  supportUrl?: string;
+  supportLabel?: string;
+  termsOfServiceUrl?: string;
+  privacyPolicyUrl?: string;
 }
 
 export interface IStatusPageItem extends IModel {

@@ -201,6 +201,10 @@ export interface IStatusPage extends IModel {
   customDomain: string | null
   statusPageItems: Array<IStatusPageItem>
   hasActiveIncident: boolean
+  supportUrl: string
+  supportLabel: string
+  termsOfServiceUrl: string
+  privacyPolicyUrl: string
 }
 
 export interface IStatusPageItem extends IModel {

@@ -13,23 +13,9 @@ const Root = styled.div`
   display: flex;
   justify-content: center;
 `;
-
 const Content = styled.div`
   margin: 0 auto;
   width: 100%;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--color-slate-200);
-  padding-bottom: 1rem;
-
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 0;
-  }
 `;
 const Section = styled.div`
   margin: 1rem 0;
@@ -50,11 +36,6 @@ export default function StatusPage({ statusPageResponse }: Props) {
   return (
     <Root>
       <Content>
-        <Section>
-          <Header>
-            <h1>{statusPageResponse.statusPage.name}</h1>
-          </Header>
-        </Section>
         <Section>
           {hasActiveIncident ? (
             <CurrentIncidentsHero statusPageResponse={statusPageResponse} />
