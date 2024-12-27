@@ -61,6 +61,11 @@ class StatusPage(Base, TimestampMixin, SoftDeleteMixin):
     custom_domain: Mapped[str | None] = mapped_column(String, nullable=True)
     is_custom_domain_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    support_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    support_label: Mapped[str] = mapped_column(String, nullable=False)
+    privacy_policy_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    terms_of_service_url: Mapped[str | None] = mapped_column(String, nullable=True)
+
     # table properties
     __table_args__ = (UniqueConstraint("slug", name="ux_status_page_slug"),)
 

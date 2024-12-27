@@ -204,6 +204,10 @@ class StatusPageSchema(ModelSchema):
     public_url: str
     slug: str
     has_active_incident: bool
+    support_url: str | None
+    support_label: str | None
+    privacy_policy_url: str | None
+    terms_of_service_url: str | None
 
     status_page_items: list[StatusPageItemSchema]
 

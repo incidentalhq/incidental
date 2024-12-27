@@ -2,6 +2,7 @@
 
 import Footer from "@/components/Footer";
 import styled from "styled-components";
+import Header from "./Header";
 
 const Root = styled.div`
   display: flex;
@@ -22,6 +23,7 @@ export default function Layout({
 }) {
   return (
     <Root>
+      <Header />
       <Main>{children}</Main>
       <Footer />
     </Root>

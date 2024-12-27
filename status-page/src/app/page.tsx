@@ -2,7 +2,7 @@ import StatusPage from "@/components/StatusPage";
 import { getStatusPage } from "@/lib/api";
 import { headers } from "next/headers";
 
-async function getDomain() {
+export async function getDomain() {
   const requestHeaders = await headers();
   return requestHeaders.get("x-forwarded-host");
 }

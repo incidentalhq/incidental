@@ -528,11 +528,19 @@ class StatusPageRepo(BaseRepo):
         return self.session.execute(stmt).scalar_one_or_none()
 
     def patch_status_page(self, status_page: StatusPage, patch_in: PatchStatusPageSchema):
+        """Patch basic information of a status page"""
         for key, value in patch_in.model_dump(exclude_unset=True).items():
+            # for slugs check if they are unique
             if key == "slug":
                 if not self._check_slug_is_unique(value, status_page):
                     raise FormFieldValidationError("Slug is already in use", "slug")
                 status_page.slug = value
+            # if these urls are empty, set them to None
+            elif key in ["support_url", "privacy_policy_url", "terms_of_service_url"]:
+                if value:
+                    setattr(status_page, key, str(value))
+                else:
+                    setattr(status_page, key, None)
             else:
                 setattr(status_page, key, value)
 
