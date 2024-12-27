@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: "",
 };
 
-export async function getDomain() {
+async function getDomain() {
   const requestHeaders = await headers();
   return requestHeaders.get("x-forwarded-host");
 }
